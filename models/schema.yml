@@ -1,0 +1,7 @@
+version: 2
+
+sources:
+  - name: dummy_test
+    schema: dummy_test
+    tables: 
+      - name: dummy
