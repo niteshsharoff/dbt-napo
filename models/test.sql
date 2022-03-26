@@ -1,1 +1,0 @@
-select * from {{source('dummy_test','dummy')}}

@@ -1,7 +1,13 @@
 version: 2
 
 sources:
-  - name: dummy_test
-    schema: dummy_test
+  - name: raw
+    schema: raw
     tables: 
-      - name: dummy
+      - name: breed
+      - name: customer
+      - name: pet
+      - name: policy
+      - name: product
+      - name: productline
+      - name: subscription
