@@ -1,0 +1,110 @@
+version: 2
+
+models:
+  - name: dim_policy_detail
+    description: ""
+    config:
+        +re_data_monitored: true
+        +re_data_columns:
+        - pk
+    columns:
+      - name: pk
+        description: ""
+        tests:
+          - unique
+          - not_null
+      - name: quote_id
+        description: ""
+
+      - name: reference_number
+        description: ""
+
+      - name: subscription_active
+        description: ""
+
+      - name: created_date
+        description: ""
+
+      - name: subscription_created_date
+        description: ""
+
+      - name: subscription_modified_date
+        description: ""
+
+      - name: start_date
+        description: ""
+
+      - name: end_date
+        description: ""
+
+      - name: cancel_date
+        description: ""
+
+      - name: cancel_reason
+        description: ""
+
+      - name: payment_plan_type
+        description: ""
+
+      - name: monthly_price
+        description: ""
+
+      - name: annual_price
+        description: ""
+
+      - name: customer
+        description: ""
+
+      - name: pet
+        description: ""
+
+      - name: product
+        description: ""
+
+      - name: quote_source_reference
+        description: ""
+
+      - name: quote_source
+        description: ""
+
+      - name: voucher_code
+        description: ""
+
+      - name: year_of_birth
+        description: ""
+
+      - name: customer_age
+        description: ""
+
+      - name: customer_id
+        description: ""
+
+      - name: breed_category
+        description: ""
+
+      - name: multipet_number
+        description: ""
+
+      - name: is_neutered
+        description: ""
+
+      - name: age_months
+        description: ""
+
+      - name: size
+        description: ""
+
+      - name: name
+        description: ""
+
+      - name: breed_species
+        description: ""
+
+      - name: source
+        description: ""
+
+      - name: breed_name
+        description: ""
+
+      - name: breed_pk
+        description: ""

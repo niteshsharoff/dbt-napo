@@ -4,7 +4,7 @@ select
     ,row_number() over(partition by policy order by created_date desc) row_no
 from  {{ref('raw_subscription')}} s
 ),
-subscription_table as (
+subscription_table as ( --latest subscription table
     select * except (row_no)
     from grouped_policy_data 
     where row_no = 1
@@ -15,7 +15,7 @@ grouped_data as (
         ,p.quote_id
         ,p.reference_number
         ,coalesce(cast(s.active as string),'not set') as subscription_active
-        ,p.created_date
+        ,p.created_date as created_date
         ,s.created_date as subscription_created_date
         ,s.modified_date as subscription_modified_date
         ,p.start_date

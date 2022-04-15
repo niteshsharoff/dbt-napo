@@ -1,0 +1,5 @@
+packages:
+  - package: re-data/re_data
+    version: 0.7.1
+  - package: dbt-labs/codegen
+    version: 0.6.0

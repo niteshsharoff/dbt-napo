@@ -1,3 +1,2 @@
-select pk
-      ,fields.*
+select *
 from {{source('raw','subscription')}}
