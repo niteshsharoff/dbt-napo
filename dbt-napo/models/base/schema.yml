@@ -1,0 +1,13 @@
+version: 2
+
+sources:
+  - name: raw
+    schema: raw
+    tables: 
+      - name: breed
+      - name: customer
+      - name: pet
+      - name: policy
+      - name: product
+      - name: productline
+      - name: subscription
