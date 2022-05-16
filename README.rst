@@ -13,7 +13,8 @@ Nitesh and Oisin are working on early process to generate key metrics from polic
 
 
 Two folders added:
+----------------
 * gcp-pq-to-bq-loader
-  - This is the loader for cloud storage to BigQuery
+  -This is the loader for cloud storage to BigQuery
 * dbt-napo
-  - This is a version controlled transformation layer on the raw BigQuery dataset
+  -This is a version controlled transformation layer on the raw BigQuery dataset
