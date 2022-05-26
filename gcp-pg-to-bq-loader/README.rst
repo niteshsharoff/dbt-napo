@@ -10,3 +10,8 @@ Recommended implementation:
 ------------------------------------
 * Setup this code as a Cloud function
 * Schedule Cloud Scheduler to ping the endpoint daily so the code runs
+
+Re-run the loader
+-----------------------------------
+To re-run this loader, simply hit the following endpoint from any browser:
+* https://<gcp-region e.g. us-central1>-<project-id>.cloudfunctions.net/analytics__load_postgres_tables_bq
