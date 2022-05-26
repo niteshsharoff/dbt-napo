@@ -40,7 +40,7 @@ def main(request):
 
     # Subscription table loading
     blob = bucket.blob("{}/{}".format(path_name,'policy.subscription.json'))
-    df = pd.read_json(blob.download_as_text(), lines=True)
+    df = pd.read_json(blob.download_as_string(), lines=True)
     df1 = pd.json_normalize(df['fields'])
     if (df1.policy.count()==df.model.count()):
         print('True')
