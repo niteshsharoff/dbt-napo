@@ -15,6 +15,7 @@ grouped_data as (
         ,p.quote_id
         ,p.reference_number
         ,coalesce(cast(s.active as string),'not set') as subscription_active
+        ,p.annual_payment_id
         ,p.created_date as created_date
         ,s.created_date as subscription_created_date
         ,s.modified_date as subscription_modified_date

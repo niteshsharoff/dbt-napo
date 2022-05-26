@@ -3,6 +3,7 @@ select
       ,p.quote_id
       ,p.reference_number
       ,p.subscription_active
+      ,p.annual_payment_id
       ,p.created_date
       ,p.subscription_created_date
       ,p.subscription_modified_date
