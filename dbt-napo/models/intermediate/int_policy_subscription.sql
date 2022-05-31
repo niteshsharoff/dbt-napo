@@ -11,7 +11,7 @@ subscription_table as ( --latest subscription table
 ),
 active_policy_existed as (
   select policy
-    ,countif(active=true) as active_policy_existed  
+    ,countif(active=true) as active_subscription_existed  
   from  {{ref('raw_subscription')}}
   group by policy
 ),
@@ -21,7 +21,7 @@ grouped_data as (
         ,p.quote_id
         ,p.reference_number
         ,coalesce(cast(s.active as string),'not set') as subscription_active
-        ,coalesce(if(c.active_policy_existed=1,true,false),false) as active_policy_existed
+        ,coalesce(if(c.active_subscription_existed=1,true,false),false) as active_subscription_existed
         ,p.annual_payment_id
         ,p.created_date as created_date
         ,s.created_date as subscription_created_date

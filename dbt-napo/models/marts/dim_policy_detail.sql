@@ -1,7 +1,3 @@
-{{
-    config(
-      re_data_monitored=true)}}
-
 with policies as (
     select p.*
          , b.* except (pk)

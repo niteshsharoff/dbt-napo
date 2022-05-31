@@ -4,7 +4,7 @@ select
       ,p.reference_number
       ,p.subscription_active
       ,p.annual_payment_id
-      ,p.active_policy_existed
+      ,p.active_subscription_existed
       ,p.created_date
       ,p.subscription_created_date
       ,p.subscription_modified_date

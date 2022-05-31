@@ -3,13 +3,6 @@ version: 2
 models:
   - name: dim_policy_detail
     description: ""
-    config:
-        re_data_monitored: true
-        re_data_time_filter: created_date
-        re_data_columns:
-          - pk
-          - subscription_active
-          - pet
     columns:
       - name: pk
         description: ""
