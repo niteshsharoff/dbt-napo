@@ -10,8 +10,9 @@ with pet_breeds as (
             --,b.species as breed_species
             ,b.source as source
             ,b.name as breed_name 
+            ,b.common_breed_name
       from {{ref('raw_pet')}} p
-      left join {{ref('raw_breed')}} b
+      left join {{ref('int_breed_breed_mapping')}} b
       on p.breed = b.pk
 )
-select * from pet_breeds
+select distinct * from pet_breeds
