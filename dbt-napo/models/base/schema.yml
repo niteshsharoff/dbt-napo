@@ -11,3 +11,4 @@ sources:
       - name: product
       - name: productline
       - name: subscription
+      - name: breed_mapping
