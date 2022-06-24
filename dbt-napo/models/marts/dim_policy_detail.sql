@@ -9,6 +9,8 @@ with policies as (
 features as (
 select *
        ,DATE_DIFF(policy_start_date,cast(created_date as date),DAY) as days_policy_start
+       ,if(DATE_DIFF(policy_end_date,current_date(),DAY)<0,true,false) as is_policy_expired 
+
 from policies
 )
 select * 
