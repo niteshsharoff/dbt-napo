@@ -11,7 +11,7 @@ with pet_breeds as (
             ,b.source as source
             ,b.name as breed_name 
             ,b.common_breed_name
-      from {{ref('raw_pet')}} p
+      from {{ref('stg_pet')}} p
       left join {{ref('int_breed_breed_mapping')}} b
       on p.breed = b.pk
 )

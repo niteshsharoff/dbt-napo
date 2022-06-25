@@ -3,6 +3,7 @@ select
       ,p.quote_id
       ,p.reference_number
       ,p.subscription_active
+      ,p.is_subscription_active
       ,p.annual_payment_id
       ,p.active_subscription_existed
       ,p.created_date
@@ -25,5 +26,5 @@ select
       ,(extract(YEAR from current_date())-cast(c.year_of_birth as numeric)) as customer_age
       ,c.user
 from {{ref('int_policy_subscription')}} p
-left join {{ref('raw_customer')}} c
+left join {{ref('stg_customer')}} c
 on p.customer = c.pk
