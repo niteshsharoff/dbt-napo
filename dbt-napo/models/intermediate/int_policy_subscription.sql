@@ -2,7 +2,7 @@ with grouped_policy_data as (
 select 
     s.*
     ,row_number() over(partition by policy order by created_date desc) row_no
-from  {{ref('raw_subscription')}} s
+from  {{ref('stg_subscription')}} s
 ),
 subscription_table as ( --latest subscription table
     select * except (row_no)
@@ -12,7 +12,7 @@ subscription_table as ( --latest subscription table
 active_policy_existed as (
   select policy
     ,countif(active=true) as active_subscription_existed  
-  from  {{ref('raw_subscription')}}
+  from  {{ref('stg_subscription')}}
   group by policy
 ),
 grouped_data as (
@@ -20,6 +20,7 @@ grouped_data as (
          p.pk
         ,p.quote_id
         ,p.reference_number
+        ,s.active as is_subscription_active
         ,coalesce(cast(s.active as string),'not set') as subscription_active
         ,coalesce(if(c.active_subscription_existed=1,true,false),false) as active_subscription_existed
         ,p.annual_payment_id
@@ -39,7 +40,7 @@ grouped_data as (
         ,p.quote_source_reference
         ,p.quote_source
         ,p.voucher_code
-    FROM {{ref('raw_policy')}} p
+    FROM {{ref('stg_policy')}} p
     left join subscription_table s
     on p.pk = s.policy
     left join active_policy_existed c
