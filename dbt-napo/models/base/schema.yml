@@ -12,7 +12,3 @@ sources:
       - name: productline
       - name: subscription
       - name: breed_mapping
-  - name: raw
-    schema: raw
-    tables: 
-      - name: breed_mapping
