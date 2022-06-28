@@ -1,8 +1,8 @@
 version: 2
 
 sources:
-  - name: raw
-    schema: raw
+  - name: postgres
+    schema: postgres
     tables: 
       - name: breed
       - name: customer

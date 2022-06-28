@@ -7,4 +7,4 @@ select pk
                       ,date_of_birth
                       ,address_locality)
       ,extract(YEAR from fields.date_of_birth) as year_of_birth
-from {{source('raw','customer')}}
+from {{source('postgres','customer')}}
