@@ -1,8 +1,8 @@
 version: 2
 
 sources:
-  - name: raw
-    schema: raw
+  - name: postgres
+    schema: postgres
     tables: 
       - name: breed
       - name: customer
@@ -11,4 +11,8 @@ sources:
       - name: product
       - name: productline
       - name: subscription
+      - name: breed_mapping
+  - name: raw
+    schema: raw
+    tables: 
       - name: breed_mapping
