@@ -1,2 +1,2 @@
 select *
-from {{source('raw','subscription')}}
+from {{source('postgres','subscription')}}

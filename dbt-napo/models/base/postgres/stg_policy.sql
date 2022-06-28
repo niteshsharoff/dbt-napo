@@ -1,3 +1,3 @@
 select pk
       ,fields.*
-from {{source('raw','policy')}}
+from {{source('postgres','policy')}}
