@@ -15,6 +15,7 @@ def main(request):
     )
 
     bucket_name='data-warehouse-harbour'
+    dataset_name='postgres'
     path_name='policy-service/{}'.format(datetime.now().strftime("%Y-%m-%d"))
     bucket = storage_client.get_bucket(bucket_name)
 
@@ -25,15 +26,16 @@ def main(request):
         "policy.policy.json":"policy",
         "policy.product.json":"product",
         "policy.productline.json":"productline",
+        "policy.payment.json":"policy_payment"
     }
 
     for table in table_mapping:
         uri = "gs://{}/{}/{}".format(bucket_name,path_name,table)
-        table_id = "ae32-vpcservice-datawarehouse.raw.{}".format(table_mapping[table])
+        table_id = "ae32-vpcservice-datawarehouse.{}.{}".format(dataset_name,table_mapping[table])
         load_job = client.load_table_from_uri(
             uri,
             table_id,
-            location="US",  # To match the destination dataset location
+            location="EU",  # To match the destination dataset location
             job_config=job_config,
         )
         print(table,load_job.result())
@@ -42,7 +44,7 @@ def main(request):
     blob = bucket.blob("{}/{}".format(path_name,'policy.subscription.json'))
     df = pd.read_json(blob.download_as_string(), lines=True)
     df1 = pd.json_normalize(df['fields'])
-    if (df1.policy.count()==df.model.count()):
+    if (df1.policyid.count()==df.model.count()):
         print('True')
         df_final = pd.merge(df, df1, left_index=True, right_index=True)
         df_final.drop(columns=['fields','failed_payment_events'],inplace=True)
@@ -53,7 +55,10 @@ def main(request):
     )
 
     load_job = client.load_table_from_dataframe(
-        df_final, "ae32-vpcservice-datawarehouse.raw.subscription", job_config=job_config2
+        df_final
+        ,"ae32-vpcservice-datawarehouse.{}.subscription".format(dataset_name)
+        ,job_config=job_config2
+        ,location='EU'
     ) 
     print(load_job.result())
 
