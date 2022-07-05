@@ -44,7 +44,7 @@ def main(request):
     blob = bucket.blob("{}/{}".format(path_name,'policy.subscription.json'))
     df = pd.read_json(blob.download_as_string(), lines=True)
     df1 = pd.json_normalize(df['fields'])
-    if (df1.policy.count()==df.model.count()):
+    if (df1.policyid.count()==df.model.count()):
         print('True')
         df_final = pd.merge(df, df1, left_index=True, right_index=True)
         df_final.drop(columns=['fields','failed_payment_events'],inplace=True)
