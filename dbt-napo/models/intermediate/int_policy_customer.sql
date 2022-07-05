@@ -1,5 +1,6 @@
 select 
        p.pk
+      ,p.policy_id
       ,p.quote_id
       ,p.reference_number
       ,p.subscription_active
@@ -7,8 +8,8 @@ select
       ,p.annual_payment_id
       ,p.active_subscription_existed
       ,p.created_date
-      ,p.subscription_created_date
-      ,p.subscription_modified_date
+      ,p.last_subscription_created_date
+      ,p.last_subscription_modified_date
       ,p.start_date as policy_start_date
       ,p.end_date as policy_end_date
       ,p.cancel_date as policy_cancel_date
@@ -22,6 +23,8 @@ select
       ,p.quote_source_reference
       ,p.quote_source
       ,p.voucher_code
+      ,p.first_payment_charge_date
+      ,p.last_payment_charge_date
       ,c.year_of_birth
       ,(extract(YEAR from current_date())-cast(c.year_of_birth as numeric)) as customer_age
       ,c.user

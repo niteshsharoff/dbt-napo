@@ -12,3 +12,4 @@ sources:
       - name: productline
       - name: subscription
       - name: breed_mapping
+      - name: policy_payment

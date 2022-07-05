@@ -4,7 +4,7 @@ models:
   - name: dim_policy_detail
     description: ""
     columns:
-      - name: pk
+      - name: policy_id
         description: ""
         tests:
           - unique

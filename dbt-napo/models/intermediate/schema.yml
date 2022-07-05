@@ -1,0 +1,11 @@
+version: 2
+
+models:
+  - name: int_breed_breed_mapping
+    description: Joining postgres breed table with breed mappings (breed table has user input values for breed, breed mapping has normalized values)
+  - name: int_pet_breed
+    description: Combining postgres pet and breeds together
+  - name: int_subscription_payments
+    description: Joining postgres subscription table with policy payments table (1 to M)
+  - name: int_policy_subscription
+    description: Joining policy and subscription_payments (1 to M)
