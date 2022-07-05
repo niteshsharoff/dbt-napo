@@ -2,7 +2,7 @@
 
 
 with policies as (
-    select p.*
+    select p.* except (pk)
          , b.* except (pk)
          , b.pk as breed_pk
     from {{ref('int_policy_customer')}} p
@@ -18,7 +18,3 @@ from policies
 )
 select *
 from features
---where payment_plan_type = 'monthly'
---and first_charge_date_monthly is null
-
---Problem to fix - many don't have a payment plan?!
