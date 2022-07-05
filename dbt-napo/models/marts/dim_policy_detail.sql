@@ -16,5 +16,9 @@ select *
 
 from policies
 )
-select * 
+select *
 from features
+--where payment_plan_type = 'monthly'
+--and first_charge_date_monthly is null
+
+--Problem to fix - many don't have a payment plan?!
