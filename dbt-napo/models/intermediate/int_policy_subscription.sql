@@ -22,8 +22,9 @@ grouped_data as (
         ,p.quote_id
         ,p.reference_number
         ,s.active as is_subscription_active
-        ,coalesce(cast(s.active as string),'not set') as subscription_active
-        ,coalesce(if(c.active_subscription_existed=1,true,false),false) as active_subscription_existed
+--        ,coalesce(cast(s.active as string),'not set') as subscription_active
+--        ,coalesce(if(c.active_subscription_existed=1,true,false),false) as active_subscription_existed
+        ,p.active_subscription_setup
         ,p.annual_payment_id
         ,p.created_date as created_date
         ,s.created_date as last_subscription_created_date

@@ -8,6 +8,10 @@ sources:
       - name: customer
       - name: pet
       - name: policy
+        freshness:
+          warn_after: {count: 1, period: day}
+          error_after: {count: 2, period: day}
+        loaded_at_field: fields.created_date
       - name: product
       - name: productline
       - name: subscription
