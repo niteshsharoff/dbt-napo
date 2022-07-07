@@ -3,10 +3,11 @@ select
       ,p.policy_id
       ,p.quote_id
       ,p.reference_number
-      ,p.subscription_active
+--      ,p.subscription_active
       ,p.is_subscription_active
       ,p.annual_payment_id
-      ,p.active_subscription_existed
+--      ,p.active_subscription_existed
+      ,p.active_subscription_setup
       ,p.created_date
       ,p.last_subscription_created_date
       ,p.last_subscription_modified_date
