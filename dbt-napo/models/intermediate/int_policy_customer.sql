@@ -9,6 +9,7 @@ select
 --      ,p.active_subscription_existed
       ,p.active_subscription_setup
       ,p.created_date
+      ,p.policy_effective_date
       ,p.last_subscription_created_date
       ,p.last_subscription_modified_date
       ,p.start_date as policy_start_date

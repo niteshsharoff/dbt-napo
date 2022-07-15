@@ -26,6 +26,7 @@ grouped_data as (
 --        ,coalesce(if(c.active_subscription_existed=1,true,false),false) as active_subscription_existed
         ,p.active_subscription_setup
         ,p.annual_payment_id
+        ,p.effective_at as policy_effective_date
         ,p.created_date as created_date
         ,s.created_date as last_subscription_created_date
         ,s.modified_date as last_subscription_modified_date
