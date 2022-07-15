@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+    - name: ga4
+      schema: analytics_290494422
+      tables: 
+        - name: events
+          identifier: events_*
