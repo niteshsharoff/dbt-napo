@@ -86,6 +86,8 @@ from rolled_up
   group by 1,2
   order by 3 desc
 )
-select * 
+select *
+,round(safe_divide(sum(total),sum(total) over(partition by month)),3) as percentage 
 from final
+group by 1,2,3
 order by month desc ,total desc
