@@ -1,3 +1,6 @@
+import functions_framework
+
+@functions_framework.http
 def main(request):
     from datetime import date, time, datetime
     from google.oauth2 import service_account
@@ -5,8 +8,15 @@ def main(request):
     import pandas as pd
     import json
 
-    client = bigquery.Client()
-    storage_client = storage.Client()
+    dev = False
+    if (dev):
+        key_path = r"C:\Users\nites\OneDrive\Documents\napo-nitesh-local-ae32-vpcservice-datawarehouse-879a160a28ee.json"
+        credentials = service_account.Credentials.from_service_account_file(
+            key_path, scopes=["https://www.googleapis.com/auth/cloud-platform"],
+        )
+
+        client = bigquery.Client(credentials=credentials, project=credentials.project_id,)
+        storage_client = storage.Client(credentials=credentials, project=credentials.project_id,) 
 
     job_config = bigquery.LoadJobConfig(
         source_format=bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
@@ -44,6 +54,13 @@ def main(request):
     blob = bucket.blob("{}/{}".format(path_name,'policy.subscription.json'))
     df = pd.read_json(blob.download_as_string(), lines=True)
     df1 = pd.json_normalize(df['fields'])
+
+    if 'policyid' in df1.columns:
+        policy_column = 'policyid' 
+    if '_policyid' in df1.columns:
+        policy_column = '_policyid'
+        df1.rename(columns={'_policyid':'policyid'},inplace=True)
+
     if (df1.policyid.count()==df.model.count()):
         print('True')
         df_final = pd.merge(df, df1, left_index=True, right_index=True)
