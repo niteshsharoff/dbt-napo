@@ -1,12 +1,12 @@
 with payments as (
 select *
-from `ae32-vpcservice-datawarehouse`.`dbt_nsharoff`.`stg_policy_payments`
+from {{ref('stg_policy_payments')}}
 ),
 subscriptions as (
   select distinct 
          subscription_id
         ,policy_id 
-from `ae32-vpcservice-datawarehouse`.`dbt_nsharoff`.`stg_subscription`
+from {{ref('stg_subscription')}}
 ),
 payments_monthly as (
 select a.*
@@ -18,7 +18,7 @@ using (subscription_id)
 payments_monthly_annual as (
 select a.* except(policy_id)
       ,coalesce(a.policy_id,b.policy_id) as policy_id
-from `ae32-vpcservice-datawarehouse.dbt_nsharoff.stg_policy` b
+from {{ref('stg_policy')}} b
 right join payments_monthly a
 on b.annual_payment_id = a.payment_id
 )
