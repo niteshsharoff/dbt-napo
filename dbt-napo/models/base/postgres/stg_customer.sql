@@ -1,5 +1,7 @@
 select pk
-      ,fields.* 
+      ,fields.* except(_user_id,_customerid)
+      ,fields._user_id as user
+      ,fields._customerid as customer
       /*except(mandate_inactive_event_id
                       ,address_region
                       ,street_address
