@@ -52,12 +52,13 @@ from final
 select
     format_date('%Y',created_date) as year
     ,format_date('%m',created_date) as month
+    ,format_date('%d',created_date) as day
     ,count(policy_id) as backend_policies
     ,count(event_name) as analytics_policies
     ,round(
         safe_divide((count(event_name)-count(policy_id))*100
         ,count(policy_id)),2) as perc_diff
 from final
-group by 1,2
-order by 1,2
+group by 1,2,3
+order by 1 desc,2 desc,3 desc
 
