@@ -104,6 +104,7 @@ with DAG(
         ("policy_napobenefitcode", "raw", "napobenefitcode", "1.0.0", None),
         ("policy_quotewithbenefit", "raw", "quotewithbenefit", "1.0.0", "created_date"),
     ]:
+
         @task_group(group_id=f"{bq_table}_raw_data_pipeline")
         def create_pipeline(
             src_table: str,

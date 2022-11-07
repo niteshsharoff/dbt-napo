@@ -6,7 +6,7 @@ from typing import Optional
 from google.cloud import storage
 from jsonschema import validate, exceptions
 
-fileConfig('logging_config.ini')
+fileConfig("logging_config.ini")
 log = logging.getLogger()
 
 
