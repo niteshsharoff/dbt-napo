@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "policy_breed postgres table validation schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "code": {
+      "type": "string"
+    },
+    "created_date": {
+      "type": ["integer", "null"]
+    },
+    "expires_after": {
+      "type": ["integer", "null"]
+    },
+    "disabled": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}

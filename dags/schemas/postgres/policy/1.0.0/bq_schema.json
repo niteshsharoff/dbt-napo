@@ -1,0 +1,177 @@
+[
+  {
+    "mode": "NULLABLE",
+    "name": "version_id",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "quote_id",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "start_date",
+    "type": "INT64"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "end_date",
+    "type": "INT64"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "payment_plan_type",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "annual_price",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "monthly_price",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "created_date",
+    "type": "INT64"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "wording_document",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "product_id",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "annual_payment_id",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "cancel_date",
+    "type": "INT64"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "accident_cover_start_date",
+    "type": "INT64"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "illness_cover_start_date",
+    "type": "INT64"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "reference_number",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "uuid",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "quote_source",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "quote_source_reference",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "voucher_code_id",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "notes",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "principal",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "policy_id",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "active_subscription_setup",
+    "type": "BOOLEAN"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "subscription_id",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "change_at",
+    "type": "INT64"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "change_reason",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "change_user_id",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "effective_at",
+    "type": "INT64"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "cancel_detail",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "cancel_reason",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "renewal_approved",
+    "type": "BOOLEAN"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "pet_id",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "customer_id",
+    "type": "INTEGER"
+  },
+    {
+    "mode": "NULLABLE",
+    "name": "direct_debit_day",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "initial_monthly_payment_id",
+    "type": "STRING"
+  }
+]

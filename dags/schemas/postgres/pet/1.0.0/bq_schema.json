@@ -1,0 +1,112 @@
+[
+  {
+    "mode": "NULLABLE",
+    "name": "version_id",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "created_date",
+    "type": "INT64"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "name",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "age_months",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "gender",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "size",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "cost",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "is_neutered",
+    "type": "BOOLEAN"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "is_microchipped",
+    "type": "BOOLEAN"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "is_vaccinated",
+    "type": "BOOLEAN"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "species",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "breed_category",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "has_pre_existing_conditions",
+    "type": "BOOLEAN"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "breed_id",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "multipet_number",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "date_of_birth",
+    "type": "INT64"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "pet_id",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "change_at",
+    "type": "INT64"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "change_reason",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "change_user_id",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "effective_at",
+    "type": "INT64"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "uuid",
+    "type": "STRING"
+  }
+]

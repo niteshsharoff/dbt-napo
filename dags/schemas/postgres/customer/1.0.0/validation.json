@@ -1,0 +1,71 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "policy_customer postgres table validation schema",
+  "type": "object",
+  "properties": {
+    "version_id": {
+      "type": "integer"
+    },
+    "created_date": {
+      "type": "integer"
+    },
+    "date_of_birth": {
+      "type": "integer"
+    },
+    "phone_number": {
+      "type": "string"
+    },
+    "street_address": {
+      "type": ["string", "null"]
+    },
+    "address_locality": {
+      "type": ["string", "null"]
+    },
+    "address_region": {
+      "type": ["string", "null"]
+    },
+    "postal_code": {
+      "type": ["string", "null"]
+    },
+    "mandate_id": {
+      "type": ["string", "null"]
+    },
+    "user_id": {
+      "type": "integer"
+    },
+    "mandate_inactive_event_id": {
+      "type": ["string", "null"]
+    },
+    "firebase_user_id": {
+      "type": ["string", "null"]
+    },
+    "uuid": {
+      "type": "string"
+    },
+    "referral_code": {
+      "type": ["string", "null"]
+    },
+    "referred": {
+      "type": "boolean"
+    },
+    "is_vet": {
+      "type": "boolean"
+    },
+    "customer_id": {
+      "type": "integer"
+    },
+    "change_at": {
+      "type": "integer"
+    },
+    "change_reason": {
+      "type": ["string", "null"]
+    },
+    "change_user_id": {
+      "type": ["integer", "null"]
+    },
+    "effective_at": {
+      "type": "integer"
+    }
+  },
+  "additionalProperties": false
+}

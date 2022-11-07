@@ -1,0 +1,77 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "policy_product postgres table validation schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "created_date": {
+      "type": "integer"
+    },
+    "reference": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "vet_fee_cover": {
+      "type": "number"
+    },
+    "complementary_treatment_cover": {
+      "type": "number"
+    },
+    "dental_cover": {
+      "type": "number"
+    },
+    "emergency_boarding_cover": {
+      "type": "number"
+    },
+    "third_person_liability_excess": {
+      "type": "number"
+    },
+    "third_person_liability_cover": {
+      "type": "number"
+    },
+    "pet_death_cover": {
+      "type": "number"
+    },
+    "travel_cover": {
+      "type": "number"
+    },
+    "missing_pet_cover": {
+      "type": "number"
+    },
+    "behavioural_treatment_cover": {
+      "type": "number"
+    },
+    "co_pay": {
+      "type": "integer"
+    },
+    "excess": {
+      "type": "number"
+    },
+    "generic_wording_document": {
+      "type": "string"
+    },
+    "generic_city_ipi_document": {
+      "type": "string"
+    },
+    "generic_city_toba_document": {
+      "type": "string"
+    },
+    "line_id": {
+      "type": ["integer", "null"]
+    },
+    "generic_itc_ipi_document": {
+      "type": ["string", "null"]
+    },
+    "generic_itc_toba_document": {
+      "type": ["string", "null"]
+    },
+    "pricing_model_vet_fee_cover": {
+      "type": ["number", "null"]
+    }
+  },
+  "additionalProperties": false
+}

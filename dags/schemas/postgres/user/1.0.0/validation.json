@@ -1,0 +1,41 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "policy_user postgres table validation schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "password": {
+      "type": "string"
+    },
+    "last_login": {
+      "type": ["integer", "null"]
+    },
+    "is_superuser": {
+      "type": "boolean"
+    },
+    "username": {
+      "type": "string"
+    },
+    "first_name": {
+      "type": "string"
+    },
+    "last_name": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "is_staff": {
+      "type": "boolean"
+    },
+    "is_active": {
+      "type": "boolean"
+    },
+    "date_joined": {
+      "type": "integer"
+    }
+  },
+  "additionalProperties": false
+}

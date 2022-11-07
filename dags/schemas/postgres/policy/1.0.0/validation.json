@@ -1,0 +1,113 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "policy_policy postgres table validation schema",
+  "type": "object",
+  "properties": {
+    "version_id": {
+      "type": "integer"
+    },
+    "quote_id": {
+      "type": "string"
+    },
+    "start_date": {
+      "type": "integer"
+    },
+    "end_date": {
+      "type": "integer"
+    },
+    "payment_plan_type": {
+      "type": "string"
+    },
+    "annual_price": {
+      "type": "number"
+    },
+    "monthly_price": {
+      "type": "number"
+    },
+    "created_date": {
+      "type": "integer"
+    },
+    "wording_document": {
+      "type": "string"
+    },
+    "product_id": {
+      "type": "integer"
+    },
+    "annual_payment_id": {
+      "type": ["string", "null"]
+    },
+    "cancel_date": {
+      "type": ["integer", "null"]
+    },
+    "accident_cover_start_date": {
+      "type": "integer"
+    },
+    "illness_cover_start_date": {
+      "type": "integer"
+    },
+    "reference_number": {
+      "type": "string"
+    },
+    "uuid": {
+      "type": "string"
+    },
+    "quote_source": {
+      "type": "string"
+    },
+    "quote_source_reference": {
+      "type": ["string", "null"]
+    },
+    "voucher_code_id": {
+      "type": ["string", "null"]
+    },
+    "notes": {
+      "type": ["string", "null"]
+    },
+    "principal": {
+      "type": "string"
+    },
+    "policy_id": {
+      "type": "integer"
+    },
+    "active_subscription_setup": {
+      "type": "boolean"
+    },
+    "subscription_id": {
+      "type": ["string", "null"]
+    },
+    "change_at": {
+      "type": "integer"
+    },
+    "change_reason": {
+      "type": ["string", "null"]
+    },
+    "change_user_id": {
+      "type": ["integer", "null"]
+    },
+    "effective_at": {
+      "type": "integer"
+    },
+    "cancel_detail": {
+      "type": ["string", "null"]
+    },
+    "cancel_reason": {
+      "type": ["integer", "null"]
+    },
+    "renewal_approved": {
+      "type": "boolean"
+    },
+    "pet_id": {
+      "type": "integer"
+    },
+    "customer_id": {
+      "type": "integer"
+    },
+    "direct_debit_day": {
+      "type": ["integer", "null"]
+    },
+    "initial_monthly_payment_id": {
+      "type": ["string", "null"]
+    }
+  },
+  "additionalProperties": false
+}

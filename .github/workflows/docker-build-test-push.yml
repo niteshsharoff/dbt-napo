@@ -1,0 +1,26 @@
+name: Build
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Google Login
+        uses: google-github-actions/setup-gcloud@v0
+        with:
+          project_id: ${{ secrets.DEV_PROJECT_ID }}
+          service_account_email: ${{ secrets.DEV_SERVICE_ACCOUNT_EMAIL }}
+          service_account_key: ${{ secrets.DEV_SERVICE_ACCOUNT_ACCESS }}
+
+      - name: Login to GCP container registry
+        run: gcloud auth configure-docker --quiet
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: make docker_build
+        env:
+          DOCKER_REPO: ${{ secrets.DATA_WAREHOUSE_DOCKER_REPO }}

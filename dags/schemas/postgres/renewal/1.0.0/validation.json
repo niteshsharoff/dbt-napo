@@ -1,0 +1,35 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "policy_renewal postgres table validation schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "uuid": {
+      "type": "string"
+    },
+    "renewal_quote": {
+      "type": "string"
+    },
+    "renewal_at": {
+      "type": "integer"
+    },
+    "created_at": {
+      "type": "integer"
+    },
+    "updated_at": {
+      "type": "integer"
+    },
+    "new_policy_id": {
+      "type": ["integer", "null"]
+    },
+    "old_policy_id": {
+      "type": "integer"
+    },
+    "new_policy_product_id": {
+      "type": "integer"
+    }
+  },
+  "additionalProperties": false
+}
