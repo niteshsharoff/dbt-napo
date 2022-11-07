@@ -1,10 +1,13 @@
 import json
 import logging
-from os import getcwd
+from logging.config import fileConfig
 from typing import Optional
 
 from google.cloud import storage
 from jsonschema import validate, exceptions
+
+fileConfig('logging_config.ini')
+log = logging.getLogger()
 
 
 def load_json_from_cloud_storage(
@@ -25,19 +28,21 @@ def validate_json(
     object_path: str,
     schema_path: str,
 ) -> bool:
-    print(getcwd())
     with open(schema_path) as f:
         schema = json.load(f)
         records = load_json_from_cloud_storage(bucket_name, object_path)
         if records is None:
-            logging.warning("No records found at {}".format(object_path))
+            log.warning("No records found at {}".format(object_path))
             return True
 
-        for record in records.split("\n"):
+        records = records.split("\n")
+        for record in records:
             if record:
                 try:
                     validate(json.loads(record), schema=schema)
                 except exceptions.ValidationError as err:
                     raise Exception("json schema validation failed: {}".format(err))
+
+        log.info("Validated {} records".format(len(records)))
 
     return True

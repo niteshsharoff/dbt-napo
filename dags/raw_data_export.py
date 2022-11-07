@@ -85,7 +85,7 @@ def create_bq_external_table(
 
 with DAG(
     dag_id="raw_data_export",
-    start_date=datetime(2022, 11, 1),
+    start_date=datetime(2021, 9, 1),
     schedule_interval="0 0 * * *",
     catchup=True,
     default_args={"retries": 0},
@@ -97,14 +97,13 @@ with DAG(
         ("policy_pet", "raw", "pet", "1.0.0", "change_at"),
         ("policy_breed", "raw", "breed", "1.0.0", None),
         ("policy_subscription", "raw", "subscription", "1.0.0", "modified_date"),
-        ("policy_renewal", "raw", "renewal", "1.0.0", "updated_at"),
+        ("policy_renewal", "raw", "renewal", "1.1.0", "updated_at"),
         ("policy_customer", "raw", "customer", "1.0.0", "change_at"),
         ("auth_user", "raw", "user", "1.0.0", "date_joined"),
         ("policy_product", "raw", "product", "1.0.0", "created_date"),
         ("policy_napobenefitcode", "raw", "napobenefitcode", "1.0.0", None),
         ("policy_quotewithbenefit", "raw", "quotewithbenefit", "1.0.0", "created_date"),
     ]:
-
         @task_group(group_id=f"{bq_table}_raw_data_pipeline")
         def create_pipeline(
             src_table: str,
