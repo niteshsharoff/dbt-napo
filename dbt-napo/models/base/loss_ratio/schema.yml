@@ -1,0 +1,12 @@
+version: 2
+
+sources:
+    - name: loss_ratio
+      schema: loss_ratio
+      tables: 
+        - name: all_book_summary
+        - name: breed_age_summary
+        - name: cohort_summary
+        - name: multipet_summary
+        - name: product_summary
+        - name: species_age_summary
