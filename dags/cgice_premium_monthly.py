@@ -6,6 +6,7 @@ from airflow import DAG, macros
 from airflow.contrib.sensors.gcs_sensor import GoogleCloudStorageObjectSensor
 from airflow.decorators import task, task_group
 from airflow.models import Variable
+from sqlalchemy_utils.types.enriched_datetime.pendulum_date import pendulum
 
 from workflows.create_bq_view import create_bq_view
 from workflows.create_bq_external_table import create_external_bq_table
@@ -55,7 +56,7 @@ def create_view(dataset_name: str, table_name: str, view_name: str, ds=None):
 
 with DAG(
     dag_id="cgice_premium_monthly",
-    start_date=datetime(2021, 9, 1),
+    start_date=pendulum.datetime(2021, 9, 1, tz="UTC"),
     schedule_interval="0 0 1 * *",
     catchup=True,
     default_args={"retries": 0},
@@ -67,17 +68,17 @@ with DAG(
 
     @task_group(group_id="data_sources")
     def setup_sensors():
-        for table, gcs_prefix in [
-            ("policy", "policy_policy"),
-            ("pet", "policy_pet"),
-            ("breed", "policy_breed"),
-            ("customer", "policy_customer"),
-            ("user", "auth_user"),
+        for table, version, gcs_prefix in [
+            ("policy", "1.0.0", "policy_policy"),
+            ("pet", "1.0.0", "policy_pet"),
+            ("breed", "1.0.0", "policy_breed"),
+            ("customer", "1.0.0", "policy_customer"),
+            ("user", "1.0.0", "auth_user"),
         ]:
             GoogleCloudStorageObjectSensor(
                 task_id=f"wait_for_{table}_table_partition",
                 bucket=GCS_BUCKET,
-                object=f"raw/{gcs_prefix}/run_date={end_date}/data.json",
+                object=f"raw/{gcs_prefix}/{version}/run_date={end_date}/data.json",
                 poke_interval=15 * 60,  # Check gcs every 15 minutes
                 timeout=60
                 * 60,  # Fail the pipeline after if latest partition not found

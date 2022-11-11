@@ -7,10 +7,11 @@ from jsonschema import validate, exceptions
 
 
 def load_json_from_cloud_storage(
+    project_name: str,
     bucket_name: str,
     object_path: str,
 ) -> Optional[str]:
-    client = storage.Client()
+    client = storage.Client(project=project_name)
     bucket = client.bucket(bucket_name)
     blob = bucket.get_blob(object_path)
     if blob:
@@ -20,6 +21,7 @@ def load_json_from_cloud_storage(
 
 
 def validate_json(
+    project_name: str,
     bucket_name: str,
     object_path: str,
     schema_path: str,
@@ -27,7 +29,7 @@ def validate_json(
     log = logging.getLogger(__name__)
     with open(schema_path) as f:
         schema = json.load(f)
-        records = load_json_from_cloud_storage(bucket_name, object_path)
+        records = load_json_from_cloud_storage(project_name, bucket_name, object_path)
         if records is None:
             log.warning("No records found at {}".format(object_path))
             return True

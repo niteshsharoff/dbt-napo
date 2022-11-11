@@ -124,7 +124,7 @@ def create_pipeline(
     schedule_interval="@daily",
     catchup=True,
     default_args={"retries": 0},
-    max_active_runs=32,
+    max_active_runs=7,
     max_active_tasks=128,
     tags=["raw", "policy_service"],
 )

@@ -41,7 +41,7 @@ def create_bq_view(
     run_date: datetime,
 ) -> None:
     try:
-        bq_client = bigquery.Client()
+        bq_client = bigquery.Client(project=project_name)
         dataset_id = "{}.{}".format(project_name, dataset_name)
         dataset_ref = bq_client.get_dataset(dataset_id)
         table = bigquery.Table(
