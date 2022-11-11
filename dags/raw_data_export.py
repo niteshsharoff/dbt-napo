@@ -1,32 +1,40 @@
 from datetime import datetime
+from enum import Enum, auto
 
-from airflow import DAG
+import pendulum
+from airflow.datasets import Dataset
 from airflow.decorators import task, task_group
 from airflow.macros import ds_add
 from airflow.models import Variable
+from airflow.models.dag import dag
 
 from workflows.create_bq_external_table import create_external_bq_table
 from workflows.export_pg_tables_to_gcs import load_pg_table_to_gcs
 from workflows.move_gcs_object import move_gcs_blob
 from workflows.validate_json_schema import validate_json
 
-
 GCP_PROJECT_ID = Variable.get("GCP_PROJECT_ID")
 GCP_REGION = Variable.get("GCP_REGION")
 GCS_BUCKET = Variable.get("GCS_BUCKET")
 PG_HOST = Variable.get("PG_HOST")
-PG_DATABASE = Variable.get("PG_DATABASE")
-PG_USER = Variable.get("PG_USER")
-PG_PASSWORD = Variable.get("PG_PASSWORD")
+POLICY_DATABASE = Variable.get("POLICY_DATABASE")
+POLICY_DB_USER = Variable.get("POLICY_DB_USER")
+POLICY_DB_PASS = Variable.get("POLICY_DB_PASSWORD")
 
 
-@task(task_id="export_data_to_gcs")
-def export_pg_table_to_gcs(src_table: str, date_column: str, ds=None):
+class DataSource(Enum):
+    POLICY_DB = auto()
+
+
+@task
+def export_pg_table_to_gcs(
+    source: DataSource, src_table: str, date_column: str, ds=None
+):
     load_pg_table_to_gcs(
         pg_host=PG_HOST,
-        pg_database=PG_DATABASE,
-        pg_user=PG_USER,
-        pg_password=PG_PASSWORD,
+        pg_database=POLICY_DATABASE,
+        pg_user=POLICY_DB_USER,
+        pg_password=POLICY_DB_PASS,
         pg_table=src_table,
         pg_columns=["*"],
         project_id=GCP_PROJECT_ID,
@@ -38,18 +46,20 @@ def export_pg_table_to_gcs(src_table: str, date_column: str, ds=None):
     )
 
 
-@task(task_id="validate_raw_data")
+@task
 def validate_raw_data(src_table: str, dst_table: str, version: str, ds=None):
     validate_json(
+        project_name=GCP_PROJECT_ID,
         bucket_name=GCS_BUCKET,
         object_path=f"tmp/{src_table}/run_date={ds}/data.json",
         schema_path=f"dags/schemas/postgres/{dst_table}/{version}/validation.json",
     )
 
 
-@task(task_id="commit_raw_data")
+@task
 def commit_raw_data(src_table: str, dataset_name: str, version: str, ds=None):
     move_gcs_blob(
+        project_name=GCP_PROJECT_ID,
         src_bucket=GCS_BUCKET,
         src_path=f"tmp/{src_table}/run_date={ds}/data.json",
         dst_bucket=GCS_BUCKET,
@@ -57,10 +67,10 @@ def commit_raw_data(src_table: str, dataset_name: str, version: str, ds=None):
     )
 
 
-@task(task_id="update_bq_external_table")
+@task
 def create_bq_external_table(
     src_table: str,
-    dataset_name: str,
+    dataset: str,
     dst_table: str,
     version: str,
     load_last_partition_only: bool = False,
@@ -74,25 +84,53 @@ def create_bq_external_table(
     create_external_bq_table(
         project_name=GCP_PROJECT_ID,
         region=GCP_REGION,
-        dataset_name=dataset_name,
+        dataset_name=dataset,
         table_name=dst_table,
         schema_path=f"dags/schemas/postgres/{dst_table}/{version}/bq_schema.json",
         source_uri=src_uri,
-        partition_uri=f"gs://{GCS_BUCKET}/{dataset_name}/{src_table}/{version}",
+        partition_uri=f"gs://{GCS_BUCKET}/{dataset}/{src_table}/{version}",
         source_format="JSON",
     )
 
 
-with DAG(
-    dag_id="raw_data_export",
-    start_date=datetime(2021, 9, 1),
-    schedule_interval="0 0 * * *",
+def create_pipeline(
+    source: DataSource,
+    src_table: str,
+    dataset_name: str,
+    dst_table: str,
+    version: str,
+    pg_date_column: str,
+):
+    t1 = export_pg_table_to_gcs(source, src_table, pg_date_column)
+    t2 = validate_raw_data(src_table, dst_table, version)
+    t3 = commit_raw_data(src_table, dataset_name, version)
+    t4 = create_bq_external_table.override(
+        outlets=[Dataset(f"{dataset_name}.{dst_table}")]
+    )(
+        src_table,
+        dataset_name,
+        dst_table,
+        version,
+        # Only load last partition if no partition column specified
+        pg_date_column is None,
+    )
+
+    return t1 >> t2 >> t3 >> t4
+
+
+@dag(
+    dag_id="policy_service_data_export",
+    start_date=pendulum.datetime(2021, 9, 1, tz="UTC"),
+    schedule_interval="@daily",
     catchup=True,
     default_args={"retries": 0},
     max_active_runs=32,
     max_active_tasks=128,
-) as dag:
-    for pg_table, dataset, bq_table, schema_version, pg_date_column in [
+    tags=["raw", "policy_service"],
+)
+def export_policy_service_data():
+    # Policy service database tables
+    for pg_table, bq_dataset, bq_table, schema_version, pg_date_column in [
         ("policy_policy", "raw", "policy", "1.0.0", "change_at"),
         ("policy_pet", "raw", "pet", "1.0.0", "change_at"),
         ("policy_breed", "raw", "breed", "1.0.0", None),
@@ -105,25 +143,18 @@ with DAG(
         ("policy_quotewithbenefit", "raw", "quotewithbenefit", "1.0.0", "created_date"),
     ]:
 
-        @task_group(group_id=f"{bq_table}_raw_data_pipeline")
-        def create_pipeline(
-            src_table: str,
-            dataset_name: str,
-            dst_table: str,
-            version: str,
-            pg_date_column: str,
-        ):
-            t1 = export_pg_table_to_gcs(src_table, pg_date_column)
-            t2 = validate_raw_data(src_table, dst_table, version)
-            t3 = commit_raw_data(src_table, dataset_name, version)
-            t4 = create_bq_external_table(
-                src_table,
-                dataset_name,
-                dst_table,
-                version,
-                # Only load last partition if no partition column specified
-                pg_date_column is None,
+        @task_group(group_id=f"policy_{bq_table}")
+        def create_policy_pipeline():
+            create_pipeline(
+                DataSource.POLICY_DB,
+                pg_table,
+                bq_dataset,
+                bq_table,
+                schema_version,
+                pg_date_column,
             )
-            t1 >> t2 >> t3 >> t4
 
-        create_pipeline(pg_table, dataset, bq_table, schema_version, pg_date_column)
+        create_policy_pipeline()
+
+
+export_policy_service_data()
