@@ -6,17 +6,15 @@ from google.cloud import bigquery
 def create_napo_benefit_weekly_view(
     project_name: str,
     dataset_name: str,
-    table_name: str,
+    src_table: str,
     view_name: str,
     run_date: datetime,
 ) -> None:
     try:
-        bq_client = bigquery.Client()
+        bq_client = bigquery.Client(project=project_name)
         dataset_id = "{}.{}".format(project_name, dataset_name)
         dataset_ref = bq_client.get_dataset(dataset_id)
-        table = bigquery.Table(
-            dataset_ref.table(view_name + "_" + run_date.strftime("%Y-W%V"))
-        )
+        table = bigquery.Table(dataset_ref.table(view_name))
         table.view_query = """
             select *
             from `{project_name}.{dataset_name}.{table_name}`
@@ -25,7 +23,7 @@ def create_napo_benefit_weekly_view(
         """.format(
             project_name=project_name,
             dataset_name=dataset_name,
-            table_name=table_name,
+            table_name=src_table,
             run_year=run_date.strftime("%Y"),
             run_week=run_date.strftime("%V"),
         )

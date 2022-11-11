@@ -7,10 +7,6 @@ import psycopg2
 from google.cloud import storage
 from jinja2 import Environment, FileSystemLoader
 
-LOG_FORMAT = (
-    "[%(asctime)s][%(levelname)s][%(threadName)s][%(filename)s:%(lineno)d] "
-    "- %(message)s "
-)
 JINJA_ENV = Environment(loader=FileSystemLoader("dags/sql/"))
 UPLOAD_PATH = "{prefix}/run_date={run_date}/{file_name}"
 
@@ -68,6 +64,7 @@ def load_pg_table_to_gcs(
     end_date: datetime,
     date_column: str,
 ) -> None:
+    log = logging.getLogger(__name__)
     column_names, rows = query_pg(
         JINJA_ENV.get_template("query_columns_by_date.sql").render(
             dict(
@@ -95,7 +92,7 @@ def load_pg_table_to_gcs(
             "{}/{}".format(dataset_name, pg_table),
         )
     else:
-        logging.warning(
+        log.warning(
             "No data found in table '{table_name}' on '{run_date}'".format(
                 table_name=pg_table,
                 run_date=start_date.strftime("%Y-%m-%d"),

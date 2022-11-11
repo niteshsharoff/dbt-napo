@@ -5,10 +5,6 @@ from google.cloud import bigquery
 from google.cloud.bigquery import HivePartitioningOptions, CSVOptions
 from google.cloud.exceptions import NotFound, Conflict
 
-LOG_FORMAT = (
-    "[%(asctime)s][%(levelname)s][%(threadName)s][%(filename)s:%(lineno)d] "
-    "- %(message)s "
-)
 DATASET_ID = "{project}.{dataset}"
 
 
@@ -34,13 +30,14 @@ def create_external_bq_table(
     source_format: str,
     skip_leading_rows: Optional[int] = 1,
 ) -> None:
-    bq_client = bigquery.Client()
+    log = logging.getLogger(__name__)
+    bq_client = bigquery.Client(project=project_name)
     dataset_id = DATASET_ID.format(project=project_name, dataset=dataset_name)
     try:
         dataset_ref = bq_client.get_dataset(dataset_id)
-        logging.info("Dataset '{}' already exists".format(dataset_id))
+        log.info("Dataset '{}' already exists".format(dataset_id))
     except NotFound:
-        logging.info("Creating dataset '{}'".format(dataset_id))
+        log.info("Creating dataset '{}'".format(dataset_id))
         dataset_ref = create_bq_dataset(bq_client, dataset_id, region)
 
     # Default to JSON
@@ -71,7 +68,7 @@ def create_external_bq_table(
         else:
             table = bigquery.Table(dataset_ref.table(table_name))
 
-        logging.info("Creating table '{}.{}'".format(dataset_id, table_name))
+        log.info("Creating table '{}.{}'".format(dataset_id, table_name))
         table.external_data_configuration = table_config
         bq_client.create_table(table)
 
@@ -85,6 +82,6 @@ def create_external_bq_table(
         else:
             table = bigquery.Table(dataset_ref.table(table_name))
 
-        logging.info("Updating table '{}.{}'".format(dataset_id, table_name))
+        log.info("Updating table '{}.{}'".format(dataset_id, table_name))
         table.external_data_configuration = table_config
         bq_client.update_table(table, fields=["schema", "external_data_configuration"])

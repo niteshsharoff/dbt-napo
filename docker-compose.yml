@@ -3,7 +3,7 @@ version: '3.4'
 
 x-common:
   &common
-  image: airflow:local
+  image: napo-airflow:local
   user: "${AIRFLOW_UID}:${AIRFLOW_GID}"
   environment:
     # Airflow Core
@@ -23,6 +23,7 @@ x-common:
     - ./plugins:/opt/airflow/plugins
     - /var/run/docker.sock:/var/run/docker.sock
     # - ${HOME}/.config/gcloud:/root/.config/gcloud
+    - ${HOME}/.config/gcloud/oauth_token.json:/secrets/airflow/oauth_token.json
     - ${HOME}/.config/gcloud/application_default_credentials.json:/secrets/airflow/credentials.json
 
 x-depends-on:

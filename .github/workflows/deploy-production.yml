@@ -1,0 +1,88 @@
+name: "Publish"
+
+on:
+  release:
+    types: [published]
+
+env:
+  VPC_PROJECT_ID: ${{ secrets.SHARED_VPC_PROJECT_ID }}
+  PROJECT_ID: ${{ secrets.DATA_WAREHOUSE_PROJECT_ID }}
+  BASTION_ZONE: europe-west2-a
+  GKE_REGION: europe-west2
+  GKE_CLUSTER: production
+  GKE_NAMESPACE: airflow
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Google Login
+        uses: google-github-actions/setup-gcloud@v0
+        with:
+          project_id: ${{ secrets.DATA_WAREHOUSE_PROJECT_ID }}
+          service_account_email: ${{ secrets.DATAWAREHOUSE_SERVICE_ACCOUNT_EMAIL }}
+          service_account_key: ${{ secrets.DATAWAREHOUSE_SERVICE_ACCOUNT_KEY }}
+
+      - name: Login to GCP container registry
+        run: gcloud auth configure-docker --quiet
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: make docker_build GIT_COMMIT=latest
+        env:
+          DOCKER_REPO: ${{ secrets.DATA_WAREHOUSE_DOCKER_REPO }}
+          DOCKER_TAG: ${{ github.ref_name }}
+
+      - name: Test
+        run: make docker_test GIT_COMMIT=latest
+        env:
+          DOCKER_REPO: ${{ secrets.DATA_WAREHOUSE_DOCKER_REPO }}
+          DOCKER_TAG: ${{ github.ref_name }}
+
+      - name: Push
+        run: make docker_release GIT_COMMIT=latest
+        env:
+          DOCKER_REPO: ${{ secrets.DATA_WAREHOUSE_DOCKER_REPO }}
+          DOCKER_TAG: ${{ github.ref_name }}
+
+  deploy:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Google Login
+        uses: 'google-github-actions/auth@v0'
+        with:
+          credentials_json: ${{ secrets.INFRA_DEPLOYMENT_SERVICE_ACCOUNT }}
+
+      - name: Setup bastion host tunnel
+        run: |
+          nohup gcloud compute ssh ae32-bastion-host \
+            --project ${VPC_PROJECT_ID} \
+            --zone ${BASTION_ZONE} \
+            --ssh-key-file=~/.ssh/id_rsa \
+            --ssh-key-expire-after=5m \
+            -- -L 17889:127.0.0.1:8888 -N &
+          sleep 45
+        shell: bash
+
+      - name: Test get pods
+        run: |
+          gcloud container clusters get-credentials ${GKE_CLUSTER} \
+            --region ${GKE_REGION} \
+            --project ${PROJECT_ID}
+          
+          HTTPS_PROXY=127.0.0.1:17889 kubectl get pods -n ${GKE_NAMESPACE}
+        shell: bash
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Patch Deployment
+        run: HTTPS_PROXY=127.0.0.1:17889 make kubectl_patch
+        shell: bash
+        env:
+          DOCKER_REPO: ${{ secrets.DATA_WAREHOUSE_DOCKER_REPO }}
+          DOCKER_TAG: ${{ github.ref_name }}

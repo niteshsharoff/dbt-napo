@@ -1,14 +1,39 @@
+GIT_COMMIT?=$(shell git rev-parse HEAD)
 BRANCH_NAME?=$(shell git rev-parse --abbrev-ref HEAD)
 BRANCH_TAG=$(subst /,_,$(BRANCH_NAME))
 
 DOCKER_REPO?=repo_not_set
 DOCKER_NAME?=napo-airflow
+DOCKER_TAG?=${BRANCH_TAG}
 DOCKER_IMAGE=${DOCKER_NAME}:${GIT_COMMIT}
+DOCKER_BRANCH_IMAGE=${DOCKER_NAME}:${DOCKER_TAG}
 
-export DOCKER_BRANCH_IMAGE=${DOCKER_NAME}:${BRANCH_TAG}
 export AIRFLOW_UID?=$(shell id -u ${USER})
 export AIRFLOW_GID?=0
 export PIPENV_VENV_IN_PROJECT=1
+export K8S_NAMESPACE=airflow
+define PATCH_TEMPLATE
+{
+  "spec":{
+    "template":{
+      "spec":{
+        "containers":[
+          {
+            "name":"airflow-scheduler",
+            "image":"${DOCKER_REPO}/${DOCKER_BRANCH_IMAGE}"
+          },
+          {
+            "name":"airflow-webserver",
+            "image":"${DOCKER_REPO}/${DOCKER_BRANCH_IMAGE}"
+          }
+        ]
+      }
+    }
+  }
+}
+endef
+export PATCH_TEMPLATE
+
 
 .DEFAULT_GOAL := all
 
@@ -16,25 +41,20 @@ export PIPENV_VENV_IN_PROJECT=1
 all:
 	echo "Please choose a make target to run."
 
-.PHONY: local
-local:
+.PHONY: build
+build:
 	pip3 install --upgrade pip pipenv
 	pipenv lock
 	pipenv requirements > requirements.txt
-	docker build -t airflow:local .
+
+.PHONY: local
+local:
+	docker build --target prod -t ${DOCKER_NAME}:local .
 	docker-compose up -d
 
 .PHONY: clean
 clean:
 	find . -iname '*.pyc' -exec rm {} \; -print
-
-.PHONY: docker_build
-docker_build: clean
-	docker build -t ${DOCKER_REPO}/${DOCKER_BRANCH_IMAGE} .
-
-.PHONY: docker_push
-docker_push:
-	docker push ${DOCKER_REPO}/${DOCKER_BRANCH_IMAGE}
 
 .PHONY: prod_login
 prod_login:
@@ -64,11 +84,38 @@ down:
 	docker-compose --project-name ${DOCKER_NAME} down --remove-orphans
 	rm -r logs
 
-.PHONY: k8s_rollout
-k8s_rollout:
-	kubectl rollout restart deployment.apps/airflow -n airflow
-
 .PHONY: lint
 lint:
 	flake8 dags/*
 
+.PHONY: test
+test: lint
+	pytest --timeout=600
+
+.PHONY: docker_build
+docker_build: clean
+	docker build \
+		-t ${DOCKER_IMAGE} \
+		-t ${DOCKER_BRANCH_IMAGE} \
+		-t ${DOCKER_REPO}/${DOCKER_IMAGE} \
+		-t ${DOCKER_REPO}/${DOCKER_BRANCH_IMAGE} \
+		--target prod .
+	docker build \
+		-t ${DOCKER_IMAGE}-test \
+		-t ${DOCKER_BRANCH_IMAGE}-test \
+		-t ${DOCKER_REPO}/${DOCKER_IMAGE}-test \
+		-t ${DOCKER_REPO}/${DOCKER_BRANCH_IMAGE}-test \
+		--target test .
+
+.PHONY: docker_test
+docker_test:
+	docker run --rm ${DOCKER_IMAGE}-test
+
+.PHONY: docker_release
+docker_release:
+	docker push ${DOCKER_REPO}/${DOCKER_IMAGE}
+	docker push ${DOCKER_REPO}/${DOCKER_BRANCH_IMAGE}
+
+.PHONY: kubectl_patch
+kubectl_patch:
+	kubectl patch deployment airflow -p "$${PATCH_TEMPLATE}" -n ${K8S_NAMESPACE}

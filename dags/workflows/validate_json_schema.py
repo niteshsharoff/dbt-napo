@@ -1,13 +1,9 @@
 import json
 import logging
-from logging.config import fileConfig
 from typing import Optional
 
 from google.cloud import storage
 from jsonschema import validate, exceptions
-
-fileConfig("logging_config.ini")
-log = logging.getLogger()
 
 
 def load_json_from_cloud_storage(
@@ -28,6 +24,7 @@ def validate_json(
     object_path: str,
     schema_path: str,
 ) -> bool:
+    log = logging.getLogger(__name__)
     with open(schema_path) as f:
         schema = json.load(f)
         records = load_json_from_cloud_storage(bucket_name, object_path)
