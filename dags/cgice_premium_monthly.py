@@ -62,8 +62,8 @@ with DAG(
     default_args={"retries": 0},
 ) as dag:
     start_date = "{{ ds }}"
-    end_date = """{{ (macros.datetime.strptime(ds, "%Y-%m-%d") 
-        + macros.dateutil.relativedelta.relativedelta(months=1)).strftime("%Y-%m-%d") 
+    end_date = """{{ (macros.datetime.strptime(ds, "%Y-%m-%d")
+        + macros.dateutil.relativedelta.relativedelta(months=1)).strftime("%Y-%m-%d")
     }}"""
 
     @task_group(group_id="data_sources")

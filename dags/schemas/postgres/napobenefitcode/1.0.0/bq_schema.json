@@ -20,5 +20,13 @@
   {
     "name": "disabled",
     "type": "BOOL"
+  },
+  {
+    "name": "lockin_period_days",
+    "type": "INTEGER"
+  },
+  {
+    "name": "reward",
+    "type": "INTEGER"
   }
 ]

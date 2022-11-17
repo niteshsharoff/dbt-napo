@@ -1,7 +1,7 @@
 import csv
 import logging
 import argparse
-from datetime import datetime
+from datetime import datetime, date
 from datetime import timezone
 from datetime import timedelta
 from typing import Optional
@@ -101,7 +101,7 @@ def get_customers(project_id: str) -> pd.DataFrame:
     )
 
 
-def is_qualified(run_date, lockin_period_days, start_date):
+def is_qualified(run_date: date, lockin_period_days: int, start_date: date):
     days = (run_date - start_date).days
     include = days == lockin_period_days
     return include
@@ -114,8 +114,8 @@ def date_or_empty(when: datetime) -> str:
 def generate_daily_napo_benefit_code_report(
     run_date: datetime,
     project_id: str,
-    bucket: str,
-    table_name: str,
+    gcs_bucket: str,
+    gcs_prefix: str,
     output_to_file: Optional[bool] = False,
 ) -> str:
     """Generate the qualifying customers for the given run date."""
@@ -207,10 +207,10 @@ def generate_daily_napo_benefit_code_report(
 
     else:
         log.info(
-            f"Uploading to BigQuery Project: '{project_id}' Bucket: '{bucket}' "
-            f"Table '{table_name}'"
+            f"Uploading to BigQuery Project: '{project_id}' Bucket: '{gcs_bucket}' "
+            f"Table '{gcs_prefix}'"
         )
-        load_csv_to_gcs_bucket(bucket, csv_data, run_date, table_name, project_id)
+        load_csv_to_gcs_bucket(gcs_bucket, csv_data, run_date, gcs_prefix, project_id)
 
     return csv_data
 
@@ -230,14 +230,14 @@ if __name__ == "__main__":
         required=True,
     )
     parser.add_argument(
-        "--bucket",
+        "--gcs_bucket",
         type=str,
         help="The base GCP bucket to upload into.",
         default="data-warehouse-harbour",
         required=False,
     )
     parser.add_argument(
-        "--table_name",
+        "--gcs_prefix",
         type=str,
         help="Where the table will be created.",
         default="reporting/napo_benefit_code_daily",

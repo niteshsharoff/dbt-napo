@@ -17,6 +17,12 @@
     },
     "disabled": {
       "type": "boolean"
+    },
+    "lockin_period_days": {
+      "type": "integer"
+    },
+    "reward": {
+      "type": "integer"
     }
   },
   "additionalProperties": false
