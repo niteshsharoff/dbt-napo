@@ -20,21 +20,28 @@ PG_HOST = Variable.get("PG_HOST")
 POLICY_DATABASE = Variable.get("POLICY_DATABASE")
 POLICY_DB_USER = Variable.get("POLICY_DB_USER")
 POLICY_DB_PASS = Variable.get("POLICY_DB_PASSWORD")
+QUOTE_DATABASE = Variable.get("QUOTE_DATABASE")
+QUOTE_DB_USER = Variable.get("QUOTE_DB_USER")
+QUOTE_DB_PASS = Variable.get("QUOTE_DB_PASSWORD")
 
 
 class DataSource(Enum):
     POLICY_DB = auto()
+    QUOTE_DB = auto()
 
 
 @task
 def export_pg_table_to_gcs(
     source: DataSource, src_table: str, date_column: str, ds=None
 ):
+    pg_database = QUOTE_DATABASE if source == DataSource.QUOTE_DB else POLICY_DATABASE
+    pg_user = QUOTE_DB_USER if source == DataSource.QUOTE_DB else POLICY_DB_USER
+    pg_password = QUOTE_DB_PASS if source == DataSource.QUOTE_DB else POLICY_DB_PASS
     load_pg_table_to_gcs(
         pg_host=PG_HOST,
-        pg_database=POLICY_DATABASE,
-        pg_user=POLICY_DB_USER,
-        pg_password=POLICY_DB_PASS,
+        pg_database=pg_database,
+        pg_user=pg_user,
+        pg_password=pg_password,
         pg_table=src_table,
         pg_columns=["*"],
         project_id=GCP_PROJECT_ID,
@@ -158,3 +165,36 @@ def export_policy_service_data():
 
 
 export_policy_service_data()
+
+
+@dag(
+    dag_id="quote_service_data_export",
+    start_date=pendulum.datetime(2021, 10, 17, tz="UTC"),
+    schedule_interval="@daily",
+    catchup=True,
+    default_args={"retries": 0},
+    max_active_runs=7,
+    max_active_tasks=128,
+    tags=["raw", "quote_service"],
+)
+def export_quote_service_data():
+    # Quote service database tables
+    for pg_table, bq_dataset, bq_table, schema_version, pg_date_column in [
+        ("quote_quoterequest", "raw", "quoterequest", "1.0.0", "created_at"),
+    ]:
+
+        @task_group(group_id=f"quote_{bq_table}")
+        def create_quote_pipeline():
+            create_pipeline(
+                DataSource.QUOTE_DB,
+                pg_table,
+                bq_dataset,
+                bq_table,
+                schema_version,
+                pg_date_column,
+            )
+
+        create_quote_pipeline()
+
+
+export_quote_service_data()

@@ -1,7 +1,9 @@
 from google.cloud import storage
 
 
-def move_gcs_blob(project_name: str, src_bucket: str, src_path: str, dst_bucket: str, dst_path: str):
+def move_gcs_blob(
+    project_name: str, src_bucket: str, src_path: str, dst_bucket: str, dst_path: str
+):
     storage_client = storage.Client(project=project_name)
     src_bucket = storage_client.get_bucket(src_bucket)
     src_blob = src_bucket.blob(src_path)

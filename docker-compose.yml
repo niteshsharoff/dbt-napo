@@ -22,9 +22,8 @@ x-common:
     - ./logs:/opt/airflow/logs
     - ./plugins:/opt/airflow/plugins
     - /var/run/docker.sock:/var/run/docker.sock
-    # - ${HOME}/.config/gcloud:/root/.config/gcloud
     - ${HOME}/.config/gcloud/oauth_token.json:/secrets/airflow/oauth_token.json
-    - ${HOME}/.config/gcloud/application_default_credentials.json:/secrets/airflow/credentials.json
+    - ${HOME}/.config/gcloud/airflow_node_sa.json:/secrets/airflow/credentials.json
 
 x-depends-on:
   &depends-on
