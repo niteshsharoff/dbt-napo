@@ -1,7 +1,8 @@
 {{config(materialized='table')}}
 
 with stg_quote as (
-  select *
+  select * except(customer)
+         ,customer.* 
   from {{ref('stg_raw__quote_request')}}
 )
 select * 
