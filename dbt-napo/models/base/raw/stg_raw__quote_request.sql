@@ -1,6 +1,6 @@
 with quote_data as (
 SELECT 
-   quote_request_id
+   quote_request_id as quote_id
 --  ,JSON_value(common_quote,"$.id") as quote_id
   ,timestamp_millis(created_at) as created_at
   ,date(run_date) as run_date
