@@ -26,3 +26,7 @@ sources:
       - name: multipet_summary
       - name: product_summary
       - name: species_age_summary
+  - name: raw
+    schema: raw
+    tables: 
+      - name: quoterequest
