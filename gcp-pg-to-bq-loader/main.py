@@ -21,6 +21,7 @@ def main(request):
     job_config = bigquery.LoadJobConfig(
         source_format=bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
         autodetect=True,
+        max_bad_records=1,
         write_disposition = bigquery.WriteDisposition.WRITE_TRUNCATE
     )
 
