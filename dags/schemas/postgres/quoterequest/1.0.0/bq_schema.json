@@ -50,5 +50,10 @@
     "mode": "NULLABLE",
     "name": "original_selected_product_reference",
     "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "msm_sales_tracking_urn",
+    "type": "STRING"
   }
 ]

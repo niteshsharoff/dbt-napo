@@ -51,6 +51,12 @@
         "null",
         "string"
       ]
+    },
+    "msm_sales_tracking_urn": {
+      "type": [
+        "null",
+        "string"
+      ]
     }
   },
   "additionalProperties": false
