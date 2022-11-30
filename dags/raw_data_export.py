@@ -118,8 +118,6 @@ def create_pipeline(
         dataset_name,
         dst_table,
         version,
-        # Only load last partition if no partition column specified
-        pg_date_column is None,
     )
 
     return t1 >> t2 >> t3 >> t4

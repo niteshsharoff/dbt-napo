@@ -121,7 +121,7 @@ def generate_daily_napo_benefit_code_report(
     """Generate the qualifying customers for the given run date."""
     log = logging.getLogger(f"{__name__}.generate_daily_napo_benefit_code_report")
 
-    lockin_period_days = 10
+    lockin_period_days = 60
     log.info(f"The lockin period in days is '{lockin_period_days}'")
 
     # Join customer on user table to get the first name and email:
