@@ -1,3 +1,5 @@
+{{config(materialized='view')}}
+
 with stg_quote as (
   select * except(customer)
          ,customer.* 

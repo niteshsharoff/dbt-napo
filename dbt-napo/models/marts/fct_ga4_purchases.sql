@@ -1,5 +1,3 @@
-{{config(materialized='table')}}
-
 SELECT _table_suffix as date
       ,event_name
       ,user_id
