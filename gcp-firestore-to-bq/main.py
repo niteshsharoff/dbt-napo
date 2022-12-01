@@ -1,11 +1,8 @@
+from datetime import datetime
 import firebase_admin
 from firebase_admin import firestore
 from google.cloud import bigquery
 import pandas as pd
-#from firebase_admin import credentials
-#from google.oauth2 import service_account
-#cred = credentials.Certificate("service-account.json")
-#app = firebase_admin.initialize_app(cred)
 import functions_framework
 
 @functions_framework.http
@@ -29,11 +26,7 @@ def main(request):
         temp = list(db.collection('{}'.format(key)).stream())
         temp_dict = list(map(lambda x: x.to_dict(), temp))
         globals()[f"df_{mapping[key]}"] = pd.DataFrame(temp_dict)
-
-    #key_path = r"C:\Users\nites\OneDrive\Documents\napo-nitesh-local-ae32-vpcservice-datawarehouse-879a160a28ee.json"
-    #credentials = service_account.Credentials.from_service_account_file(
-    #    key_path, scopes=["https://www.googleapis.com/auth/cloud-platform"])
-    #client = bigquery.Client(credentials=credentials, project=credentials.project_id,)
+        globals()[f"df_{mapping[key]}"]['_imported_at'] = datetime.now()
 
     client = bigquery.Client(project="ae32-vpcservice-datawarehouse",)
     job_config2 = bigquery.LoadJobConfig(
