@@ -2,7 +2,7 @@ with raw as (
     select 
          userId as user_id
         ,sessionid as session_id
-        ,date as booking_date
+        ,parse_datetime('%Y-%m-%d %H:%M',date) as booking_date
         ,cancelled
         ,attendance
         ,classId as class_id
