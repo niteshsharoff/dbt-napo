@@ -2,14 +2,13 @@ import pendulum
 from airflow.datasets import Dataset
 from airflow.decorators import task
 from airflow.models import Variable
-
 from airflow.models.dag import dag
 from airflow.operators.empty import EmptyOperator
 
 from dags.workflows.export_bq_result_to_gcs import export_table_to_gcs
 from dags.workflows.upload_to_google_drive import upload_to_google_drive
-from workflows.create_bq_view import create_ctm_sales_monthly_view
 from workflows.create_bq_external_table import create_external_bq_table
+from workflows.create_bq_view import create_ctm_sales_monthly_view
 
 OAUTH_TOKEN_FILE = Variable.get("OAUTH_CREDENTIALS")
 GCP_PROJECT_ID = Variable.get("GCP_PROJECT_ID")
@@ -52,7 +51,7 @@ def update_daily_table():
 
 
 @task(task_id="upload_daily_report")
-def upload_daily_report(ds=None):
+def upload_daily_report(data_interval_end: pendulum.datetime = None):
     """
     This task uploads a daily report to a shared Google Drive folder in csv format.
     The report day is the same as the ETL run_date but the data should be from the
@@ -62,7 +61,7 @@ def upload_daily_report(ds=None):
         https://drive.google.com/drive/folders/1JEtPgxP38MWYLaxgZRNwJLkziYTRtRHf
 
     """
-    run_date = pendulum.parse(ds, tz="UTC")
+    run_date = data_interval_end
     report_date = run_date.subtract(days=1)
     gcs_file_name = "100161_Pet_{0}_{0}_1_2.csv".format(report_date.format("DDMMYYYY"))
     gdrive_file_name = f"{DAILY_TABLE}_{run_date.format('YYYYMMDD')}.csv"
@@ -77,12 +76,12 @@ def upload_daily_report(ds=None):
 
 
 @task.branch(task_id="monthly_branch")
-def is_first_of_month(ds=None):
+def is_first_of_month(data_interval_end: pendulum.datetime = None):
     """
     Branch and run monthly tasks only on the first day of each month.
     Daily runs not on the first of the month should branch to no op.
     """
-    run_date = pendulum.parse(ds, tz="UTC")
+    run_date = data_interval_end.date()
     if run_date.day == 1:
         return "create_monthly_view"
 
@@ -93,7 +92,7 @@ def is_first_of_month(ds=None):
     task_id="create_monthly_view",
     outlets=[Dataset("reporting.ctm_sales_report_monthly_*")],
 )
-def update_monthly_view(ds=None):
+def update_monthly_view(data_interval_end: pendulum.datetime = None):
     """
     This task creates a Big Query monthly view on top of the ctm_sales_report_daily
     table.
@@ -102,7 +101,7 @@ def update_monthly_view(ds=None):
         ae32-vpcservice-datawarehouse.reporting.ctm_sales_report_monthly_{YYYYMMDD}
 
     """
-    run_date = pendulum.parse(ds, tz="UTC")
+    run_date = data_interval_end
     start_date = pendulum.datetime(run_date.year, run_date.month - 1, 1, tz="UTC")
     end_date = pendulum.datetime(run_date.year, run_date.month, 1, tz="UTC")
     create_ctm_sales_monthly_view(
@@ -116,32 +115,44 @@ def update_monthly_view(ds=None):
 
 
 @task(task_id="export_monthly_report")
-def export_monthly_view(ds=None):
+def export_monthly_view(data_interval_end: pendulum.datetime = None):
     """
     This task query's the monthly view table, stores the results in a temp table and
     exports the result to Cloud Storage.
 
-    The weekly view table is:
-        ae32-vpcservice-datawarehouse.reporting.ctm_sales_report_monthly_{YYYYmmdd}
+    The monthly view table is:
+        ae32-vpcservice-datawarehouse.reporting.ctm_sales_report_monthly_{YYYYMMDD}
 
     The results are stored in a tmp table which expires after 1 hour:
         ae32-vpcservice-datawarehouse.reporting.tmp
 
     """
-    run_date = pendulum.parse(ds, tz="UTC")
-    start_date = pendulum.datetime(run_date.year, run_date.month, 1, tz="UTC")
+    run_date = data_interval_end
+    start_date = pendulum.datetime(run_date.year, run_date.month - 1, 1, tz="UTC")
+    end_date = pendulum.datetime(run_date.year, run_date.month, 1, tz="UTC")
     table_name = f"{MONTHLY_TABLE}_{start_date.format('YYYYMMDD')}"
+    # This is the filename format requested by CTM
+    gcs_file_name = "100161_Pet_{start_date}_{end_date}_1_2.csv".format(
+        start_date=start_date.format("DDMMYYYY"),
+        end_date=end_date.subtract(days=1).format("DDMMYYYY"),
+    )
     export_table_to_gcs(
         project_name=GCP_PROJECT_ID,
         dataset_name=BQ_DATASET,
         src_table=table_name,
         tmp_table=TMP_TABLE,
-        gcs_uri=f"gs://{GCS_BUCKET}/{BQ_DATASET}/{MONTHLY_TABLE}/{table_name}.csv",
+        gcs_uri="gs://{}/{}/{}/run_date={}/{}".format(
+            GCS_BUCKET,
+            BQ_DATASET,
+            MONTHLY_TABLE,
+            run_date.date(),
+            gcs_file_name,
+        ),
     )
 
 
 @task(task_id="upload_monthly_report")
-def upload_monthly_report(ds=None):
+def upload_monthly_report(data_interval_end: pendulum.datetime = None):
     """
     This task uploads the monthly report to a shared Google Drive folder in csv format.
     The report month is the same as the ETL run_date but the data should be from the
@@ -151,13 +162,24 @@ def upload_monthly_report(ds=None):
         https://drive.google.com/drive/folders/1iK37ZMa_9dDxkdxgVD9KSNInEsmzRTaR
 
     """
-    run_date = pendulum.parse(ds, tz="UTC")
+    run_date = data_interval_end
     start_date = pendulum.datetime(run_date.year, run_date.month - 1, 1, tz="UTC")
-    file_name = f"{MONTHLY_TABLE}_{start_date.format('YYYYMMDD')}.csv"
+    end_date = pendulum.datetime(run_date.year, run_date.month, 1, tz="UTC")
+    # This is the filename format requested by CTM
+    gcs_file_name = "100161_Pet_{start_date}_{end_date}_1_2.csv".format(
+        start_date=start_date.format("DDMMYYYY"),
+        end_date=end_date.subtract(days=1).format("DDMMYYYY"),
+    )
+    file_name = f"{MONTHLY_TABLE}_{end_date.format('YYYYMMDD')}.csv"
     upload_to_google_drive(
         project_name=GCP_PROJECT_ID,
         gcs_bucket=GCS_BUCKET,
-        gcs_path=f"{BQ_DATASET}/{MONTHLY_TABLE}/{file_name}",
+        gcs_path="{}/{}/run_date={}/{}".format(
+            BQ_DATASET,
+            MONTHLY_TABLE,
+            run_date.date(),
+            gcs_file_name,
+        ),
         gdrive_folder_id=GOOGLE_DRIVE_MONTHLY_FOLDER_ID,
         gdrive_file_name=f"{file_name}",
         token_file=OAUTH_TOKEN_FILE,
@@ -176,20 +198,26 @@ def upload_monthly_report(ds=None):
     tags=["reporting", "daily", "monthly"],
 )
 def compare_the_market():
+    # Placeholder for report generation
     placeholder = EmptyOperator(task_id="generate_report")
+
+    # Daily tasks
     daily_table = update_daily_table()
     daily_upload = upload_daily_report()
-    branch = is_first_of_month()
+
+    # Monthly tasks
     no_op = EmptyOperator(task_id="no_op")
+    monthly_branch = is_first_of_month()
     monthly_view = update_monthly_view()
     monthly_export = export_monthly_view()
     monthly_upload = upload_monthly_report()
 
-    # Graph
-    placeholder >> daily_table >> branch
+    # DAG
+    placeholder >> daily_table >> monthly_branch
     daily_table >> daily_upload
-    branch >> no_op
-    branch >> monthly_view >> monthly_export >> monthly_upload
+
+    monthly_branch >> no_op
+    monthly_branch >> monthly_view >> monthly_export >> monthly_upload
 
 
 compare_the_market()
