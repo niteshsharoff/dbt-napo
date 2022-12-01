@@ -1,6 +1,3 @@
-{{config(materialized='table')}}
-
-
 with purchase_data as(
   select created_date
   ,quote_id

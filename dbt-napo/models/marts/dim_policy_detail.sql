@@ -1,6 +1,3 @@
-{{config(materialized='table')}}
-
-
 with policies as (
     select p.* except (pk)
          , b.* except (pk)

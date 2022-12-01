@@ -1,5 +1,3 @@
-{{config(materialized='table')}}
-
 with policies as (
 select 
       policy_id

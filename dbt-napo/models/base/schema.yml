@@ -30,3 +30,11 @@ sources:
     schema: raw
     tables: 
       - name: quoterequest
+  - name: firestore
+    schema: firestore
+    description: "Puppy Academy Firebase/Firestore data" 
+    tables: 
+      - name: users
+      - name: bookings
+      - name: email_reminders
+      - name: sms_reminders
