@@ -31,5 +31,5 @@ select
       ,(extract(YEAR from current_date())-cast(c.year_of_birth as numeric)) as customer_age
       ,c.user
 from {{ref('int_policy_subscription')}} p
-left join {{ref('stg_customer')}} c
+left join {{ref('stg_postgres__customer')}} c
 on p.customer = c.pk
