@@ -1,6 +1,8 @@
+import csv
 from datetime import datetime, timedelta, timezone
 
-from google.cloud import bigquery
+import pandas as pd
+from google.cloud import bigquery, storage
 
 
 def export_query_to_table(
@@ -90,3 +92,30 @@ def export_table_to_gcs(
         f"SELECT * FROM `{dataset_name}.{src_table}`",
     )
     export_results_to_gcs(bq_client, project_name, dataset_name, tmp_table, gcs_uri)
+
+
+def export_query_to_gcs(
+    project_name: str,
+    query: str,
+    gcs_bucket: str,
+    gcs_uri: str,
+):
+    """
+    Write query results to a temp table in Big Query. The temp table is set to expire
+    after 1 hour.
+
+    :param project_name: GCP project ID
+    :param query: Big Query dataset name
+    :param gcs_bucket: Source table to execute query against
+    :param gcs_uri: SQL DML statement
+    """
+    df = pd.read_gbq(query)
+    df = df.rename(columns=lambda x: x.replace("_", " "))  # update column names
+
+    storage_client = storage.Client(project=project_name)
+    bucket = storage_client.get_bucket(gcs_bucket)
+    blob = bucket.blob(gcs_uri)
+    blob.upload_from_string(
+        df.to_csv(index=False, encoding="utf-8", quoting=csv.QUOTE_ALL),
+        content_type="application/octet-stream",
+    )

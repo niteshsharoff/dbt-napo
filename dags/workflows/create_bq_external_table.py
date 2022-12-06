@@ -50,6 +50,7 @@ def create_external_bq_table(
         csv_options = CSVOptions()
         csv_options.skip_leading_rows = skip_leading_rows
         csv_options.allow_quoted_newlines = True
+        table_config.csv_options = csv_options
 
     hive_partitioning_options = HivePartitioningOptions()
     hive_partitioning_options.mode = "AUTO"

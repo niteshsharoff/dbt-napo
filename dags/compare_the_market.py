@@ -5,7 +5,7 @@ from airflow.models import Variable
 from airflow.models.dag import dag
 from airflow.operators.empty import EmptyOperator
 
-from dags.workflows.export_bq_result_to_gcs import export_table_to_gcs
+from dags.workflows.export_bq_result_to_gcs import export_query_to_gcs
 from dags.workflows.upload_to_google_drive import upload_to_google_drive
 from workflows.create_bq_external_table import create_external_bq_table
 from workflows.create_bq_view import create_ctm_sales_monthly_view
@@ -45,8 +45,8 @@ def update_daily_table():
         source_uri=f"gs://{GCS_BUCKET}/tmp/ctm/*",
         partition_uri=f"gs://{GCS_BUCKET}/tmp/ctm",
         source_format="CSV",
-        schema_path=None,
-        skip_leading_rows=0,
+        schema_path=f"dags/schemas/reporting/ctm_sales_report/bq_schema.json",
+        skip_leading_rows=1,
     )
 
 
@@ -136,13 +136,11 @@ def export_monthly_view(data_interval_end: pendulum.datetime = None):
         start_date=start_date.format("DDMMYYYY"),
         end_date=end_date.subtract(days=1).format("DDMMYYYY"),
     )
-    export_table_to_gcs(
+    export_query_to_gcs(
         project_name=GCP_PROJECT_ID,
-        dataset_name=BQ_DATASET,
-        src_table=table_name,
-        tmp_table=TMP_TABLE,
-        gcs_uri="gs://{}/{}/{}/run_date={}/{}".format(
-            GCS_BUCKET,
+        query=f"SELECT * FROM `{GCP_PROJECT_ID}.{BQ_DATASET}.{table_name}`",
+        gcs_bucket=GCS_BUCKET,
+        gcs_uri="{}/{}/run_date={}/{}".format(
             BQ_DATASET,
             MONTHLY_TABLE,
             run_date.date(),
