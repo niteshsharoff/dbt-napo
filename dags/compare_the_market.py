@@ -4,23 +4,80 @@ from airflow.decorators import task
 from airflow.models import Variable
 from airflow.models.dag import dag
 from airflow.operators.empty import EmptyOperator
+from airflow.providers.google.cloud.hooks.compute_ssh import ComputeEngineSSHHook
+from airflow.providers.ssh.operators.ssh import SSHOperator
+from jinja2 import Environment, FileSystemLoader
 
-from dags.workflows.export_bq_result_to_gcs import export_query_to_gcs
-from dags.workflows.upload_to_google_drive import upload_to_google_drive
+from workflows.export_bq_result_to_gcs import export_query_to_gcs
+from workflows.upload_to_google_drive import (
+    upload_to_google_drive,
+    file_exists_on_google_drive,
+)
 from workflows.create_bq_external_table import create_external_bq_table
 from workflows.create_bq_view import create_ctm_sales_monthly_view
+
+JINJA_ENV = Environment(loader=FileSystemLoader("dags/bash/"))
+SFTP_SCRIPT = JINJA_ENV.get_template("upload_ctm_report.sh")
+SFTP_HOST = Variable.get("CTM_SFTP_HOST")
+SFTP_PORT = Variable.get("CTM_SFTP_PORT")
+SFTP_USER = Variable.get("CTM_SFTP_USER")
+SFTP_PASS = Variable.get("CTM_SFTP_PASSWORD")
 
 OAUTH_TOKEN_FILE = Variable.get("OAUTH_CREDENTIALS")
 GCP_PROJECT_ID = Variable.get("GCP_PROJECT_ID")
 GCP_REGION = Variable.get("GCP_REGION")
 GCS_BUCKET = Variable.get("GCS_BUCKET")
 
+BASTION_NAME = "ae32-bastion-host"
+BASTION_ZONE = "europe-west2-a"
+BASTION_PROJECT = "ae32-vpc-host"
 GOOGLE_DRIVE_DAILY_FOLDER_ID = "1JEtPgxP38MWYLaxgZRNwJLkziYTRtRHf"
 GOOGLE_DRIVE_MONTHLY_FOLDER_ID = "1iK37ZMa_9dDxkdxgVD9KSNInEsmzRTaR"
 BQ_DATASET = "reporting"
 DAILY_TABLE = "ctm_sales_report_daily"
 MONTHLY_TABLE = "ctm_sales_report_monthly"
 TMP_TABLE = "tmp"
+
+
+def sftp_task_wrapper(
+    task_id: str,
+    local_dir: str,
+    remote_dir: str,
+    gcs_uri: str,
+) -> SSHOperator:
+    """
+    This Airflow task wrapper returns a SSHOperator which will execute a shell script
+    on the bastion host for uploading a report via SFTP.
+
+    :param task_id: Airflow task id
+    :param local_dir: Directory the report will be downloaded to on the Bastion Host
+    :param remote_dir: Directory the report will be uploaded to on the SFTP server
+    :param gcs_uri: URI of report on GCS
+    """
+    command = SFTP_SCRIPT.render(
+        dict(
+            local_dir=local_dir,
+            remote_dir=remote_dir,
+            gcs_uri=gcs_uri,
+            host=SFTP_HOST,
+            port=SFTP_PORT,
+            user=SFTP_USER,
+            password=SFTP_PASS,
+        )
+    )
+    return SSHOperator(
+        task_id=task_id,
+        ssh_hook=ComputeEngineSSHHook(
+            instance_name=BASTION_NAME,
+            zone=BASTION_ZONE,
+            project_id=BASTION_PROJECT,
+            use_oslogin=False,
+            use_iap_tunnel=True,
+            use_internal_ip=True,
+            expire_time="60m",
+        ),
+        command=command,
+    )
 
 
 @task(
@@ -50,7 +107,24 @@ def update_daily_table():
     )
 
 
-@task(task_id="upload_daily_report")
+@task.branch(task_id="sftp_daily_check")
+def daily_report_exists(data_interval_end: pendulum.datetime = None):
+    """
+    Branch and upload the daily report to SFTP server only if the report doesn't exist
+    yet on Google Drive.
+
+    This is to prevent us from re-uploading historical reports to CTM when running the
+    pipeline in backfill mode.
+    """
+    run_date = data_interval_end
+    report_name = f"{DAILY_TABLE}_{run_date.format('YYYYMMDD')}.csv"
+    if file_exists_on_google_drive(file_name=report_name, token_file=OAUTH_TOKEN_FILE):
+        return "upload_daily_report"
+
+    return "sftp_daily_report"
+
+
+@task(task_id="upload_daily_report", trigger_rule="none_failed")
 def upload_daily_report(data_interval_end: pendulum.datetime = None):
     """
     This task uploads a daily report to a shared Google Drive folder in csv format.
@@ -149,7 +223,24 @@ def export_monthly_view(data_interval_end: pendulum.datetime = None):
     )
 
 
-@task(task_id="upload_monthly_report")
+@task.branch(task_id="sftp_monthly_check")
+def monthly_report_exists(data_interval_end: pendulum.datetime = None):
+    """
+    Branch and upload the monthly report to SFTP server only if the report doesn't exist
+    yet on Google Drive.
+
+    This is to prevent us from re-uploading historical reports to CTM when running the
+    pipeline in backfill mode.
+    """
+    run_date = data_interval_end
+    report_name = f"{MONTHLY_TABLE}_{run_date.format('YYYYMMDD')}.csv"
+    if file_exists_on_google_drive(file_name=report_name, token_file=OAUTH_TOKEN_FILE):
+        return "upload_monthly_report"
+
+    return "sftp_monthly_report"
+
+
+@task(task_id="upload_monthly_report", trigger_rule="none_failed_or_skipped")
 def upload_monthly_report(data_interval_end: pendulum.datetime = None):
     """
     This task uploads the monthly report to a shared Google Drive folder in csv format.
@@ -163,7 +254,6 @@ def upload_monthly_report(data_interval_end: pendulum.datetime = None):
     run_date = data_interval_end
     start_date = pendulum.datetime(run_date.year, run_date.month - 1, 1, tz="UTC")
     end_date = pendulum.datetime(run_date.year, run_date.month, 1, tz="UTC")
-    # This is the filename format requested by CTM
     gcs_file_name = "100161_Pet_{start_date}_{end_date}_1_2.csv".format(
         start_date=start_date.format("DDMMYYYY"),
         end_date=end_date.subtract(days=1).format("DDMMYYYY"),
@@ -172,12 +262,7 @@ def upload_monthly_report(data_interval_end: pendulum.datetime = None):
     upload_to_google_drive(
         project_name=GCP_PROJECT_ID,
         gcs_bucket=GCS_BUCKET,
-        gcs_path="{}/{}/run_date={}/{}".format(
-            BQ_DATASET,
-            MONTHLY_TABLE,
-            run_date.date(),
-            gcs_file_name,
-        ),
+        gcs_path=f"{BQ_DATASET}/{MONTHLY_TABLE}/run_date={run_date.date()}/{gcs_file_name}",
         gdrive_folder_id=GOOGLE_DRIVE_MONTHLY_FOLDER_ID,
         gdrive_file_name=f"{file_name}",
         token_file=OAUTH_TOKEN_FILE,
@@ -196,26 +281,56 @@ def upload_monthly_report(data_interval_end: pendulum.datetime = None):
     tags=["reporting", "daily", "monthly"],
 )
 def compare_the_market():
-    # Placeholder for report generation
+    """
+    The CompareTheMarket sales report is currently generated on a reporting instance
+    via a Django management command.
+
+    A k8s cronjob is setup on the production cluster to sync the reports to GCS.
+
+    This Airflow pipeline will automate Big Query table creation, Google Drive upload
+    and SFTP upload.
+
+    This pipeline is scheduled to run daily at 02:00 but monthly tasks will be skipped
+    unless it's the first day of the month.
+    """
+    run_date = "{{ data_interval_end.date() }}"
     placeholder = EmptyOperator(task_id="generate_report")
 
     # Daily tasks
     daily_table = update_daily_table()
+    daily_sftp_check = daily_report_exists()
+    daily_sftp = sftp_task_wrapper(
+        task_id="sftp_daily_report",
+        local_dir="ctm/daily",
+        remote_dir="Daily",
+        gcs_uri=f"gs://{GCS_BUCKET}/tmp/ctm/run_date={run_date}/*",
+    )
     daily_upload = upload_daily_report()
 
     # Monthly tasks
     no_op = EmptyOperator(task_id="no_op")
     monthly_branch = is_first_of_month()
     monthly_view = update_monthly_view()
+    monthly_sftp_check = monthly_report_exists()
+    monthly_sftp = sftp_task_wrapper(
+        task_id="sftp_monthly_report",
+        local_dir="ctm/monthly",
+        remote_dir="Monthly",
+        gcs_uri=f"gs://{GCS_BUCKET}/reporting/{MONTHLY_TABLE}/run_date={run_date}/*",
+    )
     monthly_export = export_monthly_view()
     monthly_upload = upload_monthly_report()
 
     # DAG
     placeholder >> daily_table >> monthly_branch
-    daily_table >> daily_upload
+    daily_table >> daily_sftp_check
+    daily_sftp_check >> daily_sftp >> daily_upload
+    daily_sftp_check >> daily_upload
 
     monthly_branch >> no_op
-    monthly_branch >> monthly_view >> monthly_export >> monthly_upload
+    monthly_branch >> monthly_view >> monthly_export >> monthly_sftp_check
+    monthly_sftp_check >> monthly_sftp >> monthly_upload
+    monthly_sftp_check >> monthly_upload
 
 
 compare_the_market()

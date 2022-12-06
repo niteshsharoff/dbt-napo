@@ -17,6 +17,26 @@ OAUTH_SCOPES = [
 ]
 
 
+def get_google_drive_client(token_file: str):
+    """
+    Constructs the client for interacting with Google Drive API.
+
+    :param token_file: Absolute path to OAuth2 token file
+    """
+    log = logging.getLogger(__name__)
+    try:
+        credentials = Credentials.from_authorized_user_file(token_file, OAUTH_SCOPES)
+    except FileNotFoundError as error:
+        log.error(f"Oauth2 token credentials not found: {error}")
+        raise FileNotFoundError(error)
+
+    if not credentials or not credentials.valid:
+        if credentials and credentials.expired and credentials.refresh_token:
+            credentials.refresh(Request())
+
+    return build("drive", "v3", credentials=credentials)
+
+
 def create_folder(client: Any, folder_name: str) -> str:
     """
     Creates a folder in Google Drive. Determines whether a folder exists by querying
@@ -140,16 +160,7 @@ def upload_to_google_drive(
     :param token_file: Absolute path to OAuth2 token file
     """
     log = logging.getLogger(__name__)
-    try:
-        credentials = Credentials.from_authorized_user_file(token_file, OAUTH_SCOPES)
-    except FileNotFoundError as error:
-        log.error(f"Oauth2 token credentials not found: {error}")
-        raise FileNotFoundError(error)
-
-    if not credentials or not credentials.valid:
-        if credentials and credentials.expired and credentials.refresh_token:
-            credentials.refresh(Request())
-
+    gdrive_client = get_google_drive_client(token_file)
     storage_client = storage.Client(project=project_name)
     bucket = storage_client.bucket(gcs_bucket)
     blob = bucket.blob(gcs_path)
@@ -158,7 +169,6 @@ def upload_to_google_drive(
         raise FileNotFoundError
 
     try:
-        gdrive_client = build("drive", "v3", credentials=credentials)
         upload_bytes_to_folder(
             gdrive_client,
             gdrive_folder_id,
@@ -167,6 +177,32 @@ def upload_to_google_drive(
         )
     except HttpError as error:
         raise HttpError(f"An error occurred: {error}")
+
+
+def file_exists_on_google_drive(
+    file_name: str,
+    token_file: str,
+) -> bool:
+    """
+    Check if a file already exists on Google Drive.
+
+    :param file_name: Name of file to search for
+    :param token_file: Absolute path to OAuth2 token file
+    """
+    log = logging.getLogger(__name__)
+    gdrive_client = get_google_drive_client(token_file)
+    file_list = (
+        gdrive_client.files()
+        .list(
+            q=f"name='{file_name}' and trashed=false",
+            fields="nextPageToken, files(id, name)",
+            supportsAllDrives=True,
+            includeItemsFromAllDrives=True,
+        )
+        .execute()
+    )
+    log.info(f"Google Drive query output: '{file_list}'")
+    return len(file_list["files"]) > 0
 
 
 def generate_token_file(credentials_file: str, token_file: str = "token.json"):
