@@ -107,6 +107,9 @@
     },
     "initial_monthly_payment_id": {
       "type": ["string", "null"]
+    },
+    "premium_price_annual": {
+      "type": "number"
     }
   },
   "additionalProperties": false
