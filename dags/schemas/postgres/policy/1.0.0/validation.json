@@ -109,7 +109,7 @@
       "type": ["string", "null"]
     },
     "premium_price_annual": {
-      "type": "number"
+      "type": ["number", "null"]
     }
   },
   "additionalProperties": false

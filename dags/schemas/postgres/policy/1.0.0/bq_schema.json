@@ -175,7 +175,7 @@
     "type": "STRING"
   },
   {
-    "mode": "REQUIRED",
+    "mode": "NULLABLE",
     "name": "premium_price_annual",
     "type": "FLOAT"
   }
