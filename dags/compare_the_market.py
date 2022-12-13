@@ -17,7 +17,7 @@ from workflows.create_bq_external_table import create_external_bq_table
 from workflows.create_bq_view import create_ctm_sales_monthly_view
 
 JINJA_ENV = Environment(loader=FileSystemLoader("dags/bash/"))
-SFTP_SCRIPT = JINJA_ENV.get_template("upload_ctm_report.sh")
+SFTP_SCRIPT = JINJA_ENV.get_template("sftp_upload.sh")
 SFTP_HOST = Variable.get("CTM_SFTP_HOST")
 SFTP_PORT = Variable.get("CTM_SFTP_PORT")
 SFTP_USER = Variable.get("CTM_SFTP_USER")
