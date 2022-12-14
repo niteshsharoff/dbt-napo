@@ -8,16 +8,9 @@ def main(request):
     import pandas as pd
     import json
 
-    dev = False
-    if (dev):
-        key_path = r"C:\Users\nites\OneDrive\Documents\napo-nitesh-local-ae32-vpcservice-datawarehouse-879a160a28ee.json"
-        credentials = service_account.Credentials.from_service_account_file(
-            key_path, scopes=["https://www.googleapis.com/auth/cloud-platform"],
-        )
-
-        client = bigquery.Client(credentials=credentials, project=credentials.project_id,)
-        storage_client = storage.Client(credentials=credentials, project=credentials.project_id,) 
-
+    client = bigquery.Client()
+    storage_client = storage.Client()
+    
     job_config = bigquery.LoadJobConfig(
         source_format=bigquery.SourceFormat.NEWLINE_DELIMITED_JSON,
         autodetect=True,
@@ -42,14 +35,26 @@ def main(request):
 
     for table in table_mapping:
         uri = "gs://{}/{}/{}".format(bucket_name,path_name,table)
-        table_id = "ae32-vpcservice-datawarehouse.{}.{}".format(dataset_name,table_mapping[table])
-        load_job = client.load_table_from_uri(
-            uri,
-            table_id,
-            location="EU",  # To match the destination dataset location
-            job_config=job_config,
-        )
-        print(table,load_job.result())
+        
+        if (storage_client.get_bucket(bucket_name).get_blob(path_name+'/'+table).exists()):
+            size=storage_client.get_bucket(bucket_name).get_blob(path_name+'/'+table).size
+            print(table,' was found in today\'s bucket with file size',size)
+            if (size==0):
+                raise NameError(table+' file size is 0')
+
+            table_id = "ae32-vpcservice-datawarehouse.{}.{}".format(dataset_name,table_mapping[table])
+            load_job = client.load_table_from_uri(
+                uri,
+                table_id,
+                location="EU",  # To match the destination dataset location
+                job_config=job_config,
+                
+            )
+            print(table,load_job.result())
+
+        else:
+            print(table,' not found in today\'s bucket')
+            raise NameError(table+' not found in bucket')
 
     # Subscription table loading
     blob = bucket.blob("{}/{}".format(path_name,'policy.subscription.json'))
