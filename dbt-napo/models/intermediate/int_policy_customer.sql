@@ -16,6 +16,7 @@ select
       ,p.end_date as policy_end_date
       ,p.cancel_date as policy_cancel_date
       ,p.cancel_reason as policy_cancel_reason
+      ,p.renewal_approved
       ,p.payment_plan_type
       ,p.monthly_price
       ,p.annual_price

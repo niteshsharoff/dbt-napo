@@ -34,6 +34,7 @@ grouped_data as (
         ,p.end_date
         ,p.cancel_date
         ,p.cancel_reason
+        ,p.renewal_approved
         ,p.payment_plan_type
         ,p.monthly_price
         ,p.annual_price
