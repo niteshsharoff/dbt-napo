@@ -176,7 +176,8 @@ def update_monthly_view(data_interval_end: pendulum.datetime = None):
 
     """
     run_date = data_interval_end
-    start_date = pendulum.datetime(run_date.year, run_date.month - 1, 1, tz="UTC")
+    start_date = run_date.subtract(months=1)
+    start_date = pendulum.datetime(start_date.year, start_date.month, 1, tz="UTC")
     end_date = pendulum.datetime(run_date.year, run_date.month, 1, tz="UTC")
     create_ctm_sales_monthly_view(
         project_name=GCP_PROJECT_ID,
@@ -202,7 +203,8 @@ def export_monthly_view(data_interval_end: pendulum.datetime = None):
 
     """
     run_date = data_interval_end
-    start_date = pendulum.datetime(run_date.year, run_date.month - 1, 1, tz="UTC")
+    start_date = run_date.subtract(months=1)
+    start_date = pendulum.datetime(start_date.year, start_date.month, 1, tz="UTC")
     end_date = pendulum.datetime(run_date.year, run_date.month, 1, tz="UTC")
     table_name = f"{MONTHLY_TABLE}_{start_date.format('YYYYMMDD')}"
     # This is the filename format requested by CTM
@@ -252,7 +254,8 @@ def upload_monthly_report(data_interval_end: pendulum.datetime = None):
 
     """
     run_date = data_interval_end
-    start_date = pendulum.datetime(run_date.year, run_date.month - 1, 1, tz="UTC")
+    start_date = run_date.subtract(months=1)
+    start_date = pendulum.datetime(start_date.year, start_date.month, 1, tz="UTC")
     end_date = pendulum.datetime(run_date.year, run_date.month, 1, tz="UTC")
     gcs_file_name = "100161_Pet_{start_date}_{end_date}_1_2.csv".format(
         start_date=start_date.format("DDMMYYYY"),
@@ -271,7 +274,7 @@ def upload_monthly_report(data_interval_end: pendulum.datetime = None):
 
 @dag(
     dag_id="compare_the_market",
-    start_date=pendulum.datetime(2022, 11, 1, tz="UTC"),
+    start_date=pendulum.datetime(2022, 12, 31, tz="UTC"),
     # cronjob.batch/ctm-report-daily-upload is currently scheduled at 0 1 * * *
     schedule_interval="0 2 * * *",
     catchup=True,
