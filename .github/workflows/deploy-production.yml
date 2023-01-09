@@ -11,6 +11,7 @@ env:
   GKE_REGION: europe-west2
   GKE_CLUSTER: production
   GKE_NAMESPACE: airflow
+  USE_GKE_GCLOUD_AUTH_PLUGIN: "True"
 
 jobs:
   build:
@@ -56,6 +57,11 @@ jobs:
         uses: 'google-github-actions/auth@v0'
         with:
           credentials_json: ${{ secrets.INFRA_DEPLOYMENT_SERVICE_ACCOUNT }}
+
+      - name: Set up Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          install_components: gke-gcloud-auth-plugin
 
       - name: Setup bastion host tunnel
         run: |
