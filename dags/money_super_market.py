@@ -121,7 +121,7 @@ def create_weekly_view(data_interval_end: pendulum.datetime = None):
     """
     run_date = data_interval_end
     end_date = run_date.subtract(days=1)
-    start_date = pendulum.parse(f"{end_date.year}W{end_date.week_of_year}")
+    start_date = pendulum.parse(f"{end_date.year}W{end_date.week_of_year:02d}")
     create_msm_sales_view(
         project_name=GCP_PROJECT_ID,
         dataset_name=BQ_DATASET,
@@ -139,7 +139,7 @@ def export_weekly_report(data_interval_end: pendulum.datetime = None):
     """
     run_date = data_interval_end
     end_date = run_date.subtract(days=1)
-    start_date = pendulum.parse(f"{end_date.year}W{end_date.week_of_year}")
+    start_date = pendulum.parse(f"{end_date.year}W{end_date.week_of_year:02d}")
     view_name = f"{WEEKLY_TABLE}_{start_date.format('YYYYMMDD')}"
     gcs_file_name = "Napo_Pet_Weekly_{}.csv".format(end_date.format("YYYYMMDD"))
     export_query_to_gcs(
