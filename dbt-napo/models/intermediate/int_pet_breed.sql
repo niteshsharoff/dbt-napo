@@ -4,6 +4,7 @@ with pet_breeds as (
             ,p.multipet_number
             ,p.is_neutered
             ,p.age_months
+            ,p.date_of_birth as pet_date_of_birth
             ,p.size
             ,p.name
             ,p.species
