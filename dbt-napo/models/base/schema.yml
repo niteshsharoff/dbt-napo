@@ -26,6 +26,12 @@ sources:
       - name: multipet_summary
       - name: product_summary
       - name: species_age_summary
+      - name: customer_generation_summary
+      - name: popular_breed_summary
+      - name: pricing_model_summary
+      - name: region_summary
+      - name: species_gender_neutered_summary
+      - name: yearly_cohort_renewal_summary
   - name: raw
     schema: raw
     tables: 
