@@ -27,7 +27,7 @@ Once verified, modify the folder ID to "1541hzsET3OMSyc4JKlCdl3HmbK9wmXH3"
 This corresponds to the GCICE premium report folder on Google Drive.
 
 """
-GOOGLE_DRIVE_FOLDER_ID = "1DSxToVHiaXdaEoNxT9XoyX_IsF_y4j8u"
+GOOGLE_DRIVE_FOLDER_ID = "1541hzsET3OMSyc4JKlCdl3HmbK9wmXH3"
 
 
 @task(
@@ -86,7 +86,7 @@ def upload_report(
     """
     start_date = data_interval_start
     end_date = data_interval_end
-    filename = f"Napo_Pet_Premium_Bdx_New_{start_date.year}_{start_date.month}.csv"
+    filename = f"Napo_Pet_Premium_Bdx_New_{start_date.year}_{start_date.month:02d}.csv"
     upload_to_google_drive(
         project_name=GCP_PROJECT_ID,
         gcs_bucket=GCS_BUCKET,
