@@ -3,7 +3,7 @@ from datetime import datetime
 from google.cloud import bigquery
 
 
-def create_msm_sales_view(
+def create_pcw_sales_view(
     project_name: str,
     dataset_name: str,
     src_table: str,

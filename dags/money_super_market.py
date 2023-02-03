@@ -11,10 +11,12 @@ from airflow.utils.task_group import TaskGroup
 from jinja2 import Environment, FileSystemLoader
 
 from dags.workflows.create_bq_external_table import create_external_bq_table
-from dags.workflows.create_bq_view import create_msm_sales_view
+from dags.workflows.create_bq_view import create_pcw_sales_view
 from dags.workflows.export_bq_result_to_gcs import export_query_to_gcs
-from dags.workflows.upload_to_google_drive import file_exists_on_google_drive, \
-    upload_to_google_drive
+from dags.workflows.upload_to_google_drive import (
+    file_exists_on_google_drive,
+    upload_to_google_drive,
+)
 
 JINJA_ENV = Environment(loader=FileSystemLoader("dags/bash/"))
 SFTP_SCRIPT = JINJA_ENV.get_template("sftp_upload.sh")
@@ -122,7 +124,7 @@ def create_weekly_view(data_interval_end: pendulum.datetime = None):
     run_date = data_interval_end
     end_date = run_date.subtract(days=1)
     start_date = pendulum.parse(f"{end_date.year}W{end_date.week_of_year:02d}")
-    create_msm_sales_view(
+    create_pcw_sales_view(
         project_name=GCP_PROJECT_ID,
         dataset_name=BQ_DATASET,
         src_table=DAILY_TABLE,
@@ -206,7 +208,7 @@ def create_monthly_view(data_interval_end: pendulum.datetime = None):
     """
     run_date = data_interval_end
     start_date = run_date.subtract(months=1)
-    create_msm_sales_view(
+    create_pcw_sales_view(
         project_name=GCP_PROJECT_ID,
         dataset_name=BQ_DATASET,
         src_table=DAILY_TABLE,
@@ -266,7 +268,6 @@ def upload_monthly_report(data_interval_end: pendulum.datetime = None):
         gdrive_file_name=f"{report_name}",
         token_file=OAUTH_TOKEN_FILE,
     )
-
 
 
 @dag(
