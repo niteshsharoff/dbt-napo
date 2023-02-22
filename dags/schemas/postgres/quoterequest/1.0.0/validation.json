@@ -14,7 +14,11 @@
       "type": "object"
     },
     "raw_response": {
-      "type": ["array", "object", "string"]
+      "type": [
+        "array",
+        "object",
+        "string"
+      ]
     },
     "created_at": {
       "type": "integer"
@@ -57,6 +61,9 @@
         "null",
         "string"
       ]
+    },
+    "price_elasticity_test": {
+      "type": "boolean"
     }
   },
   "additionalProperties": false
