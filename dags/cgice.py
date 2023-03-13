@@ -1,32 +1,28 @@
 import pendulum
 from airflow.datasets import Dataset
+from airflow.decorators import task
 from airflow.models import Variable
 from airflow.models.dag import dag
 from airflow.operators.empty import EmptyOperator
-from airflow.decorators import task
+from airflow.providers.dbt.cloud.operators.dbt import (
+    DbtCloudRunJobOperator,
+)
 from airflow.utils.edgemodifier import Label
 
-from workflows.upload_to_google_drive import (
+from dags.workflows.create_bq_external_table import create_external_bq_table
+from dags.workflows.upload_to_google_drive import (
     upload_to_google_drive,
     file_exists_on_google_drive,
 )
-from workflows.create_bq_external_table import create_external_bq_table
 
 OAUTH_TOKEN_FILE = Variable.get("OAUTH_CREDENTIALS")
 GCP_PROJECT_ID = Variable.get("GCP_PROJECT_ID")
 GCP_REGION = Variable.get("GCP_REGION")
 GCS_BUCKET = "data-warehouse-harbour"
 
-""" 
-TODO: Check that the new premium report is automatically uploaded to Google Drive 
-on 2023-01-01:
+# https://cloud.getdbt.com/deploy/67538/projects/106847/jobs/235012
+DBT_CLOUD_JOB_ID = 235012
 
-    https://drive.google.com/drive/folders/1DSxToVHiaXdaEoNxT9XoyX_IsF_y4j8u
-    
-Once verified, modify the folder ID to "1541hzsET3OMSyc4JKlCdl3HmbK9wmXH3"
-This corresponds to the GCICE premium report folder on Google Drive.
-
-"""
 GOOGLE_DRIVE_FOLDER_ID = "1541hzsET3OMSyc4JKlCdl3HmbK9wmXH3"
 
 
@@ -108,14 +104,14 @@ def upload_report(
 )
 def cgice_premium_bdx():
     """
-    The cgice_premium_bdx sales report is currently generated on a reporting instance
-    via a Django management command.
+    The cgice_premium_bdx sales report is generated on a reporting instance via a
+    Django management command.
 
     A k8s cronjob is setup on the production cluster to sync monthly reports to GCS at
     01:00 on the first of each month. [0 1 1 * *]
 
-    This Airflow pipeline will automate Big Query table creation and Google Drive
-    upload.
+    This Airflow pipeline will automate Big Query table creation, DBT tests cases and
+    Google Drive upload.
 
     This pipeline is scheduled to run monthly at 02:00 on the first of each month.
     """
@@ -123,11 +119,18 @@ def cgice_premium_bdx():
     no_op = EmptyOperator(task_id="no_op")
 
     t1 = update_bq_table()
-    t2 = upload_branch()
-    t3 = upload_report()
+    t2 = DbtCloudRunJobOperator(
+        task_id="run_dbt_tests",
+        job_id=DBT_CLOUD_JOB_ID,
+        check_interval=10,
+        timeout=300,
+    )
+    t3 = upload_branch()
+    t4 = upload_report()
 
-    report_stub >> t1 >> t2 >> t3
-    t2 >> Label("File exists") >> no_op
+    report_stub >> t1 >> t3 >> t4
+    t1 >> t2
+    t3 >> Label("File exists") >> no_op
 
 
 cgice_premium_bdx()
