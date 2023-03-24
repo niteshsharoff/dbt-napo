@@ -125,7 +125,7 @@ def create_pipeline(
 
 @dag(
     dag_id="policy_service_data_export",
-    start_date=pendulum.datetime(2023, 3, 22, tz="UTC"),
+    start_date=pendulum.datetime(2021, 9, 1, tz="UTC"),
     schedule_interval="@daily",
     catchup=True,
     default_args={"retries": 0},
