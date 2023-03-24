@@ -5,3 +5,4 @@ plugins
 **/__pycache__/
 .idea
 airflow-variables.json
+.kube
