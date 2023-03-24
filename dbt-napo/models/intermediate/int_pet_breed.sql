@@ -1,5 +1,6 @@
 with pet_breeds as (
       select p.pk
+            ,p._petid as pet_id
             ,p.breed_category
             ,p.multipet_number
             ,p.is_neutered
