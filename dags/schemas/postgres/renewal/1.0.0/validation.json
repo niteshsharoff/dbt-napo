@@ -29,6 +29,15 @@
     },
     "new_policy_product_id": {
       "type": "integer"
+    },
+    "new_policy_product_email_id":{
+      "type": ["integer", "null"]
+    },
+    "cancellation_detail": {
+      "type": ["string", "null"]
+    },
+    "cancellation_reason": {
+      "type": ["string", "null"]
     }
   },
   "additionalProperties": false

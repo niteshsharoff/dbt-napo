@@ -36,7 +36,7 @@
   },
   {
     "name":"Insured_DOB",
-    "type":"DATE",
+    "type":"STRING",
     "mode":"NULLABLE"
   },
   {
