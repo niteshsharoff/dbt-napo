@@ -4,7 +4,7 @@ with policies as (
          , b.pk as breed_pk
     from {{ref('int_policy_customer')}} p
     left join {{ref('int_pet_breed')}} b
-    on p.pet = b.pk
+    on p.pet = b.pet_id
 ),
 features as (
 select *
