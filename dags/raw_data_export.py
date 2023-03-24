@@ -140,7 +140,7 @@ def export_policy_service_data():
         ("policy_pet", "raw", "pet", "1.0.0", "change_at"),
         ("policy_breed", "raw", "breed", "1.0.0", None),
         ("policy_subscription", "raw", "subscription", "1.0.0", "modified_date"),
-        ("policy_renewal", "raw", "renewal", "1.1.0", "updated_at"),
+        ("policy_renewal", "raw", "renewal", "1.0.0", "updated_at"),
         ("policy_customer", "raw", "customer", "1.0.0", "change_at"),
         ("auth_user", "raw", "user", "1.0.0", "date_joined"),
         ("policy_product", "raw", "product", "1.0.0", "created_date"),
