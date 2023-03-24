@@ -28,5 +28,9 @@
   {
     "name": "reward",
     "type": "INTEGER"
+  },
+  {
+    "name": "affiliate_channel",
+    "type": "STRING"
   }
 ]
