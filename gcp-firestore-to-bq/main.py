@@ -12,6 +12,11 @@ def main(request):
     app = firebase_admin.initialize_app()
     db = firestore.client()
 
+    def manipulate(x):
+        temp =x.to_dict()
+        temp['id']=x.id
+        return temp
+
     mapping = {
         'user':'users',
         'booking':'bookings',
@@ -24,7 +29,7 @@ def main(request):
 
     for key in mapping:
         temp = list(db.collection('{}'.format(key)).stream())
-        temp_dict = list(map(lambda x: x.to_dict(), temp))
+        temp_dict = list(map(manipulate, temp))
         globals()[f"df_{mapping[key]}"] = pd.DataFrame(temp_dict)
         globals()[f"df_{mapping[key]}"]['_imported_at'] = datetime.now()
 
