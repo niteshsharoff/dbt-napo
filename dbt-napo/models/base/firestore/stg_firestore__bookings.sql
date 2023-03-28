@@ -1,6 +1,6 @@
 with raw as (
     select 
-        ,id
+        id
         ,userId as user_id
         ,sessionid as session_id
         ,parse_datetime('%Y-%m-%d %H:%M',date) as class_date
