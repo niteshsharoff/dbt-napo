@@ -1,6 +1,7 @@
 with a as (
     select 
-        firstName as first_name
+        id
+       ,firstName as first_name
        ,lastName as last_name
        ,email
        ,phone
