@@ -1,7 +1,10 @@
 from datetime import datetime
 
 from google.cloud import bigquery
+from jinja2 import Environment, FileSystemLoader
 
+
+JINJA_ENV = Environment(loader=FileSystemLoader("dags/sql/"))
 
 def create_pcw_sales_view(
     project_name: str,
@@ -117,3 +120,25 @@ def create_bq_view(
         bq_client.create_table(table, exists_ok=True)
     except Exception:
         raise
+
+
+def create_quotezone_sales_view(
+    project_name: str,
+    dataset_name: str,
+    view_name: str,
+    start_date: datetime,
+    end_date: datetime,
+    snapshot_at: datetime,
+) -> None:
+    bq_client = bigquery.Client(project=project_name)
+    dataset_id = "{}.{}".format(project_name, dataset_name)
+    dataset_ref = bq_client.get_dataset(dataset_id)
+    table = bigquery.Table(dataset_ref.table(view_name))
+    table.view_query = JINJA_ENV.get_template("quotezone_sales_report.sql").render(
+            dict(
+                start_date=start_date.strftime("%Y-%m-%d"),
+                end_date=end_date.strftime("%Y-%m-%d"),
+                snapshot_at=snapshot_at.strftime("%Y-%m-%d")
+            )
+        )
+    bq_client.create_table(table, exists_ok=True)
