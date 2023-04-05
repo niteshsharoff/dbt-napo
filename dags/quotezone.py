@@ -1,4 +1,5 @@
 import pendulum
+from airflow.datasets import Dataset
 from airflow.models import Variable
 from airflow.models.dag import dag
 from airflow.operators.python import task
@@ -21,7 +22,7 @@ BQ_DATASET = "reporting"
 MONTHLY_TABLE = "quotezone_sales_report_monthly"
 
 
-@task(task_id="create_view")
+@task(task_id="create_view", outlets=[Dataset(f"reporting.{MONTHLY_TABLE}_*")])
 def create_view(data_interval_end: pendulum.datetime = None):
     """
     This task creates / updates an external Big Query table on top of the generated
@@ -110,7 +111,7 @@ def upload_report(data_interval_end: pendulum.datetime = None):
 @dag(
     dag_id="quotezone",
     start_date=pendulum.datetime(2023, 1, 1, tz="UTC"),
-    schedule_interval="0 0 1 * *",
+    schedule_interval="0 2 1 * *",
     catchup=True,
     default_args={"retries": 0},
     max_active_runs=1,
