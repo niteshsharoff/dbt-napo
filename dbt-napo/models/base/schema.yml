@@ -38,6 +38,7 @@ sources:
       - name: quoterequest
       - name: renewal
       - name: policy
+      - name: customer
   - name: firestore
     schema: firestore
     description: "Puppy Academy Firebase/Firestore data" 

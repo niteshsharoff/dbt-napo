@@ -30,7 +30,7 @@ select
       ,p.last_payment_charge_date
       ,c.year_of_birth
       ,(extract(YEAR from current_date())-cast(c.year_of_birth as numeric)) as customer_age
-      ,c.user
+      ,c.user_id
 from {{ref('int_policy_subscription')}} p
-left join {{ref('stg_postgres__customer')}} c
-on p.customer_id = c.pk
+left join {{ref('stg_raw__customer')}} c
+on p.customer_id = c.customer_id

@@ -13,7 +13,7 @@ select
       ,quote_source_reference
       ,quote_source
       ,cast(cast (first_payment_charge_date as timestamp) as date) as first_payment_charge_date
-      ,user
+      ,user_id
 from {{ref('dim_policy_detail')}}
 where (annual_payment_id is not null or is_subscription_active is not null)
 ),
