@@ -17,7 +17,7 @@ active_policy_existed as (
 ),
 grouped_data as (
     select
-         p.pk
+         p.version_id
         ,p.policy_id
         ,p.quote_id
         ,p.reference_number
@@ -38,13 +38,13 @@ grouped_data as (
         ,p.payment_plan_type
         ,p.monthly_price
         ,p.annual_price
-        ,p.customer
-        ,p.pet
-        ,p.product
+        ,p.customer_id
+        ,p.pet_id
+        ,p.product_id
         ,p.quote_source_reference
         ,p.quote_source
-        ,p.voucher_code
-    FROM {{ref('stg_postgres__policy')}} p
+        ,p.voucher_code_id
+    FROM {{ref('stg_raw__policy')}} p
     left join subscription_table s --only has last subscription
     on p.policy_id = s.policy_id
     left join active_policy_existed c

@@ -18,7 +18,7 @@ using (subscription_id)
 payments_monthly_annual as (
 select a.* except(policy_id)
       ,coalesce(a.policy_id,b.policy_id) as policy_id
-from {{ref('stg_postgres__policy')}} b
+from {{ref('stg_raw__policy')}} b
 right join payments_monthly a
 on b.annual_payment_id = a.payment_id
 )

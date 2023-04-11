@@ -1,5 +1,5 @@
 select 
-       p.pk
+       p.version_id
       ,p.policy_id
       ,p.quote_id
       ,p.reference_number
@@ -20,12 +20,12 @@ select
       ,p.payment_plan_type
       ,p.monthly_price
       ,p.annual_price
-      ,p.customer
-      ,p.pet
-      ,p.product
+      ,p.customer_id
+      ,p.pet_id
+      ,p.product_id
       ,p.quote_source_reference
       ,p.quote_source
-      ,p.voucher_code
+      ,p.voucher_code_id
       ,p.first_payment_charge_date
       ,p.last_payment_charge_date
       ,c.year_of_birth
@@ -33,4 +33,4 @@ select
       ,c.user
 from {{ref('int_policy_subscription')}} p
 left join {{ref('stg_postgres__customer')}} c
-on p.customer = c.pk
+on p.customer_id = c.pk
