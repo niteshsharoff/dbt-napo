@@ -25,9 +25,9 @@ def main(request):
 
     table_mapping = {
         "policy.breed.json":"breed",
-        "policy.customer.json":"customer",
+      #  "policy.customer.json":"customer",
         "policy.pet.json":"pet",
-        "policy.policy.json":"policy",
+     #   "policy.policy.json":"policy",
         "policy.product.json":"product",
         "policy.productline.json":"productline",
         "policy.payment.json":"policy_payment"
@@ -58,7 +58,7 @@ def main(request):
 
     # Subscription table loading
     blob = bucket.blob("{}/{}".format(path_name,'policy.subscription.json'))
-    df = pd.read_json(blob.download_as_string(), lines=True)
+    df = pd.read_json(str(blob.download_as_bytes(),'utf-8'), lines=True)
     df1 = pd.json_normalize(df['fields'])
 
     if 'policyid' in df1.columns:
