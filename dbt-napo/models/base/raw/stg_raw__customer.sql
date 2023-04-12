@@ -17,9 +17,9 @@ select
     ,referred
     ,is_vet
     ,customer_id
-    ,timestamp_millis(change_at) as change_at
     ,change_reason
     ,change_user_id
+    ,timestamp_millis(change_at) as change_at
     ,timestamp_millis(effective_at) as effective_at
     ,cast(run_date as date) as run_date
     ,row_number() over(partition by customer_id order by version_id desc) as row_no 
