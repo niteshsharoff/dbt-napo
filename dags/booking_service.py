@@ -12,20 +12,21 @@ from dags.workflows.export_pg_tables_to_gcs import load_pg_table_to_gcs
 PG_HOST = Variable.get("PG_HOST")
 GCS_BUCKET = Variable.get("GCS_BUCKET")
 GCP_PROJECT_ID = Variable.get("GCP_PROJECT_ID")
+BOOKING_DB_DATABASE = Variable.get("BOOKING_DB_DATABASE")
+BOOKING_DB_USER = Variable.get("BOOKING_DB_USER")
 BOOKING_DB_PASS = Variable.get("BOOKING_DB_PASSWORD")
+BOOKING_DB_PORT = Variable.get("BOOKING_DB_PORT")
 GCP_REGION = Variable.get("GCP_REGION")
 
 
 @task
 def export_pg_table_to_gcs(src_table: str, date_column: str, ds=None):
-    pg_database = "booking"
-    pg_user = "booking"
-    pg_password = BOOKING_DB_PASS
     load_pg_table_to_gcs(
         pg_host=PG_HOST,
-        pg_database=pg_database,
-        pg_user=pg_user,
-        pg_password=pg_password,
+        pg_port=BOOKING_DB_PORT,
+        pg_database=BOOKING_DB_DATABASE,
+        pg_user=BOOKING_DB_USER,
+        pg_password=BOOKING_DB_PASS,
         pg_table=src_table,
         pg_columns=["*"],
         project_id=GCP_PROJECT_ID,
@@ -64,14 +65,13 @@ def create_bq_table(src_table: str, dst_table: str):
 )
 def export_booking_service_data():
     # Booking service database tables to GCS
-    # Booking service database tables to GCS
     t1 = export_pg_table_to_gcs.override(task_id="export_customer_pg_table_to_gcs")(
         "customer", "created_at"
     )
     t2 = create_bq_table.override(task_id="create_customer_bq_table")(
         "customer", "booking_service_customer"
     )
-    
+
     t1 >> t2
 
     # Booking service database tables to BQ
@@ -81,7 +81,8 @@ def export_booking_service_data():
     t4 = create_bq_table.override(task_id="create_booking_bq_table")(
         "booking", "booking_service_booking"
     )
-    
+
     t3 >> t4
+
 
 export_booking_service_data()
