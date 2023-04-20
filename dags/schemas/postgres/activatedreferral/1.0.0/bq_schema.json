@@ -1,0 +1,87 @@
+[
+  {
+    "mode": "REQUIRED",
+    "name": "id",
+    "type": "STRING"
+  },
+  {
+    "mode": "REQUIRED",
+    "name": "referral_code",
+    "type": "STRING"
+  },
+  {
+    "mode": "REQUIRED",
+    "name": "email",
+    "type": "STRING"
+  },
+  {
+    "mode": "REQUIRED",
+    "name": "created_at",
+    "type": "INT64"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "used_at",
+    "type": "INT64"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "referee_id",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "referral_policy_id",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "rewarded",
+    "type": "BOOL"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "validate_at",
+    "type": "INT64"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "referee_reward",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "referrer_reward",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "referee_reward_mailchimp_email_id",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "referrer_reward_mailchimp_email_id",
+    "type": "STRING"
+  },
+  {
+    "mode": "REQUIRED",
+    "name": "reward_type",
+    "type": "STRING"
+  },
+  {
+    "mode": "REQUIRED",
+    "name": "uuid",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "referee_wegift_order_id",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "referrer_wegift_order_id",
+    "type": "STRING"
+  }
+]
