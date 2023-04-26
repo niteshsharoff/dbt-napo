@@ -1,0 +1,57 @@
+[{
+    "mode": "NULLABLE",
+    "name": "id",
+    "type": "STRING"
+}, {
+    "mode": "NULLABLE",
+    "name": "status",
+    "type": "STRING"
+}, {
+    "mode": "NULLABLE",
+    "name": "policy_id",
+    "type": "STRING"
+}, {
+    "mode": "NULLABLE",
+    "name": "master_claim_id",
+    "type": "STRING"
+}, {
+    "mode": "NULLABLE",
+    "name": "date_received",
+    "type": "STRING"
+}, {
+    "mode": "NULLABLE",
+    "name": "onset_date",
+    "type": "STRING"
+}, {
+    "mode": "NULLABLE",
+    "name": "type",
+    "type": "STRING"
+}, {
+    "mode": "NULLABLE",
+    "name": "sub_type",
+    "type": "STRING"
+}, {
+    "mode": "NULLABLE",
+    "name": "paid_amount",
+    "type": "STRING"
+}, {
+    "mode": "NULLABLE",
+    "name": "first_invoice_date",
+    "type": "STRING"
+}, {
+    "mode": "NULLABLE",
+    "name": "decline_reason",
+    "type": "STRING"
+}, {
+    "mode": "NULLABLE",
+    "name": "invoice_amount",
+    "type": "STRING"
+}, {
+    "mode": "NULLABLE",
+    "name": "is_continuation",
+    "type": "STRING"
+}, {
+    "mode": "NULLABLE",
+    "name": "source",
+    "type": "STRING"
+}]

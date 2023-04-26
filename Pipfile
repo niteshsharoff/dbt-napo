@@ -20,6 +20,7 @@ gcsfs = "==2023.1.0"
 jsonschema = "==4.16.0"
 numpy = "==1.21.6"
 importlib-metadata = "==4.13.0"
+pydantic = "==1.10.7"
 
 [dev-packages]
 black = "*"
