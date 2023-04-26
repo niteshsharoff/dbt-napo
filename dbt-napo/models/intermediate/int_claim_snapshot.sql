@@ -1,7 +1,7 @@
 SELECT
   id,
   CAST(policy_id AS INT64) AS policy_id,
-  master_claim_id,
+  trim(master_claim_id) as master_claim_id,
   EXTRACT(DATE FROM TIMESTAMP_MILLIS(CAST(date_received AS INT64))) AS date_received,
   EXTRACT(DATE FROM TIMESTAMP_MILLIS(CAST(onset_date AS INT64))) AS onset_date,
   type,

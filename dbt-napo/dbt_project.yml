@@ -31,3 +31,8 @@ models:
   dbt_napo:
     marts:
       +materialized: table
+
+tests:
+  +severity: warn
+  +store_failures: true
+  

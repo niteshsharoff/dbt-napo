@@ -28,3 +28,4 @@ SELECT
 FROM
   {{ ref ("int_claim_snapshot") }} AS claim
   LEFT JOIN {{ ref ("int_underwriter__policy_snapshot") }} AS policy ON policy.policy_id = claim.policy_id
+    and claim.snapshot_date = cast(policy.snapshot_at as date)
