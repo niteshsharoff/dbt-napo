@@ -1,5 +1,6 @@
 import json
 import logging
+from typing import Optional
 
 from airflow.operators.empty import EmptyOperator
 from billiard.pool import Pool
@@ -14,15 +15,16 @@ from airflow.models.dag import dag
 from google.cloud import storage
 
 from dags.workflows.create_bq_external_table import create_external_bq_table
-from dags.workflows.convert_clickup_claim_tasks_to_claims import convert_clickup_claim_tasks_to_claims
+from dags.workflows.convert_clickup_claim_tasks_to_claims import (
+    convert_clickup_claim_tasks_to_claims,
+)
 
 GCP_PROJECT_ID = Variable.get("GCP_PROJECT_ID")
 GCP_REGION = Variable.get("GCP_REGION")
 GCS_BUCKET = Variable.get("GCS_BUCKET")
 GCS_RAW_FOLDER_PATH = "raw"
 GCS_RAW_FOLDER = "gs://{gcs_bucket}/{gcs_raw_folder_path}".format(
-    gcs_bucket=GCS_BUCKET,
-    gcs_raw_folder_path=GCS_RAW_FOLDER_PATH
+    gcs_bucket=GCS_BUCKET, gcs_raw_folder_path=GCS_RAW_FOLDER_PATH
 )
 
 CLICKUP_API_URL = "https://api.clickup.com/api/v2"
@@ -47,6 +49,7 @@ CLICKUP_JSON_FIELDS = [
     "space",
 ]
 
+
 def _get_tasks(page: int, list_id: str, archived: str = "false"):
     headers = {
         "Content-Type": "application/json",
@@ -67,12 +70,26 @@ def _get_tasks(page: int, list_id: str, archived: str = "false"):
     return data.get("tasks")
 
 
+def _gcs_csv_to_dataframe(
+    gcs_path: str, gcs_folder: str, run_date: str, filename: str
+) -> Optional[pd.DataFrame]:
+    bucket = storage.Client().get_bucket(GCS_BUCKET)
+    filepath = f"{gcs_path}/{gcs_folder}/snapshot_date={run_date}/{filename}"
+    blobpath = f"{GCS_RAW_FOLDER_PATH}/{gcs_folder}/snapshot_date={run_date}/{filename}"
+
+    if bucket.blob(blobpath).exists():
+        return pd.read_csv(filepath)
+
+    logging.info(f"{blobpath} does not exist!")
+    return pd.DataFrame()
+
+
 @task
 def get_snapshot(
-        list_id: str,
-        gcs_folder: str,
-        archived: str = "false",
-        data_interval_end: pendulum.datetime = None,
+    list_id: str,
+    gcs_folder: str,
+    archived: str = "false",
+    data_interval_end: pendulum.datetime = None,
 ):
     pool = Pool()
     max_pages = 200
@@ -127,73 +144,58 @@ def create_clickup_claims_bq_external_table(table_name: str):
         partition_uri=f"{GCS_RAW_FOLDER}/{table_name}",
         source_format="CSV",
         skip_leading_rows=1,
-        partition_key="snapshot_date"
+        partition_key="snapshot_date",
     )
 
-@task
+
+@task(trigger_rule="none_failed")
 def transform_clickup_claims_to_claims(
     data_interval_end: pendulum.datetime = None,
 ):
     run_date = data_interval_end.date()
-    bucket = storage.Client().get_bucket(GCS_BUCKET)
-
-    # Extract vet claims tasks
-    archived_vet_claims_path = "{gcs_raw_folder_path}/clickup_vet_claims_snapshot/snapshot_date={run_date}/archived_claims.csv".format(
-        gcs_raw_folder_path=GCS_RAW_FOLDER_PATH,
-        run_date=run_date
+    archived_vet_claims = _gcs_csv_to_dataframe(
+        gcs_path=GCS_RAW_FOLDER,
+        gcs_folder="clickup_vet_claims_snapshot",
+        run_date=run_date,
+        filename="archived_claims.csv",
     )
-    if bucket.blob(archived_vet_claims_path).exists():
-        logging.info("Archived vet claims exist for run date {run_date}".format(run_date=run_date))
-        vet_clickup_archived_claims_df = pd.read_csv("{gcs_raw_folder}/clickup_vet_claims_snapshot/snapshot_date={run_date}/archived_claims.csv".format(
-            run_date=run_date,
-            gcs_raw_folder=GCS_RAW_FOLDER
-        ))
-
-    else:
-        logging.info("Archived vet claims do not exist for run date {run_date}".format(run_date=run_date))
-        vet_clickup_archived_claims_df = pd.DataFrame()
-    vet_clickup_claims_df = pd.concat([
-        pd.read_csv("{gcs_raw_folder}/clickup_vet_claims_snapshot/snapshot_date={run_date}/claims.csv".format(run_date=data_interval_end.date(), gcs_raw_folder=GCS_RAW_FOLDER)),
-        vet_clickup_archived_claims_df
-    ])
-
-    # Extract customer claims tasks
-    archived_customer_claims_path = "{gcs_raw_folder_path}/clickup_claims_snapshot/snapshot_date={run_date}/archived_claims.csv".format(
-        gcs_raw_folder_path=GCS_RAW_FOLDER_PATH,
-        run_date=run_date
+    vet_claims = _gcs_csv_to_dataframe(
+        gcs_path=GCS_RAW_FOLDER,
+        gcs_folder="clickup_vet_claims_snapshot",
+        run_date=run_date,
+        filename="claims.csv",
     )
-    if bucket.blob(archived_customer_claims_path).exists():
-        logging.info("Archived customer claims exist for run date {run_date}".format(run_date=run_date))
-        customer_clickup_archived_claims_df = pd.read_csv("{gcs_raw_folder}/clickup_claims_snapshot/snapshot_date={run_date}/archived_claims.csv".format(
-            run_date=run_date,
-            gcs_raw_folder=GCS_RAW_FOLDER
-        ))
+    archived_customer_claims = _gcs_csv_to_dataframe(
+        gcs_path=GCS_RAW_FOLDER,
+        gcs_folder="clickup_claims_snapshot",
+        run_date=run_date,
+        filename="archived_claims.csv",
+    )
+    customer_claims = _gcs_csv_to_dataframe(
+        gcs_path=GCS_RAW_FOLDER,
+        gcs_folder="clickup_claims_snapshot",
+        run_date=run_date,
+        filename="claims.csv",
+    )
 
-    else:
-        logging.info("Archived customer claims do not exist for run date {run_date}".format(run_date=run_date))
-        customer_clickup_archived_claims_df = pd.DataFrame()
-    customer_clickup_claims_df = pd.concat([
-        pd.read_csv("{gcs_raw_folder}/clickup_claims_snapshot/snapshot_date={run_date}/claims.csv".format(run_date=data_interval_end.date(), gcs_raw_folder=GCS_RAW_FOLDER)),
-        customer_clickup_archived_claims_df
-    ])
-
+    vet_clickup_claims_df = pd.concat([vet_claims, archived_vet_claims])
+    customer_clickup_claims_df = pd.concat([customer_claims, archived_customer_claims])
 
     # Transform tasks to claims
     claims_df = convert_clickup_claim_tasks_to_claims(
-        customer_clickup_claims_df,
-        vet_clickup_claims_df
+        customer_clickup_claims_df, vet_clickup_claims_df
     )
 
     # Load claims
     claims_df.to_csv(
         "{gcs_raw_folder}/claims_snapshot/snapshot_date={run_date}/claims.csv".format(
-        gcs_raw_folder=GCS_RAW_FOLDER,
-            run_date=data_interval_end.date()
+            gcs_raw_folder=GCS_RAW_FOLDER, run_date=data_interval_end.date()
         ),
         index=False,
     )
 
-@task
+
+@task(trigger_rule="none_failed")
 def create_claims_snapshot_table():
     create_external_bq_table(
         project_name=GCP_PROJECT_ID,
@@ -205,8 +207,9 @@ def create_claims_snapshot_table():
         partition_uri=f"{GCS_RAW_FOLDER}/claims_snapshot",
         source_format="CSV",
         skip_leading_rows=1,
-        partition_key="snapshot_date"
+        partition_key="snapshot_date",
     )
+
 
 @dag(
     dag_id="clickup_claims_export",
