@@ -2,7 +2,7 @@ with grouped_policy_data as (
 select 
     s.*
     ,row_number() over(partition by policy_id order by created_date desc) row_no
-from  {{ref('stg_postgres__subscription')}} s
+from  {{ref('stg_raw__subscription')}} s
 ),
 subscription_table as ( --latest subscription table
     select * except (row_no)
@@ -12,7 +12,7 @@ subscription_table as ( --latest subscription table
 active_policy_existed as (
   select policy_id
     ,countif(active=true) as active_subscription_existed  
-  from  {{ref('stg_postgres__subscription')}}
+  from  {{ref('stg_raw__subscription')}}
   group by policy_id
 ),
 grouped_data as (

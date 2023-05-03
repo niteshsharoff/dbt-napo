@@ -6,7 +6,7 @@ subscriptions as (
   select distinct 
          subscription_id
         ,policy_id 
-from {{ref('stg_postgres__subscription')}}
+from {{ref('stg_raw__subscription')}}
 ),
 payments_monthly as (
 select a.*
