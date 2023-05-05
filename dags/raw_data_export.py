@@ -107,6 +107,7 @@ def create_pipeline(
     dst_table: str,
     version: str,
     pg_date_column: str,
+    load_last_partition_only: bool = False,
 ):
     t1 = export_pg_table_to_gcs(source, src_table, pg_date_column)
     t2 = validate_raw_data(src_table, dst_table, version)
@@ -118,6 +119,7 @@ def create_pipeline(
         dataset_name,
         dst_table,
         version,
+        load_last_partition_only,
     )
 
     return t1 >> t2 >> t3 >> t4
@@ -135,18 +137,19 @@ def create_pipeline(
 )
 def export_policy_service_data():
     # Policy service database tables
-    for pg_table, bq_dataset, bq_table, schema_version, pg_date_column in [
-        ("policy_policy", "raw", "policy", "1.0.0", "change_at"),
-        ("policy_pet", "raw", "pet", "1.0.0", "change_at"),
-        ("policy_breed", "raw", "breed", "1.0.0", None),
-        ("policy_subscription", "raw", "subscription", "1.0.0", "modified_date"),
-        ("policy_renewal", "raw", "renewal", "1.0.0", "updated_at"),
-        ("policy_customer", "raw", "customer", "1.0.0", "change_at"),
-        ("auth_user", "raw", "user", "1.0.0", "date_joined"),
-        ("policy_product", "raw", "product", "1.0.0", "created_date"),
-        ("policy_napobenefitcode", "raw", "napobenefitcode", "1.0.0", None),
-        ("policy_quotewithbenefit", "raw", "quotewithbenefit", "1.0.0", "created_date"),
-        ("policy_activatedreferral", "raw", "activatedreferral", "1.0.0", "created_at"),
+    schema_version = "1.0.0"
+    for (pg_table, bq_dataset, bq_table, pg_date_column, load_last_partition_only) in [
+        ("policy_policy", "raw", "policy", "change_at", False),
+        ("policy_pet", "raw", "pet", "change_at", False),
+        ("policy_breed", "raw", "breed", None, False),
+        ("policy_subscription", "raw", "subscription", "modified_date", False),
+        ("policy_renewal", "raw", "renewal", "updated_at", False),
+        ("policy_customer", "raw", "customer", "change_at", False),
+        ("auth_user", "raw", "user", "date_joined", False),
+        ("policy_product", "raw", "product", None, True),
+        ("policy_napobenefitcode", "raw", "napobenefitcode", None, False),
+        ("policy_quotewithbenefit", "raw", "quotewithbenefit", "created_date", False),
+        ("policy_activatedreferral", "raw", "activatedreferral", "created_at", False),
     ]:
 
         @task_group(group_id=f"policy_{bq_table}")
@@ -158,6 +161,7 @@ def export_policy_service_data():
                 bq_table,
                 schema_version,
                 pg_date_column,
+                load_last_partition_only,
             )
 
         create_policy_pipeline()
