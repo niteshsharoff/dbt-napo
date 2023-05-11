@@ -96,6 +96,7 @@ def convert_clickup_claim_tasks_to_claims(
                 task_custom_fields_lookup.get("Continuation")
             ),
             "source": task.source,
+            "is_archived": task.archived
         }
         claims += [claim]
 

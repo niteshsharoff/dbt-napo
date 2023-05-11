@@ -1,6 +1,7 @@
 import json
 import logging
 from typing import Optional
+from datetime import date
 
 from airflow.operators.empty import EmptyOperator
 from billiard.pool import Pool
@@ -91,6 +92,10 @@ def get_snapshot(
     archived: str = "false",
     data_interval_end: pendulum.datetime = None,
 ):
+    if data_interval_end.date() != date.today():
+        logging.error("Cannot get a snapshot in the past from ClickUp API")
+        raise AirflowFailException
+
     pool = Pool()
     max_pages = 200
     offset = 10

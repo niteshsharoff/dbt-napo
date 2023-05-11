@@ -54,4 +54,8 @@
     "mode": "NULLABLE",
     "name": "source",
     "type": "STRING"
+}, {
+    "mode": "NULLABLE",
+    "name": "is_archived",
+    "type": "BOOLEAN"
 }]
