@@ -27,6 +27,7 @@ GCS_RAW_FOLDER_PATH = "raw"
 GCS_RAW_FOLDER = "gs://{gcs_bucket}/{gcs_raw_folder_path}".format(
     gcs_bucket=GCS_BUCKET, gcs_raw_folder_path=GCS_RAW_FOLDER_PATH
 )
+GCS_DATA_VERSION = '1.0.0'
 
 CLICKUP_API_URL = "https://api.clickup.com/api/v2"
 CLICKUP_API_KEY = Variable.get("CLICKUP_API_KEY")
@@ -127,9 +128,8 @@ def get_snapshot(
         df[column] = df[column].astype(object).apply(json.dumps)
 
     df.to_csv(
-        "{gcs_path}/{gcs_folder}/snapshot_date={run_date}/{filename}.csv".format(
-            gcs_path=GCS_RAW_FOLDER,
-            gcs_folder=gcs_folder,
+        "{gcs_path}/snapshot_date={run_date}/{filename}.csv".format(
+            gcs_path=f"{GCS_RAW_FOLDER}/{gcs_folder}/{GCS_DATA_VERSION}",
             run_date=data_interval_end.date(),
             filename="claims" if archived == "false" else "archived_claims",
         ),
@@ -145,8 +145,8 @@ def create_clickup_claims_bq_external_table(table_name: str):
         dataset_name="raw",
         table_name=table_name,
         schema_path="dags/schemas/raw/clickup_claims/bq_schema.json",
-        source_uri=f"{GCS_RAW_FOLDER}/{table_name}/*",
-        partition_uri=f"{GCS_RAW_FOLDER}/{table_name}",
+        source_uri=f"{GCS_RAW_FOLDER}/{table_name}/{GCS_DATA_VERSION}/*",
+        partition_uri=f"{GCS_RAW_FOLDER}/{table_name}/{GCS_DATA_VERSION}",
         source_format="CSV",
         skip_leading_rows=1,
         partition_key="snapshot_date",
@@ -160,25 +160,25 @@ def transform_clickup_claims_to_claims(
     run_date = data_interval_end.date()
     archived_vet_claims = _gcs_csv_to_dataframe(
         gcs_path=GCS_RAW_FOLDER,
-        gcs_folder="clickup_vet_claims_snapshot",
+        gcs_folder=f"clickup_vet_claims_snapshot/{GCS_DATA_VERSION}",
         run_date=run_date,
         filename="archived_claims.csv",
     )
     vet_claims = _gcs_csv_to_dataframe(
         gcs_path=GCS_RAW_FOLDER,
-        gcs_folder="clickup_vet_claims_snapshot",
+        gcs_folder=f"clickup_vet_claims_snapshot/{GCS_DATA_VERSION}",
         run_date=run_date,
         filename="claims.csv",
     )
     archived_customer_claims = _gcs_csv_to_dataframe(
         gcs_path=GCS_RAW_FOLDER,
-        gcs_folder="clickup_claims_snapshot",
+        gcs_folder=f"clickup_claims_snapshot/{GCS_DATA_VERSION}",
         run_date=run_date,
         filename="archived_claims.csv",
     )
     customer_claims = _gcs_csv_to_dataframe(
         gcs_path=GCS_RAW_FOLDER,
-        gcs_folder="clickup_claims_snapshot",
+        gcs_folder=f"clickup_claims_snapshot/{GCS_DATA_VERSION}",
         run_date=run_date,
         filename="claims.csv",
     )
