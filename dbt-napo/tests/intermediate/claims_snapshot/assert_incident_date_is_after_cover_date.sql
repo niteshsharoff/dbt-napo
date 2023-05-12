@@ -8,8 +8,11 @@
   
   THEN 
     the claim incident date should occur after the policy's cover start date
+
+  Note: Allow if the subtype is neither 'Illness' or 'Accident' and the incident
+        date is after either cover start date
 */
-select *
+select * except(policy_is_renewal, is_covered)
 from (
   select policy_reference_number
     , claim_master_claim_id
@@ -24,7 +27,10 @@ from (
     , case 
         when claim_sub_type = 'Illness' then claim_incident_date >= policy_illness_cover_start_date
         when claim_sub_type = 'Accident' then claim_incident_date >= policy_accident_cover_start_date
-        else false
+        else (
+          claim_incident_date >= policy_illness_cover_start_date 
+          or claim_incident_date >= policy_accident_cover_start_date
+        )
     end as is_covered
     , snapshot_at
   from {{ ref("int_underwriter__policy_claim_snapshot") }}
@@ -32,4 +38,5 @@ from (
 )
 where is_covered is false
   and claim_status = 'accepted'
+  and claim_sub_type is not null
   and policy_is_renewal = false
