@@ -30,11 +30,20 @@ sources:
       - name: yearly_cohort_renewal_summary
   - name: raw
     schema: raw
+    loaded_at_field: cast(run_date as timestamp)
+    freshness:
+      warn_after: {count: 49, period: hour}
+      error_after: {count: 50, period: hour}
+      filter: date_diff(cast(run_date as timestamp), current_timestamp(), day) < 2
     tables: 
       - name: quoterequest
       - name: renewal
       - name: policy
+      - name: product
       - name: customer
+      - name: user
+      - name: pet
+      - name: breed
       - name: subscription
   - name: firestore
     schema: firestore
@@ -44,3 +53,6 @@ sources:
       - name: bookings
       - name: email_reminders
       - name: sms_reminders
+models:
+  - name: stg_raw__policy_ledger
+    description: '{{ doc("stg_raw__policy_ledger") }}'

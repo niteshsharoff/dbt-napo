@@ -1,137 +1,41 @@
-WITH
-  policy AS (
-    SELECT
-      * EXCEPT (
-        start_date,
-        end_date,
-        created_date,
-        cancel_date,
-        accident_cover_start_date,
-        illness_cover_start_date,
-        change_at,
-        effective_at
-      ),
-      EXTRACT(
-        DATE
-        FROM
-          TIMESTAMP_MILLIS(start_date)
-      ) AS start_date,
-      EXTRACT(
-        DATE
-        FROM
-          TIMESTAMP_MILLIS(end_date)
-      ) AS end_date,
-      EXTRACT(
-        DATE
-        FROM
-          TIMESTAMP_MILLIS(created_date)
-      ) AS created_date,
-      EXTRACT(
-        DATE
-        FROM
-          TIMESTAMP_MILLIS(cancel_date)
-      ) AS cancel_date,
-      EXTRACT(
-        DATE
-        FROM
-          TIMESTAMP_MILLIS(accident_cover_start_date)
-      ) AS accident_cover_start_date,
-      EXTRACT(
-        DATE
-        FROM
-          TIMESTAMP_MILLIS(illness_cover_start_date)
-      ) AS illness_cover_start_date,
-      TIMESTAMP_MILLIS(change_at) AS change_at,
-      TIMESTAMP_MILLIS(effective_at) AS effective_from,
-      COALESCE(
-        LEAD(TIMESTAMP_MILLIS(effective_at)) OVER (
-          PARTITION BY
-            policy_id
-          ORDER BY
-            effective_at
-        ),
-        TIMESTAMP("2999-01-01 00:00:00+00")
-      ) AS effective_to
-    FROM
-      raw.policy
-  ),
-  customer AS (
-    SELECT
-      * EXCEPT (
-        created_date,
-        date_of_birth,
-        change_at,
-        effective_at
-      ),
-      EXTRACT(
-        DATE
-        FROM
-          TIMESTAMP_MILLIS(created_date)
-      ) AS created_date,
-      EXTRACT(
-        DATE
-        FROM
-          TIMESTAMP_MILLIS(date_of_birth)
-      ) AS date_of_birth,
-      TIMESTAMP_MILLIS(change_at) AS change_at,
-      TIMESTAMP_MILLIS(effective_at) AS effective_from,
-      COALESCE(
-        LEAD(TIMESTAMP_MILLIS(effective_at)) OVER (
-          PARTITION BY
-            customer_id
-          ORDER BY
-            effective_at
-        ),
-        TIMESTAMP("2999-01-01 00:00:00+00")
-      ) AS effective_to
-    FROM
-      raw.customer
-  ), pet AS (
-    SELECT
-      * EXCEPT (created_date, date_of_birth, change_at, effective_at),
-      EXTRACT(
-        DATE
-        FROM
-          TIMESTAMP_MILLIS(created_date)
-      ) AS created_date,
-      EXTRACT(
-        DATE
-        FROM
-          TIMESTAMP_MILLIS(date_of_birth)
-      ) AS date_of_birth,
-      TIMESTAMP_MILLIS(change_at) AS change_at,
-      TIMESTAMP_MILLIS(effective_at) AS effective_from,
-      COALESCE(
-        LEAD(TIMESTAMP_MILLIS(effective_at)) OVER (
-          PARTITION BY
-            pet_id
-          ORDER BY
-            effective_at
-        ),
-        TIMESTAMP("2999-01-01 00:00:00+00")
-      ) AS effective_to
-    FROM
-      raw.pet
-  )
-SELECT
-  policy,
-  customer,
-  pet,
-  GREATEST(pet.effective_from, row_effective_from) AS row_effective_from,
-  LEAST(pet.effective_to, row_effective_to) AS row_effective_to
-FROM
-  (
-    SELECT
-      policy,
-      customer,
-      GREATEST(customer.effective_from, policy.effective_from) AS row_effective_from,
-      LEAST(customer.effective_to, policy.effective_to) AS row_effective_to
-    FROM
-      policy
-      LEFT JOIN customer ON policy.customer_id = customer.customer_id
-      AND customer.effective_to >= policy.effective_from
-      AND customer.effective_from < policy.effective_to
-  )
-  LEFT JOIN pet ON policy.pet_id = pet.pet_id
-  AND pet.effective_to >= row_effective_from
-  AND pet.effective_from < row_effective_to
+with
+    policy as (select * from {{ ref("stg_raw__policy_ledger") }}),
+    customer as (select * from {{ ref("stg_raw__customer_ledger") }}),
+    pet as (select * from {{ ref("stg_raw__pet_ledger") }}),
+    user as (select * from {{ source("raw", "user") }}),
+    product as (select * from {{ source("raw", "product") }}),
+    breed as (select * from {{ source("raw", "breed") }} where run_date = parse_date('%Y-%m-%d', '{{run_started_at.date()}}')),
+    quote as (select * from {{ source("raw", "quoterequest") }}),
+    joint_history as (
+        select
+            policy,
+            customer,
+            pet,
+            greatest(pet.effective_from, row_effective_from) as row_effective_from,
+            least(pet.effective_to, row_effective_to) as row_effective_to
+        from
+            (
+                select
+                    policy,
+                    customer,
+                    greatest(customer.effective_from, policy.effective_from) as row_effective_from,
+                    least(customer.effective_to, policy.effective_to) as row_effective_to
+                from policy
+                left join
+                    customer
+                    on policy.customer_id = customer.customer_id
+                    and customer.effective_to >= policy.effective_from
+                    and customer.effective_from < policy.effective_to
+            )
+        left join
+            pet
+            on policy.pet_id = pet.pet_id
+            and pet.effective_to >= row_effective_from
+            and pet.effective_from < row_effective_to
+    )
+select quote, policy, product, customer, user, pet, breed, row_effective_from, row_effective_to
+from joint_history j
+left join user on j.customer.user_id = user.id
+left join product on j.policy.product_id = product.id
+left join breed on j.pet.breed_id = breed.id
+left join quote on j.policy.quote_id = quote.quote_request_id

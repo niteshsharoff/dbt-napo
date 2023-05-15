@@ -1,0 +1,15 @@
+id,cancel_reason
+1,Customer Request
+2,Fraud
+3,Cancelled by Provider
+4,Customer Request
+5,Customer Request
+6,Policy cancelled from inception
+7,Customer Request
+8,Customer Request
+9,Customer Request
+10,Customer Request
+11,Alternative cover found elsewhere
+12,Customer Request
+13,No payment received
+14,No payment received

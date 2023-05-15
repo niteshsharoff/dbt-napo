@@ -1,0 +1,16 @@
+id,cancel_reason
+1,customer_request
+2,fraud
+3,cancelled_by_provider
+4,Pet passed away
+5,No longer has pet
+6,Policy bought in error
+7,Declined claim
+8,Poor experience
+9,No inbound phone line
+10,Financial reasons
+11,Found cheaper alternative
+12,Other
+13,Inactive mandate
+14,Failed payment
+15,Mandate pending approval
