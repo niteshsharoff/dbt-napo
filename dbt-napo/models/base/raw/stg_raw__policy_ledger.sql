@@ -12,7 +12,7 @@ with
             ) over (partition by policy_id order by change_at) as _sold_grp,
             sum(
                 case 
-                    when cancel = true 
+                    when cancel = true and prev_cancel = false 
                     then 1 
                     else 0 
                 end
