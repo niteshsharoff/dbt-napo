@@ -8,7 +8,7 @@ from airflow.providers.google.cloud.sensors.gcs import (
 )
 
 from dags.clickup_claims_export import GCS_RAW_FOLDER
-from dags.workflows.common import gcs_parquet_to_dataframe
+from dags.workflows.common import gcs_csv_to_dataframe
 from dags.workflows.convert_clickup_claim_tasks_to_claims import (
     convert_clickup_claim_tasks_to_claims,
 )
@@ -17,7 +17,7 @@ from dags.workflows.create_bq_external_table import create_external_bq_table
 GCP_PROJECT_ID = Variable.get("GCP_PROJECT_ID")
 GCP_REGION = Variable.get("GCP_REGION")
 GCS_BUCKET = Variable.get("GCS_BUCKET")
-GCS_DATA_VERSION = "1.0.1"
+GCS_DATA_VERSION = "1.0.0"
 
 
 @task(trigger_rule="none_failed")
@@ -26,26 +26,26 @@ def transform_clickup_claims_to_claims(
 ):
     run_date = data_interval_end.date()
     vet_claims_folder = f"raw/clickup_vet_claims_snapshot/{GCS_DATA_VERSION}"
-    archived_vet_claims = gcs_parquet_to_dataframe(
+    archived_vet_claims = gcs_csv_to_dataframe(
         gcs_bucket=GCS_BUCKET,
         gcs_folder=f"{vet_claims_folder}/snapshot_date={run_date}",
-        filename="archived_claims.parquet",
+        filename="archived_claims.csv",
     )
-    vet_claims = gcs_parquet_to_dataframe(
+    vet_claims = gcs_csv_to_dataframe(
         gcs_bucket=GCS_BUCKET,
         gcs_folder=f"{vet_claims_folder}/snapshot_date={run_date}",
-        filename="claims.parquet",
+        filename="claims.csv",
     )
     claims_folder = f"raw/clickup_claims_snapshot/{GCS_DATA_VERSION}"
-    archived_customer_claims = gcs_parquet_to_dataframe(
+    archived_customer_claims = gcs_csv_to_dataframe(
         gcs_bucket=GCS_BUCKET,
         gcs_folder=f"{claims_folder}/snapshot_date={run_date}",
-        filename="archived_claims.parquet",
+        filename="archived_claims.csv",
     )
-    customer_claims = gcs_parquet_to_dataframe(
+    customer_claims = gcs_csv_to_dataframe(
         gcs_bucket=GCS_BUCKET,
         gcs_folder=f"{claims_folder}/snapshot_date={run_date}",
-        filename="claims.parquet",
+        filename="claims.csv",
     )
 
     vet_clickup_claims_df = pd.concat([vet_claims, archived_vet_claims])
