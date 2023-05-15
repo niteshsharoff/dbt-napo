@@ -67,5 +67,5 @@ with report as (
   from all_rows r
   left join dbt.lookup_msm_cancel_reason c on r.policy.cancel_reason = c.id
 )
-select *
+select distinct *
 from msm_report
