@@ -46,6 +46,9 @@ def create_external_bq_table(
         bigquery.ExternalSourceFormat.NEWLINE_DELIMITED_JSON
     )
 
+    if source_format == "PARQUET":
+        table_config = bigquery.ExternalConfig(bigquery.ExternalSourceFormat.PARQUET)
+
     if source_format == "CSV":
         table_config = bigquery.ExternalConfig(bigquery.ExternalSourceFormat.CSV)
         csv_options = CSVOptions()

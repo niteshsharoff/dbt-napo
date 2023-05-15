@@ -138,7 +138,7 @@ def create_pipeline(
 def export_policy_service_data():
     # Policy service database tables
     schema_version = "1.0.0"
-    for (pg_table, bq_dataset, bq_table, pg_date_column, load_last_partition_only) in [
+    for pg_table, bq_dataset, bq_table, pg_date_column, load_last_partition_only in [
         ("policy_policy", "raw", "policy", "change_at", False),
         ("policy_pet", "raw", "pet", "change_at", False),
         ("policy_breed", "raw", "breed", None, False),
