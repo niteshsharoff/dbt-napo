@@ -3,7 +3,7 @@
     a snapshot of all claims
     
   WHEN 
-    a claim_sub_type is 'Illness' or 'Accident' and not null
+    a claim_cover_sub_type is 'Illness' or 'Accident' and not null
     and the claim_status is 'accepted'
   
   THEN 
@@ -18,15 +18,15 @@ from (
     , claim_master_claim_id
     , claim_id
     , claim_status
-    , claim_sub_type
+    , claim_cover_sub_type
     , claim_incident_date
     , policy_start_date
     , policy_illness_cover_start_date
     , policy_accident_cover_start_date
     , policy_is_renewal
     , case 
-        when claim_sub_type = 'Illness' then claim_incident_date >= policy_illness_cover_start_date
-        when claim_sub_type = 'Accident' then claim_incident_date >= policy_accident_cover_start_date
+        when claim_cover_sub_type = 'Illness' then claim_incident_date >= policy_illness_cover_start_date
+        when claim_cover_sub_type = 'Accident' then claim_incident_date >= policy_accident_cover_start_date
         else (
           claim_incident_date >= policy_illness_cover_start_date 
           or claim_incident_date >= policy_accident_cover_start_date
@@ -38,5 +38,5 @@ from (
 )
 where is_covered is false
   and claim_status = 'accepted'
-  and claim_sub_type is not null
+  and claim_cover_sub_type is not null
   and policy_is_renewal = false
