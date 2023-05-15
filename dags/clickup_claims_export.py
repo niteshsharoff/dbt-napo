@@ -21,7 +21,7 @@ GCS_RAW_FOLDER_PATH = "raw"
 GCS_RAW_FOLDER = "gs://{gcs_bucket}/{gcs_raw_folder_path}".format(
     gcs_bucket=GCS_BUCKET, gcs_raw_folder_path=GCS_RAW_FOLDER_PATH
 )
-GCS_DATA_VERSION = "1.0.1"
+GCS_DATA_VERSION = "1.0.0"
 
 CLICKUP_API_URL = "https://api.clickup.com/api/v2"
 CLICKUP_API_KEY = Variable.get("CLICKUP_API_KEY")
@@ -107,8 +107,8 @@ def get_snapshot(
     for column in CLICKUP_JSON_FIELDS:
         df[column] = df[column].astype(object).apply(json.dumps)
 
-    df.to_parquet(
-        "{gcs_path}/snapshot_date={run_date}/{filename}.parquet".format(
+    df.to_csv(
+        "{gcs_path}/snapshot_date={run_date}/{filename}.csv".format(
             gcs_path=f"{GCS_RAW_FOLDER}/{gcs_folder}/{GCS_DATA_VERSION}",
             run_date=data_interval_end.date(),
             filename="claims" if archived == "false" else "archived_claims",
