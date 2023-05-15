@@ -85,10 +85,10 @@ def _extract_custom_fields(tasks: pd.DataFrame) -> pd.DataFrame:
             "onset_date": extract_custom_field_value(
                 task_custom_fields_lookup.get("Onset Date")
             ),
-            "type": extract_custom_field_value(
+            "cover_type": extract_custom_field_value(
                 task_custom_fields_lookup.get("cover_type")
             ),
-            "sub_type": extract_custom_field_value(
+            "cover_sub_type": extract_custom_field_value(
                 task_custom_fields_lookup.get("Claim Sub type")
             ),
             "paid_amount": extract_custom_field_value(
@@ -132,6 +132,15 @@ def _extract_custom_fields(tasks: pd.DataFrame) -> pd.DataFrame:
             ),
             "source": task.source,
             "is_archived": task.archived,
+            "last_invoice_date": extract_custom_field_value(
+                task_custom_fields_lookup.get("Last invoice date")
+            ),
+            "closed_date": extract_custom_field_value(
+                task_custom_fields_lookup.get("Closed Date")
+            ),
+            "vet_practice_name": extract_custom_field_value(
+                task_custom_fields_lookup.get("Your vet practice")
+            )
         }
         claims += [claim]
 
@@ -159,8 +168,8 @@ def _merge_columns(claims: pd.DataFrame, tags: pd.DataFrame):
             "master_claim_id",
             "date_received",
             "onset_date",
-            "type",
-            "sub_type",
+            "cover_type",
+            "cover_sub_type",
             "paid_amount",
             "first_invoice_date",
             "decline_reason",
@@ -177,5 +186,8 @@ def _merge_columns(claims: pd.DataFrame, tags: pd.DataFrame):
             "tags",
             "source",
             "is_archived",
+            "last_invoice_date",
+            "closed_date",
+            "vet_practice_name"
         ]
     ]
