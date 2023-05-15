@@ -6,8 +6,8 @@ with
             trim(master_claim_id) as master_claim_id,
             extract(date from timestamp_millis(cast(date_received as int64))) as date_received,
             extract(date from timestamp_millis(cast(onset_date as int64))) as onset_date,
-            type,
-            sub_type,
+            cover_type,
+            cover_sub_type,
             cast(paid_amount as float64) as paid_amount,
             extract(date from timestamp_millis(cast(first_invoice_date as int64))) as first_invoice_date,
             decline_reason,
@@ -33,10 +33,15 @@ with
             json_extract_scalar(tag) as tag,
             source,
             is_archived,
+            extract(date from timestamp_millis(cast(last_invoice_date as int64))) as last_invoice_date,
+            extract(date from timestamp_millis(cast(closed_date as int64))) as closed_date,
+            vet_practice_name,
             snapshot_date,
-        from raw.temp as claim
+        from raw.claims_snapshot as claim
         left join unnest(json_extract_array(tags)) tag
-        where snapshot_date = parse_date('%Y-%m-%d', '2023-05-12')
+        where snapshot_date = parse_date('%Y-%m-%d', '{{run_started_at.date()}}')
+        and not is_archived
+        and policy_id is not null
     ),
     pivot_tag_to_id_grain as (
         select
