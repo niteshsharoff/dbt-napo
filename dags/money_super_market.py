@@ -1,25 +1,29 @@
-import pendulum
+import logging
+
 from airflow.datasets import Dataset
 from airflow.decorators import task
+from airflow.exceptions import AirflowFailException, AirflowSkipException
 from airflow.models import Variable
 from airflow.models.dag import dag
 from airflow.operators.empty import EmptyOperator
+from airflow.providers.dbt.cloud.operators.dbt import DbtCloudRunJobOperator
 from airflow.providers.google.cloud.hooks.compute_ssh import ComputeEngineSSHHook
 from airflow.providers.ssh.operators.ssh import SSHOperator
-from airflow.utils.edgemodifier import Label
 from airflow.utils.task_group import TaskGroup
+from google.cloud import bigquery
 from jinja2 import Environment, FileSystemLoader
 
-from dags.workflows.create_bq_external_table import create_external_bq_table
-from dags.workflows.create_bq_view import create_pcw_sales_view
+from dags.workflows.common import gcs_csv_to_dataframe
+from dags.workflows.create_bq_view import create_bq_view
 from dags.workflows.export_bq_result_to_gcs import export_query_to_gcs
+from dags.workflows.reporting.msm.utils import *
 from dags.workflows.upload_to_google_drive import (
     file_exists_on_google_drive,
     upload_to_google_drive,
 )
 
-JINJA_ENV = Environment(loader=FileSystemLoader("dags/bash/"))
-SFTP_SCRIPT = JINJA_ENV.get_template("sftp_upload.sh")
+JINJA_ENV = Environment(loader=FileSystemLoader("dags/"))
+SFTP_SCRIPT = JINJA_ENV.get_template("bash/sftp_upload.sh")
 SFTP_HOST = Variable.get("MSM_SFTP_HOST")
 SFTP_PORT = Variable.get("MSM_SFTP_PORT")
 SFTP_USER = Variable.get("MSM_SFTP_USER")
@@ -33,10 +37,15 @@ GCS_BUCKET = Variable.get("GCS_BUCKET")
 BASTION_NAME = "ae32-bastion-host"
 BASTION_ZONE = "europe-west2-a"
 BASTION_PROJECT = "ae32-vpc-host"
+
+DBT_CLOUD_JOB_ID = 289269
+
 GOOGLE_DRIVE_MONTHLY_FOLDER_ID = "14KmTbfcFH17UJyZ90KWBAMtMs6WRWDUN"
 GOOGLE_DRIVE_WEEKLY_FOLDER_ID = "1jpWcRUismIBpbDh3_DH0aUCPOWZaiNow"
+
+PARTITION_INTEGRITY_CHECK = JINJA_ENV.get_template("sql/partition_integrity_check.sql")
+MSM_SALES_REPORT_QUERY = JINJA_ENV.get_template("sql/msm_sales_report.sql")
 BQ_DATASET = "reporting"
-DAILY_TABLE = "msm_sales_report_daily"
 WEEKLY_TABLE = "msm_sales_report_weekly"
 MONTHLY_TABLE = "msm_sales_report_monthly"
 
@@ -76,31 +85,9 @@ def sftp_task_wrapper(
             use_oslogin=False,
             use_iap_tunnel=True,
             use_internal_ip=True,
-            expire_time="60m",
+            expire_time=60,
         ),
         command=command,
-    )
-
-
-@task(
-    task_id="create_daily_table",
-    outlets=[Dataset(f"reporting.{DAILY_TABLE}")],
-)
-def create_daily_table():
-    """
-    This task creates an external Big Query table using daily msm sales report
-    partitioned by run date.
-    """
-    create_external_bq_table(
-        project_name=GCP_PROJECT_ID,
-        region=GCP_REGION,
-        dataset_name=BQ_DATASET,
-        table_name=DAILY_TABLE,
-        source_uri=f"gs://{GCS_BUCKET}/tmp/msm/*",
-        partition_uri=f"gs://{GCS_BUCKET}/tmp/msm",
-        source_format="CSV",
-        schema_path="dags/schemas/reporting/msm_sales_report/bq_schema.json",
-        skip_leading_rows=1,
     )
 
 
@@ -121,29 +108,29 @@ def create_weekly_view(data_interval_end: pendulum.datetime = None):
     This task creates a Big Query weekly view on top of the msm_sales_report_daily
     table. The view name is derived from the first day of the reporting period.
     """
-    run_date = data_interval_end
-    end_date = run_date.subtract(days=1)
-    start_date = pendulum.parse(f"{end_date.year}W{end_date.week_of_year:02d}")
-    create_pcw_sales_view(
+    start_date, _, run_date = get_weekly_reporting_period(data_interval_end)
+    create_bq_view(
         project_name=GCP_PROJECT_ID,
         dataset_name=BQ_DATASET,
-        src_table=DAILY_TABLE,
-        view_name=f"{WEEKLY_TABLE}_{start_date.format('YYYYMMDD')}",
-        start_date=start_date,
-        end_date=run_date,
+        view_name=get_weekly_view_name(start_date),
+        view_query=MSM_SALES_REPORT_QUERY.render(
+            dict(
+                start_date=start_date.strftime("%Y-%m-%d"),
+                end_date=run_date.strftime("%Y-%m-%d"),
+                snapshot_at=run_date.strftime("%Y-%m-%d"),
+            )
+        ),
     )
 
 
-@task(task_id="export_weekly_report")
+@task
 def export_weekly_report(data_interval_end: pendulum.datetime = None):
     """
     This task uploads the query results of a weekly view to Cloud Storage.
     """
-    run_date = data_interval_end
-    end_date = run_date.subtract(days=1)
-    start_date = pendulum.parse(f"{end_date.year}W{end_date.week_of_year:02d}")
-    view_name = f"{WEEKLY_TABLE}_{start_date.format('YYYYMMDD')}"
-    gcs_file_name = "Napo_Pet_Weekly_{}.csv".format(end_date.format("YYYYMMDD"))
+    start_date, end_date, run_date = get_weekly_reporting_period(data_interval_end)
+    view_name = get_weekly_view_name(start_date)
+    gcs_file_name = get_weekly_report_name(end_date)
     export_query_to_gcs(
         project_name=GCP_PROJECT_ID,
         query=f"SELECT * FROM `{GCP_PROJECT_ID}.{BQ_DATASET}.{view_name}`",
@@ -157,28 +144,64 @@ def export_weekly_report(data_interval_end: pendulum.datetime = None):
     )
 
 
-@task.branch(task_id="upload_weekly_branch")
-def upload_weekly_branch(data_interval_end: pendulum.datetime = None):
+@task
+def weekly_report_exists_check(data_interval_end: pendulum.datetime = None):
     """
     This task checks if a weekly report already exists on Google Drive.
     """
-    run_date = data_interval_end
-    end_date = run_date.subtract(days=1)
-    report_name = "Napo_Pet_Weekly_{}.csv".format(end_date.format("YYYYMMDD"))
-    if file_exists_on_google_drive(file_name=report_name, token_file=OAUTH_TOKEN_FILE):
-        return "no_op"
+    _, end_date, _ = get_weekly_reporting_period(data_interval_end)
+    report_name = get_weekly_report_name(end_date)
+    if file_exists_on_google_drive(
+        file_name=report_name,
+        token_file=OAUTH_TOKEN_FILE,
+    ):
+        raise AirflowSkipException
 
-    return "sftp_weekly_report"
+
+@task
+def weekly_data_integrity_check(data_interval_end: pendulum.datetime = None):
+    """
+    This task check if the number of partitions present in source tables is the same
+    as the number of days in the reporting period.
+    """
+    start_date, _, run_date = get_weekly_reporting_period(data_interval_end)
+    client = bigquery.Client(project=GCP_PROJECT_ID)
+    query = PARTITION_INTEGRITY_CHECK.render(
+        source_tables=["policy", "customer", "pet"],
+        start_date=start_date,
+        end_date=run_date,
+    )
+    logging.info("Checking source table partition integrity with query: \n" + query)
+    query_job = client.query(query)
+    result = query_job.result()
+    if result.total_rows != 0:
+        raise AirflowFailException
 
 
-@task(task_id="upload_weekly_report")
+@task
+def weekly_report_row_count_check(data_interval_end: pendulum.datetime = None):
+    """
+    This task checks if the report is empty.
+    """
+    _, end_date, run_date = get_weekly_reporting_period(data_interval_end)
+    filename = get_weekly_report_name(end_date)
+    df = gcs_csv_to_dataframe(
+        gcs_bucket=GCS_BUCKET,
+        gcs_folder=f"{BQ_DATASET}/{WEEKLY_TABLE}/run_date={run_date.date()}",
+        filename=filename,
+    )
+    df.head()
+    if df.empty:
+        raise AirflowFailException
+
+
+@task
 def upload_weekly_report(data_interval_end: pendulum.datetime = None):
     """
     This task uploads the weekly report to Google Drive.
     """
-    run_date = data_interval_end
-    end_date = run_date.subtract(days=1)
-    report_name = "Napo_Pet_Weekly_{}.csv".format(end_date.format("YYYYMMDD"))
+    _, end_date, run_date = get_weekly_reporting_period(data_interval_end)
+    report_name = get_weekly_report_name(end_date)
     upload_to_google_drive(
         project_name=GCP_PROJECT_ID,
         gcs_bucket=GCS_BUCKET,
@@ -206,28 +229,29 @@ def create_monthly_view(data_interval_end: pendulum.datetime = None):
     This task creates a Big Query monthly view on top of the msm_sales_report_daily
     table. The view name is derived from the first day of the reporting period.
     """
-    run_date = data_interval_end
-    start_date = run_date.subtract(months=1)
-    create_pcw_sales_view(
+    start_date, _, run_date = get_monthly_reporting_period(data_interval_end)
+    create_bq_view(
         project_name=GCP_PROJECT_ID,
         dataset_name=BQ_DATASET,
-        src_table=DAILY_TABLE,
-        view_name=f"{MONTHLY_TABLE}_{start_date.format('YYYYMMDD')}",
-        start_date=start_date,
-        end_date=run_date,
+        view_name=get_monthly_view_name(start_date),
+        view_query=MSM_SALES_REPORT_QUERY.render(
+            dict(
+                start_date=start_date.strftime("%Y-%m-%d"),
+                end_date=run_date.strftime("%Y-%m-%d"),
+                snapshot_at=run_date.strftime("%Y-%m-%d"),
+            )
+        ),
     )
 
 
-@task(task_id="export_monthly_report")
+@task
 def export_monthly_report(data_interval_end: pendulum.datetime = None):
     """
     This task uploads the query results of a monthly view to Cloud Storage.
     """
-    run_date = data_interval_end
-    start_date = run_date.subtract(months=1)
-    end_date = run_date.subtract(days=1)
+    start_date, end_date, run_date = get_monthly_reporting_period(data_interval_end)
     view_name = f"{MONTHLY_TABLE}_{start_date.format('YYYYMMDD')}"
-    gcs_file_name = "Napo_Pet_Monthly_{}.csv".format(end_date.format("YYYYMMDD"))
+    gcs_file_name = get_monthly_report_name(end_date)
     export_query_to_gcs(
         project_name=GCP_PROJECT_ID,
         query=f"SELECT * FROM `{GCP_PROJECT_ID}.{BQ_DATASET}.{view_name}`",
@@ -241,25 +265,64 @@ def export_monthly_report(data_interval_end: pendulum.datetime = None):
     )
 
 
-@task.branch(task_id="upload_monthly_branch")
-def upload_monthly_branch(data_interval_end: pendulum.datetime = None):
-    run_date = data_interval_end
-    end_date = run_date.subtract(days=1)
-    report_name = "Napo_Pet_Monthly_{}.csv".format(end_date.format("YYYYMMDD"))
-    if file_exists_on_google_drive(file_name=report_name, token_file=OAUTH_TOKEN_FILE):
-        return "no_op"
+@task
+def monthly_report_exists_check(data_interval_end: pendulum.datetime = None):
+    """
+    This task checks if a monthly report already exists on Google Drive.
+    """
+    _, end_date, _ = get_monthly_reporting_period(data_interval_end)
+    report_name = get_monthly_report_name(end_date)
+    if file_exists_on_google_drive(
+        file_name=report_name,
+        token_file=OAUTH_TOKEN_FILE,
+    ):
+        raise AirflowSkipException
 
-    return "sftp_monthly_report"
+
+@task
+def monthly_data_integrity_check(data_interval_end: pendulum.datetime = None):
+    """
+    This task check if the number of partitions present in source tables is the same
+    as the number of days in the reporting period.
+    """
+    start_date, _, run_date = get_monthly_reporting_period(data_interval_end)
+    client = bigquery.Client(project=GCP_PROJECT_ID)
+    query = PARTITION_INTEGRITY_CHECK.render(
+        source_tables=["policy", "customer", "pet"],
+        start_date=start_date,
+        end_date=run_date,
+    )
+    logging.info("Checking partition integrity with query: \n" + query)
+    query_job = client.query(query)
+    result = query_job.result()
+    if result.total_rows != 0:
+        raise AirflowFailException
 
 
-@task(task_id="upload_monthly_report")
+@task
+def monthly_report_row_count_check(data_interval_end: pendulum.datetime = None):
+    """
+    This task checks if the report is empty.
+    """
+    _, end_date, run_date = get_monthly_reporting_period(data_interval_end)
+    filename = get_monthly_report_name(end_date)
+    df = gcs_csv_to_dataframe(
+        gcs_bucket=GCS_BUCKET,
+        gcs_folder=f"{BQ_DATASET}/{MONTHLY_TABLE}/run_date={run_date.date()}",
+        filename=filename,
+    )
+    df.head()
+    if df.empty:
+        raise AirflowFailException
+
+
+@task
 def upload_monthly_report(data_interval_end: pendulum.datetime = None):
     """
     This task uploads the monthly report to Google Drive.
     """
-    run_date = data_interval_end
-    end_date = run_date.subtract(days=1)
-    report_name = "Napo_Pet_Monthly_{}.csv".format(end_date.format("YYYYMMDD"))
+    _, end_date, run_date = get_monthly_reporting_period(data_interval_end)
+    report_name = get_monthly_report_name(end_date)
     upload_to_google_drive(
         project_name=GCP_PROJECT_ID,
         gcs_bucket=GCS_BUCKET,
@@ -273,7 +336,7 @@ def upload_monthly_report(data_interval_end: pendulum.datetime = None):
 @dag(
     dag_id="money_super_market",
     start_date=pendulum.datetime(2022, 11, 30, tz="UTC"),
-    schedule_interval="0 2 * * *",
+    schedule_interval="0 4 * * *",
     catchup=True,
     default_args={"retries": 0},
     max_active_runs=1,
@@ -294,15 +357,21 @@ def money_super_market():
     be skipped unless it's the first day of the week or month.
     """
     run_date = "{{ data_interval_end.date() }}"
-    report_stub = EmptyOperator(task_id="report_stub")
     no_op = EmptyOperator(task_id="no_op", trigger_rule="one_success")
+    # This can get expensive if we run these checks for each PCW individually once they
+    # are all migrated to BQ. Consider moving to a new DBT only DAG and enforce cross
+    # DAG dependencies with ExternalTaskSensor
+    dbt_checks = DbtCloudRunJobOperator(
+        task_id="dbt_checks",
+        job_id=DBT_CLOUD_JOB_ID,
+        check_interval=10,
+        timeout=300,
+    )
 
     is_first_day_of_week = weekly_branch()
     is_first_day_of_month = monthly_branch()
 
     with TaskGroup(group_id="first_of_week", prefix_group_id=False) as weekly_tasks:
-        report_exists_branch = upload_weekly_branch()
-        create_weekly_view() >> export_weekly_report() >> report_exists_branch
         sftp_weekly_report = sftp_task_wrapper(
             task_id="sftp_weekly_report",
             local_dir="msm/weekly",
@@ -313,12 +382,20 @@ def money_super_market():
                 run_date,
             ),
         )
-        report_exists_branch >> sftp_weekly_report >> upload_weekly_report()
-        report_exists_branch >> Label("File exists") >> no_op
+        (
+            create_weekly_view()
+            >> export_weekly_report()
+            >> [
+                dbt_checks,
+                weekly_report_exists_check(),
+                weekly_data_integrity_check(),
+                weekly_report_row_count_check(),
+            ]
+            >> sftp_weekly_report
+            >> upload_weekly_report()
+        )
 
     with TaskGroup(group_id="first_of_month", prefix_group_id=False) as monthly_tasks:
-        report_exists_branch = upload_monthly_branch()
-        create_monthly_view() >> export_monthly_report() >> report_exists_branch
         sftp_monthly_report = sftp_task_wrapper(
             task_id="sftp_monthly_report",
             local_dir="msm/monthly",
@@ -329,12 +406,20 @@ def money_super_market():
                 run_date,
             ),
         )
-        report_exists_branch >> sftp_monthly_report >> upload_monthly_report()
-        report_exists_branch >> Label("File exists") >> no_op
+        (
+            create_monthly_view()
+            >> export_monthly_report()
+            >> [
+                dbt_checks,
+                monthly_report_exists_check(),
+                monthly_data_integrity_check(),
+                monthly_report_row_count_check(),
+            ]
+            >> sftp_monthly_report
+            >> upload_monthly_report()
+        )
 
     # DAG structure
-    report_stub >> create_daily_table() >> [is_first_day_of_week, is_first_day_of_month]
-
     is_first_day_of_week >> weekly_tasks,
     is_first_day_of_week >> no_op
 
