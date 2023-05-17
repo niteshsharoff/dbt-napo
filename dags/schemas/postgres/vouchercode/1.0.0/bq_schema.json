@@ -1,0 +1,37 @@
+[
+  {
+    "mode": "REQUIRED",
+    "name": "id",
+    "type": "STRING"
+  },
+  {
+    "mode": "REQUIRED",
+    "name": "code",
+    "type": "STRING"
+  },
+  {
+    "mode": "REQUIRED",
+    "name": "discount_percentage",
+    "type": "DECIMAL"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "quote_id",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "created_date",
+    "type": "INT64"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "redemption_id",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "affiliate_channel",
+    "type": "STRING"
+  }
+]
