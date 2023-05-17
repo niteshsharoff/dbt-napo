@@ -28,12 +28,12 @@ with
             (
                 select
                     *,
-                    dbt_jeremiah.is_sold(annual_payment_id, subscription_id) as sold,
-                    lead(dbt_jeremiah.is_sold(annual_payment_id, subscription_id)) over (
+                    {{target.schema}}.is_sold(annual_payment_id, subscription_id) as sold,
+                    lead({{target.schema}}.is_sold(annual_payment_id, subscription_id)) over (
                         partition by policy_id order by change_at desc
                     ) as prev_sold,
-                    dbt_jeremiah.is_cancelled(annual_payment_id, subscription_id, cancel_date) as cancel,
-                    lead(dbt_jeremiah.is_cancelled(annual_payment_id, subscription_id, cancel_date)) over (
+                    {{target.schema}}.is_cancelled(annual_payment_id, subscription_id, cancel_date) as cancel,
+                    lead({{target.schema}}.is_cancelled(annual_payment_id, subscription_id, cancel_date)) over (
                         partition by policy_id order by change_at desc
                     ) as prev_cancel
                 from raw.policy
@@ -65,7 +65,7 @@ with
             -- find the transaction time for when a policy is first sold
             first_value(
                 case
-                    when dbt_jeremiah.is_sold(annual_payment_id, subscription_id)
+                    when {{target.schema}}.is_sold(annual_payment_id, subscription_id)
                     then timestamp_millis(effective_at)
                     else null
                 end
@@ -73,7 +73,7 @@ with
             -- find the transaction time for when a policy is last cancelled
             first_value(
                 case
-                    when dbt_jeremiah.is_cancelled(annual_payment_id, subscription_id, cancel_date)
+                    when {{target.schema}}.is_cancelled(annual_payment_id, subscription_id, cancel_date)
                     then timestamp_millis(effective_at)
                     else null
                 end
