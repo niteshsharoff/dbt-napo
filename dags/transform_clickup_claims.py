@@ -4,7 +4,7 @@ from airflow.models import Variable
 from airflow.models.dag import dag
 from airflow.operators.python import task
 from airflow.providers.google.cloud.sensors.gcs import (
-    GCSObjectsWithPrefixExistenceSensor,
+    GCSObjectExistenceSensor,
 )
 
 from dags.clickup_claims_export import GCS_RAW_FOLDER
@@ -95,15 +95,20 @@ def clickup_claims_transform():
     t2 = create_claims_snapshot_table()
     (
         [
-            GCSObjectsWithPrefixExistenceSensor(
-                task_id=f"{folder}_exists_sensor",
+            GCSObjectExistenceSensor(
+                task_id=f"{folder}_{file}",
                 bucket=GCS_BUCKET,
-                prefix=f"raw/{folder}/{GCS_DATA_VERSION}/snapshot_date={run_date}/",
+                object=f"raw/{folder}/{GCS_DATA_VERSION}/snapshot_date={run_date}/{file}",
                 mode="poke",
                 poke_interval=5 * 60,
                 timeout=60 * 60,
             )
-            for folder in ["clickup_claims_snapshot", "clickup_vet_claims_snapshot"]
+            for folder, file in [
+                ("clickup_claims_snapshot", "claims.csv"),
+                ("clickup_claims_snapshot", "archived_claims.csv"),
+                ("clickup_vet_claims_snapshot", "claims.csv"),
+                ("clickup_vet_claims_snapshot", "archived_claims.csv"),
+            ]
         ]
         >> t1
         >> t2
