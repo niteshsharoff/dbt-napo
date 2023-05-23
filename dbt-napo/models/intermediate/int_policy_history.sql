@@ -6,6 +6,7 @@ with
     product as (select * from {{ source("raw", "product") }}),
     breed as (select * from {{ source("raw", "breed") }} where run_date = parse_date('%Y-%m-%d', '{{run_started_at.date()}}')),
     quote as (select * from {{ source("raw", "quoterequest") }}),
+    discount as (select * from {{ ref("int_policy_discount") }}),
     joint_history as (
         select
             policy,
@@ -33,9 +34,19 @@ with
             and pet.effective_to >= row_effective_from
             and pet.effective_from < row_effective_to
     )
-select quote, policy, product, customer, user, pet, breed, row_effective_from, row_effective_to
+select quote
+    , policy
+    , product
+    , customer
+    , user
+    , pet
+    , breed
+    , discount
+    , row_effective_from
+    , row_effective_to
 from joint_history j
 left join user on j.customer.user_id = user.id
 left join product on j.policy.product_id = product.id
 left join breed on j.pet.breed_id = breed.id
 left join quote on j.policy.quote_id = quote.quote_request_id
+left join discount on j.policy.quote_id = discount.quote_id or j.policy.voucher_code_id = discount.voucher_id
