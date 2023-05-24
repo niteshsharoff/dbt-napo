@@ -1,9 +1,6 @@
-resource "google_storage_bucket" "airflow" {
-  name          = "${local.project_id}-airflow"
-  project       = local.project_id
-  location      = "EU"
-  force_destroy = false
-  versioning {
-    enabled = false
-  }
+module "airflow" {
+  source       = "../modules/airflow"
+  project_id   = local.project_id
+  region       = local.region
+  host_network = local.shared_vpc["host_network"]
 }
