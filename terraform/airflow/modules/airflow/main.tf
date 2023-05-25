@@ -10,6 +10,10 @@ resource "google_storage_bucket" "airflow_bucket" {
   }
 }
 
+locals {
+  location = "EU"
+}
+
 # Airflow Database
 module "airflow_db" {
   source = "git@github.com:CharlieNapo/infrastructure.git//terraform/modules/cloud_sql?ref=v1.0.0"
