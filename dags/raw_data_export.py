@@ -150,6 +150,7 @@ def export_policy_service_data():
         ("policy_napobenefitcode", "raw", "napobenefitcode", None, False),
         ("policy_quotewithbenefit", "raw", "quotewithbenefit", "created_date", False),
         ("policy_activatedreferral", "raw", "activatedreferral", "created_at", False),
+        ("policy_vouchercode", "raw", "vouchercode", "created_date", False),
     ]:
 
         @task_group(group_id=f"policy_{bq_table}")
