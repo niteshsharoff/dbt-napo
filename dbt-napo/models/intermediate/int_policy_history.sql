@@ -6,7 +6,7 @@ with
     product as (select * from {{ source("raw", "product") }}),
     breed as (select * from {{ source("raw", "breed") }} where run_date = parse_date('%Y-%m-%d', '{{run_started_at.date()}}')),
     quote as (select * from {{ source("raw", "quoterequest") }}),
-    discount as (select * from {{ ref("int_policy_discount") }}),
+    discount as (select * from {{ ref('stg_raw__vouchercode') }}),
     joint_history as (
         select
             policy,
