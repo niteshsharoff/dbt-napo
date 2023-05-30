@@ -39,14 +39,14 @@ def export_pg_table_to_gcs(src_table: str, date_column: str, ds=None):
 
 
 @task
-def create_bq_table(src_table: str, dst_table: str):
+def create_bq_table(src_table: str, dst_table: str, schema_path: str):
     dataset = "raw"
     create_external_bq_table(
         project_name=GCP_PROJECT_ID,
         region=GCP_REGION,
         dataset_name=dataset,
         table_name=dst_table,
-        schema_path=None,
+        schema_path=schema_path,
         source_uri=f"gs://{GCS_BUCKET}/raw/{src_table}/*",
         partition_uri=f"gs://{GCS_BUCKET}/raw/{src_table}",
         source_format="JSON",
@@ -69,7 +69,9 @@ def export_booking_service_data():
         "customer", "created_at"
     )
     t2 = create_bq_table.override(task_id="create_customer_bq_table")(
-        "customer", "booking_service_customer"
+        "customer",
+        "booking_service_customer",
+        "dags/schemas/raw/booking_service_customer/bq_schema.json",
     )
 
     t1 >> t2
@@ -79,7 +81,9 @@ def export_booking_service_data():
         "booking", "updated_at"
     )
     t4 = create_bq_table.override(task_id="create_booking_bq_table")(
-        "booking", "booking_service_booking"
+        "booking",
+        "booking_service_booking",
+        "dags/schemas/raw/booking_service_booking/bq_schema.json",
     )
 
     t3 >> t4
