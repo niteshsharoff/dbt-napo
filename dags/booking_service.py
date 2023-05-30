@@ -55,7 +55,7 @@ def create_bq_table(src_table: str, dst_table: str):
 
 @dag(
     dag_id="booking_service_data_export",
-    start_date=pendulum.datetime(2023, 4, 9, tz="UTC"),
+    start_date=pendulum.datetime(2022, 8, 15, tz="UTC"),
     schedule_interval="@daily",
     catchup=True,
     default_args={"retries": 0},
