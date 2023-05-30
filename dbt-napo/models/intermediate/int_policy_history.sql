@@ -49,4 +49,4 @@ left join user on j.customer.user_id = user.id
 left join product on j.policy.product_id = product.id
 left join breed on j.pet.breed_id = breed.id
 left join quote on j.policy.quote_id = quote.quote_request_id
-left join discount on j.policy.quote_id = discount.quote_id or j.policy.voucher_code_id = discount.voucher_id
+left join discount on j.policy.voucher_code_id = discount.voucher_id

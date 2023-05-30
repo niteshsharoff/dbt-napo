@@ -44,7 +44,11 @@ create or replace function
     retail_price float64,
     discount_percentage numeric
   ) returns float64 as (
-    round(retail_price / (1 - discount_percentage / 100), 2)
+    case
+      when discount_percentage is not null
+      then round(retail_price / (1 - discount_percentage / 100), 2)
+      else retail_price
+    end
   );
 
 
