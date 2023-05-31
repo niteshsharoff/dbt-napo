@@ -18,7 +18,7 @@ with
             and (row_effective_from != policy.cancelled_at or policy.cancelled_at is null)
             and (
                 {% for mta_fields in [
-                    ["policy", "retail_price"],
+                    ["policy", "annual_retail_price"],
                     ["policy", "accident_cover_start_date"],
                     ["policy", "illness_cover_start_date"],
                     ["policy", "start_date"],

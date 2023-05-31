@@ -9,13 +9,16 @@ with
             , uuid
             , reference_number
             , quote_source
-            , annual_price as retail_price
+            , payment_plan_type
+            , annual_price as annual_retail_price
             , notes
             , accident_cover_start_date
             , illness_cover_start_date
             , start_date
             , end_date
             , cancel_date
+            , cancel_detail
+            , cancel_reason
             , sold_at
             , cancelled_at
             , reinstated_at
@@ -64,7 +67,11 @@ with
             , pet.uuid
             , pet.name
             , pet.date_of_birth
-            , pet.gender
+            , case 
+                when pet.gender = '1' then 'male'
+                when pet.gender = '2' then 'female'
+                else null
+            end as gender
             , pet.size
             , pet.cost
             , pet.is_neutered
@@ -84,9 +91,8 @@ with
     ),
     quote as (
         select quote_request_id as quote_id
-
             , msm_sales_tracking_urn
-            , timestamp_millis(created_at) as quote_at
+            , timestamp_millis(created_at) as created_at
         from {{ source("raw", "quoterequest") }}
     ),
     discount as (
@@ -126,14 +132,13 @@ with
             on policy.pet_id = pet.pet_id
             and pet.effective_to >= row_effective_from
             and pet.effective_from < row_effective_to
-        where policy.reference_number = 'ESS-SID-0031-REN-001'
     ),
     joint_history_with_change_audit as (
         select
-            *,
-            struct(
+            *
+            , struct(
                 {% for mta_fields in [
-                    ["policy", "retail_price"],
+                    ["policy", "annual_retail_price"],
                     ["policy", "accident_cover_start_date"],
                     ["policy", "illness_cover_start_date"],
                     ["policy", "start_date"],
