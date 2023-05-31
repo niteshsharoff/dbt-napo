@@ -1,10 +1,45 @@
 with
     policy as (
-        select * 
+        select policy_id
+            , quote_id
+            , product_id
+            , customer_id
+            , pet_id
+            , voucher_code_id as voucher_id
+            , uuid
+            , reference_number
+            , quote_source
+            , annual_price as retail_price
+            , notes
+            , accident_cover_start_date
+            , illness_cover_start_date
+            , start_date
+            , end_date
+            , cancel_date
+            , sold_at
+            , cancelled_at
+            , reinstated_at
+            , change_reason
+            , effective_from
+            , effective_to
         from {{ ref("stg_raw__policy_ledger") }}
     ),
     product as (
-        select *
+        select id as product_id
+            , reference
+            , name
+            , vet_fee_cover
+            , complementary_treatment_cover
+            , dental_cover
+            , emergency_boarding_cover
+            , third_person_liability_excess
+            , third_person_liability_cover
+            , pet_death_cover
+            , travel_cover
+            , missing_pet_cover
+            , behavioural_treatment_cover
+            , co_pay
+            , excess
         from {{ source("raw", "product") }}
     ),
     customer as (
@@ -18,6 +53,7 @@ with
             , customer.address_region
             , customer.postal_code
             , customer.date_of_birth
+            , customer.change_reason
             , customer.effective_from
             , customer.effective_to
         from {{ ref("stg_raw__customer_ledger") }} customer
@@ -39,6 +75,7 @@ with
             , breed.name as breed_name
             , breed.source as breed_source
             , pet.has_pre_existing_conditions
+            , pet.change_reason
             , pet.effective_from
             , pet.effective_to
         from {{ ref("stg_raw__pet_ledger") }} pet
@@ -46,7 +83,8 @@ with
             on pet.breed_id = breed.id and breed.run_date = parse_date('%Y-%m-%d', '{{run_started_at.date()}}')
     ),
     quote as (
-        select quote_request_id
+        select quote_request_id as quote_id
+
             , msm_sales_tracking_urn
             , timestamp_millis(created_at) as quote_at
         from {{ source("raw", "quoterequest") }}
@@ -94,20 +132,34 @@ with
         select
             *,
             struct(
-                {% for tuple in [
-                    ["policy", "annual_price"], 
-                    ["policy", "pet_id"],
-                    ["policy", "customer_id"],
+                {% for mta_fields in [
+                    ["policy", "retail_price"],
+                    ["policy", "accident_cover_start_date"],
+                    ["policy", "illness_cover_start_date"],
                     ["policy", "start_date"],
                     ["policy", "end_date"],
                     ["policy", "cancel_date"],
+                    ["customer", "first_name"],
+                    ["customer", "last_name"],
+                    ["customer", "email"],
+                    ["customer", "date_of_birth"],
                     ["customer", "postal_code"],
                     ["pet", "name"],
-                    ["pet", "breed_category"],
                     ["pet", "date_of_birth"],
+                    ["pet", "gender"],
+                    ["pet", "size"],
+                    ["pet", "cost"],
+                    ["pet", "is_neutered"],
+                    ["pet", "is_microchipped"],
+                    ["pet", "is_vaccinated"],
+                    ["pet", "species"],
+                    ["pet", "breed_category"],
+                    ["pet", "breed_name"],
+                    ["pet", "breed_source"],
+                    ["pet", "has_pre_existing_conditions"]
                 ] -%}
-                {% set model = tuple[0] -%}
-                {% set column = tuple[1] -%}
+                {% set model = mta_fields[0] -%}
+                {% set column = mta_fields[1] -%}
                 case
                     when {{ model }}.{{ column }} != lag({{ model }}.{{ column }}) over (partition by policy.policy_id order by row_effective_from)
                     or (
@@ -119,24 +171,29 @@ with
                 end as {{ model }}_{{ column }}_changed
                 {%- if not loop.last %}, {% endif %}
                 {% endfor %}
-            ) as mta
+                , policy.change_reason as policy_row_change_reason
+                , customer.change_reason as customer_row_change_reason
+                , pet.change_reason as pet_row_change_reason
+                , policy.effective_from as policy_row_effective_from
+                , policy.effective_to as policy_row_effective_to
+                , customer.effective_from as customer_row_effective_from
+                , customer.effective_to as customer_row_effective_to
+                , pet.effective_from as pet_row_effective_from
+                , pet.effective_to as pet_row_effective_to
+            ) as _audit
         from joint_history
     )
 select
     quote,
-    policy,
+    (select as struct policy.* except(change_reason, effective_from, effective_to)) as policy,
+    (select as struct customer.* except(change_reason, effective_from, effective_to)) as customer,
+    (select as struct pet.* except(change_reason, effective_from, effective_to)) as pet,
     product,
-    customer,
-    -- user,
-    pet,
-    -- breed,
     discount,
-    mta,
+    _audit,
     row_effective_from,
     row_effective_to,
 from joint_history_with_change_audit j
--- left join user on j.customer.user_id = user.id
-left join product on j.policy.product_id = product.id
--- left join breed on j.pet.breed_id = breed.id
-left join quote on j.policy.quote_id = quote.quote_request_id
-left join discount on j.policy.voucher_code_id = discount.voucher_id
+left join product on j.policy.product_id = product.product_id
+left join quote on j.policy.quote_id = quote.quote_id
+left join discount on j.policy.voucher_id = discount.voucher_id

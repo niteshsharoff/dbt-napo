@@ -17,13 +17,37 @@ with
             row_effective_from != policy.sold_at
             and (row_effective_from != policy.cancelled_at or policy.cancelled_at is null)
             and (
-                mta.policy_annual_price_changed
-                or mta.policy_start_date_changed
-                or mta.policy_end_date_changed
-                or mta.customer_postal_code_changed
-                or mta.pet_name_changed
-                or mta.pet_breed_category_changed
-                or mta.pet_date_of_birth_changed
+                {% for mta_fields in [
+                    ["policy", "retail_price"],
+                    ["policy", "accident_cover_start_date"],
+                    ["policy", "illness_cover_start_date"],
+                    ["policy", "start_date"],
+                    ["policy", "end_date"],
+                    ["policy", "cancel_date"],
+                    ["customer", "first_name"],
+                    ["customer", "last_name"],
+                    ["customer", "email"],
+                    ["customer", "date_of_birth"],
+                    ["customer", "postal_code"],
+                    ["pet", "name"],
+                    ["pet", "date_of_birth"],
+                    ["pet", "gender"],
+                    ["pet", "size"],
+                    ["pet", "cost"],
+                    ["pet", "is_neutered"],
+                    ["pet", "is_microchipped"],
+                    ["pet", "is_vaccinated"],
+                    ["pet", "species"],
+                    ["pet", "breed_category"],
+                    ["pet", "breed_name"],
+                    ["pet", "breed_source"],
+                    ["pet", "has_pre_existing_conditions"]
+                ] -%}
+                {% set model = mta_fields[0] -%}
+                {% set column = mta_fields[1] -%}
+                _audit.{{ model }}_{{ column }}_changed
+                {%- if not loop.last %} or{% endif %}
+                {% endfor %}
             )
         )
     ),
@@ -49,17 +73,20 @@ with
         union all select * from renewals
         union all select * from reinstatements
         union all select * from cancelled_reinstatements
+    ),
+    final as (
+        select 
+            transaction_type, 
+            transaction_at,
+            quote,
+            (select as struct policy.* except(quote_id, product_id, customer_id, pet_id, voucher_id)) as policy, 
+            customer, 
+            pet,
+            product,
+            discount
+        from all_transactions t
+        order by transaction_at
     )
-select 
-    transaction_type, 
-    transaction_at, 
-    quote, 
-    policy, 
-    product, 
-    customer, 
-    user, 
-    pet, 
-    breed,
-    mta
-from all_transactions t
-order by transaction_at
+select *
+from final
+
