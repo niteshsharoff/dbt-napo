@@ -3,35 +3,61 @@ with
         select * 
         from {{ ref("stg_raw__policy_ledger") }}
     ),
-    customer as (
-        select * 
-        from {{ ref("stg_raw__customer_ledger") }}
-    ),
-    pet as (
-        select * 
-        from {{ ref("stg_raw__pet_ledger") }}
-    ),
-    user as (
-        select * 
-        from {{ source("raw", "user") }}
-    ),
     product as (
-        select * 
+        select *
         from {{ source("raw", "product") }}
     ),
-    breed as (
-        select *
-        from {{ source("raw", "breed") }}
-        where run_date = parse_date('%Y-%m-%d', '{{run_started_at.date()}}')
+    customer as (
+        select customer.customer_id
+            , customer.uuid
+            , user.first_name
+            , user.last_name
+            , user.email
+            , customer.street_address
+            , customer.address_locality
+            , customer.address_region
+            , customer.postal_code
+            , customer.date_of_birth
+            , customer.effective_from
+            , customer.effective_to
+        from {{ ref("stg_raw__customer_ledger") }} customer
+        left join {{ source("raw", "user") }} user on customer.user_id = user.id
+    ),
+    pet as (
+        select pet.pet_id
+            , pet.uuid
+            , pet.name
+            , pet.date_of_birth
+            , pet.gender
+            , pet.size
+            , pet.cost
+            , pet.is_neutered
+            , pet.is_microchipped
+            , pet.is_vaccinated
+            , pet.species
+            , pet.breed_category
+            , breed.name as breed_name
+            , breed.source as breed_source
+            , pet.has_pre_existing_conditions
+            , pet.effective_from
+            , pet.effective_to
+        from {{ ref("stg_raw__pet_ledger") }} pet
+        left join {{ source("raw", "breed") }} breed 
+            on pet.breed_id = breed.id and breed.run_date = parse_date('%Y-%m-%d', '{{run_started_at.date()}}')
     ),
     quote as (
-        select 
-            quote_request_id, 
-            msm_sales_tracking_urn, 
-            created_at
+        select quote_request_id
+            , msm_sales_tracking_urn
+            , timestamp_millis(created_at) as quote_at
         from {{ source("raw", "quoterequest") }}
     ),
-    discount as (select * from {{ ref("stg_raw__vouchercode") }}),
+    discount as (
+        select voucher_id
+            , voucher_code
+            , discount_percentage
+            , affiliate_channel
+        from {{ ref("stg_raw__vouchercode") }}
+    ),
     joint_history as (
         select
             policy,
@@ -62,7 +88,7 @@ with
             on policy.pet_id = pet.pet_id
             and pet.effective_to >= row_effective_from
             and pet.effective_from < row_effective_to
-        where policy.reference_number = 'ESS-BIN-0011'
+        where policy.reference_number = 'ESS-SID-0031-REN-001'
     ),
     joint_history_with_change_audit as (
         select
@@ -101,16 +127,16 @@ select
     policy,
     product,
     customer,
-    user,
+    -- user,
     pet,
-    breed,
+    -- breed,
     discount,
     mta,
     row_effective_from,
     row_effective_to,
 from joint_history_with_change_audit j
-left join user on j.customer.user_id = user.id
+-- left join user on j.customer.user_id = user.id
 left join product on j.policy.product_id = product.id
-left join breed on j.pet.breed_id = breed.id
+-- left join breed on j.pet.breed_id = breed.id
 left join quote on j.policy.quote_id = quote.quote_request_id
 left join discount on j.policy.voucher_code_id = discount.voucher_id
