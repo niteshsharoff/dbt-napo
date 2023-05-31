@@ -39,4 +39,17 @@ CREATE OR REPLACE FUNCTION
   );
 
 
+create or replace function
+  {{target.schema}}.calculate_premium_price (
+    retail_price float64,
+    discount_percentage numeric
+  ) returns float64 as (
+    case
+      when discount_percentage is not null
+      then round(retail_price / (1 - discount_percentage / 100), 2)
+      else retail_price
+    end
+  );
+
+
 {% endmacro %}
