@@ -1,4 +1,5 @@
 {{ config(
+    materialized='table',
     pre_hook=[
       "{{declare_underwriter_udfs()}}"
     ]
@@ -6,7 +7,7 @@
 WITH
   snapshot_details AS (
     SELECT
-      PARSE_TIMESTAMP('%Y-%m-%d', '{{run_started_at.date()}}') AS snapshot_at
+      TIMESTAMP(DATETIME(2023, 6, 1, 0, 0, 0)) AS snapshot_at
   )
 SELECT
   policy.*,
@@ -35,7 +36,7 @@ LEFT JOIN (
     policy_id,
     SUM(claim_incurred_amount) AS policy_incurred_amount
   FROM
-    {{ ref("int_underwriter__claim_snapshot") }}
+    {{ ref("int_underwriter__claim_snapshot_2023_05") }}
   GROUP BY
     policy_id
 ) AS policy_claim ON
