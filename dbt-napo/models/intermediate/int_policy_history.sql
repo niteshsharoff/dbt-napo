@@ -1,31 +1,33 @@
 with
     policy as (
-        select policy_id
-            , quote_id
-            , product_id
-            , customer_id
-            , pet_id
-            , voucher_code_id as voucher_id
-            , uuid
-            , reference_number
-            , quote_source
-            , payment_plan_type
-            , annual_price as annual_retail_price
-            , notes
-            , accident_cover_start_date
-            , illness_cover_start_date
-            , start_date
-            , end_date
-            , cancel_date
-            , cancel_detail
-            , cancel_reason
-            , sold_at
-            , cancelled_at
-            , reinstated_at
-            , change_reason
-            , effective_from
-            , effective_to
-        from {{ ref("stg_raw__policy_ledger") }}
+        select policy.policy_id
+            , policy.quote_id
+            , policy.product_id
+            , policy.customer_id
+            , policy.pet_id
+            , policy.voucher_code_id as voucher_id
+            , policy.uuid
+            , policy.reference_number
+            , policy.quote_source
+            , policy.payment_plan_type
+            , policy.annual_price as annual_retail_price
+            , policy.notes
+            , policy.accident_cover_start_date
+            , policy.illness_cover_start_date
+            , policy.start_date
+            , policy.end_date
+            , policy.cancel_date
+            , policy.cancel_detail
+            , cancel_mapping.cancel_reason
+            , policy.sold_at
+            , policy.cancelled_at
+            , policy.reinstated_at
+            , policy.change_reason
+            , policy.effective_from
+            , policy.effective_to
+        from {{ ref("stg_raw__policy_ledger") }} policy
+        left join {{ ref("lookup_policy_cancel_reason") }} cancel_mapping
+            on policy.cancel_reason = cancel_mapping.id
     ),
     product as (
         select id as product_id
