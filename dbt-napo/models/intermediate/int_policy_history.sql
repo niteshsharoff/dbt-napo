@@ -116,12 +116,8 @@ with
                 select
                     policy,
                     customer,
-                    greatest(
-                        customer.effective_from, policy.effective_from
-                    ) as row_effective_from,
-                    least(
-                        customer.effective_to, policy.effective_to
-                    ) as row_effective_to
+                    greatest(customer.effective_from, policy.effective_from) as row_effective_from,
+                    least(customer.effective_to, policy.effective_to) as row_effective_to
                 from policy
                 left join
                     customer

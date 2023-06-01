@@ -53,8 +53,13 @@ with
     ),
     renewals as (
         select 'Renewal' as transaction_type, row_effective_from as transaction_at, *
-        from policy_history
-        where row_effective_from = policy.sold_at and policy.quote_source = 'renewal'
+        from policy_history r
+        where policy.quote_source = 'renewal'
+        and row_effective_from = (
+            select min(policy.sold_at)
+            from policy_history
+            where policy.policy_id = r.policy.policy_id 
+        )
     ),
     reinstatements as (
         select 'Reinstatement' as transaction_type, row_effective_from as transaction_at, *
@@ -84,7 +89,7 @@ with
             pet,
             product,
             discount
-        from all_transactions t
+        from all_transactions
         order by transaction_at
     )
 select *
