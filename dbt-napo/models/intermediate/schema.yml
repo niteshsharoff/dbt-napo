@@ -15,3 +15,5 @@ models:
     description: '{{ doc("int_policy_transaction") }}'
   - name: int_claim_snapshot
     description: Normalized claims data
+  - name: int_quote
+    description: Normalized quote  data

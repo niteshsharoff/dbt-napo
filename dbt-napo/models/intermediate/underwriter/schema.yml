@@ -5,5 +5,5 @@ models:
     description: Historic full policy data for finance and pricing reporting
   - name: int_underwriter__policy_snapshot
     description: Snapshotted full policy data for finance and pricing reporting
-  - name: int_underwriter__policy_claim_snapshot
+  - name: int_underwriter__claim_snapshot
     description: Snapshotted full policy and claim data for finance and pricing reporting

@@ -32,9 +32,9 @@ from (
           or claim_incident_date >= policy_accident_cover_start_date
         )
     end as is_covered
-    , snapshot_at
-  from {{ ref("int_underwriter__policy_claim_snapshot") }}
-  where cast(snapshot_at as date) = parse_date('%Y-%m-%d', '{{run_started_at.date()}}')
+    , snapshot_date
+  from {{ ref("int_underwriter__claim_snapshot") }}
+  where snapshot_date = parse_date('%Y-%m-%d', '{{run_started_at.date()}}')
 )
 where is_covered is false
   and claim_status = 'accepted'

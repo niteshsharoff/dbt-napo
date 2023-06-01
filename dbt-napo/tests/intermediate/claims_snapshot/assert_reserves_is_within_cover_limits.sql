@@ -15,13 +15,13 @@ with cumulative_paid_amount_by_cover_snapshot as (
     , claim_source
     , claim_cover_type
     , sum(claim_paid_amount) paid_amount
-    , snapshot_at
-  from {{ ref("int_underwriter__policy_claim_snapshot") }}
-  where cast(snapshot_at as date) = parse_date('%Y-%m-%d', '{{run_started_at.date()}}')
+    , snapshot_date
+  from {{ ref("int_underwriter__claim_snapshot") }}
+  where snapshot_date = parse_date('%Y-%m-%d', '{{run_started_at.date()}}')
   group by policy_uuid
     , claim_source
     , claim_cover_type
-    , snapshot_at
+    , snapshot_date
 ),
 pivot_paid_amount_to_policy_grain as (
   select *
@@ -47,15 +47,15 @@ pivot_paid_amount_to_policy_grain as (
     , c.claim_cover_type
     , c.claim_reserve_amount
     , c.claim_paid_amount
-    , c.product_vet_fee_cover
-    , c.product_complementary_treatment_cover
-    , c.product_dental_cover
-    , c.product_emergency_boarding_cover
-    , c.product_third_person_liability_cover
-    , c.product_pet_death_cover
-    , c.product_travel_cover
-    , c.product_missing_pet_cover
-    , c.product_behavioural_treatment_cover
+    , policy.product_vet_fee_cover
+    , policy.product_complementary_treatment_cover
+    , policy.product_dental_cover
+    , policy.product_emergency_boarding_cover
+    , policy.product_third_person_liability_cover
+    , policy.product_pet_death_cover
+    , policy.product_travel_cover
+    , policy.product_missing_pet_cover
+    , policy.product_behavioural_treatment_cover
     , p.used_vet_fee_cover
     , p.used_complementary_treatment_cover
     , p.used_dental_cover
@@ -65,20 +65,21 @@ pivot_paid_amount_to_policy_grain as (
     , p.used_pet_death_cover
     , p.used_travel_cover
     , p.used_missing_pet_cover
-    , c.snapshot_at
-  from {{ ref("int_underwriter__policy_claim_snapshot") }} c
+    , c.snapshot_date
+  from {{ ref("int_underwriter__claim_snapshot") }} c
   join pivot_paid_amount_to_policy_grain p on c.policy_uuid = p.policy_uuid 
-    and c.snapshot_at = p.snapshot_at
+    and c.snapshot_date = p.snapshot_date
     and c.claim_source = p.claim_source
-  where (claim_cover_type = 'vet_fee_cover' and claim_reserve_amount + p.used_vet_fee_cover > c.product_vet_fee_cover)
-    or (claim_cover_type = 'complementary_treatment_cover' and claim_reserve_amount + p.used_complementary_treatment_cover > c.product_complementary_treatment_cover)
-    or (claim_cover_type = 'dental_cover' and claim_reserve_amount + p.used_dental_cover > c.product_dental_cover)
-    or (claim_cover_type = 'behavioural_treatment_cover' and claim_reserve_amount + p.used_behavioural_treatment_cover > cast(c.product_behavioural_treatment_cover as float64))
-    or (claim_cover_type = 'emergency_boarding_cover' and claim_reserve_amount + p.used_emergency_boarding_cover > c.product_emergency_boarding_cover)
-    or (claim_cover_type = 'third_person_liability_cover' and claim_reserve_amount + p.used_third_person_liability_cover > c.product_third_person_liability_cover)
-    or (claim_cover_type = 'pet_death_cover' and claim_reserve_amount + p.used_pet_death_cover > c.product_pet_death_cover)
-    or (claim_cover_type = 'travel_cover' and claim_reserve_amount + p.used_travel_cover > c.product_travel_cover)
-    or (claim_cover_type = 'missing_pet_cover' and claim_reserve_amount + p.used_missing_pet_cover > c.product_missing_pet_cover)
+  join {{ ref("int_underwriter__policy_snapshot") }} policy on policy.policy_uuid = c.policy_uuid
+  where (claim_cover_type = 'vet_fee_cover' and claim_reserve_amount + p.used_vet_fee_cover > policy.product_vet_fee_cover)
+    or (claim_cover_type = 'complementary_treatment_cover' and claim_reserve_amount + p.used_complementary_treatment_cover > policy.product_complementary_treatment_cover)
+    or (claim_cover_type = 'dental_cover' and claim_reserve_amount + p.used_dental_cover > policy.product_dental_cover)
+    or (claim_cover_type = 'behavioural_treatment_cover' and claim_reserve_amount + p.used_behavioural_treatment_cover > cast(policy.product_behavioural_treatment_cover as float64))
+    or (claim_cover_type = 'emergency_boarding_cover' and claim_reserve_amount + p.used_emergency_boarding_cover > policy.product_emergency_boarding_cover)
+    or (claim_cover_type = 'third_person_liability_cover' and claim_reserve_amount + p.used_third_person_liability_cover > policy.product_third_person_liability_cover)
+    or (claim_cover_type = 'pet_death_cover' and claim_reserve_amount + p.used_pet_death_cover > policy.product_pet_death_cover)
+    or (claim_cover_type = 'travel_cover' and claim_reserve_amount + p.used_travel_cover > policy.product_travel_cover)
+    or (claim_cover_type = 'missing_pet_cover' and claim_reserve_amount + p.used_missing_pet_cover > policy.product_missing_pet_cover)
 )
 select *
 from final
