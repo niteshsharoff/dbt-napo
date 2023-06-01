@@ -1,3 +1,30 @@
+{% set mta_fields = [
+    ["policy", "annual_price"],
+    ["policy", "accident_cover_start_date"],
+    ["policy", "illness_cover_start_date"],
+    ["policy", "start_date"],
+    ["policy", "end_date"],
+    ["policy", "cancel_date"],
+    ["customer", "first_name"],
+    ["customer", "last_name"],
+    ["customer", "email"],
+    ["customer", "date_of_birth"],
+    ["customer", "postal_code"],
+    ["pet", "name"],
+    ["pet", "date_of_birth"],
+    ["pet", "gender"],
+    ["pet", "size"],
+    ["pet", "cost"],
+    ["pet", "is_neutered"],
+    ["pet", "is_microchipped"],
+    ["pet", "is_vaccinated"],
+    ["pet", "species"],
+    ["pet", "breed_category"],
+    ["pet", "breed_name"],
+    ["pet", "breed_source"],
+    ["pet", "has_pre_existing_conditions"]
+] %}
+
 with
     policy_history as (select * from {{ ref("int_policy_history") }}),
     sold_policies as (
@@ -17,34 +44,9 @@ with
             row_effective_from != policy.sold_at
             and (row_effective_from != policy.cancelled_at or policy.cancelled_at is null)
             and (
-                {% for mta_fields in [
-                    ["policy", "annual_retail_price"],
-                    ["policy", "accident_cover_start_date"],
-                    ["policy", "illness_cover_start_date"],
-                    ["policy", "start_date"],
-                    ["policy", "end_date"],
-                    ["policy", "cancel_date"],
-                    ["customer", "first_name"],
-                    ["customer", "last_name"],
-                    ["customer", "email"],
-                    ["customer", "date_of_birth"],
-                    ["customer", "postal_code"],
-                    ["pet", "name"],
-                    ["pet", "date_of_birth"],
-                    ["pet", "gender"],
-                    ["pet", "size"],
-                    ["pet", "cost"],
-                    ["pet", "is_neutered"],
-                    ["pet", "is_microchipped"],
-                    ["pet", "is_vaccinated"],
-                    ["pet", "species"],
-                    ["pet", "breed_category"],
-                    ["pet", "breed_name"],
-                    ["pet", "breed_source"],
-                    ["pet", "has_pre_existing_conditions"]
-                ] -%}
-                {% set model = mta_fields[0] -%}
-                {% set column = mta_fields[1] -%}
+                {% for mta_field in mta_fields -%}
+                {% set model = mta_field[0] -%}
+                {% set column = mta_field[1] -%}
                 _audit.{{ model }}_{{ column }}_changed
                 {%- if not loop.last %} or{% endif %}
                 {% endfor %}

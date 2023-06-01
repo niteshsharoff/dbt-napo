@@ -52,4 +52,14 @@ create or replace function
   );
 
 
+  create or replace function
+    {{target.schema}}.calculate_pro_rata_amount (
+      amount float64,
+      start_date date, 
+      end_date date
+    ) returns float64 as (
+      amount * (greatest(date_diff(end_date, start_date, day), 0) / 365)
+    );
+
+
 {% endmacro %}

@@ -1,3 +1,30 @@
+{% set mta_fields = [
+    ["policy", "annual_price"],
+    ["policy", "accident_cover_start_date"],
+    ["policy", "illness_cover_start_date"],
+    ["policy", "start_date"],
+    ["policy", "end_date"],
+    ["policy", "cancel_date"],
+    ["customer", "first_name"],
+    ["customer", "last_name"],
+    ["customer", "email"],
+    ["customer", "date_of_birth"],
+    ["customer", "postal_code"],
+    ["pet", "name"],
+    ["pet", "date_of_birth"],
+    ["pet", "gender"],
+    ["pet", "size"],
+    ["pet", "cost"],
+    ["pet", "is_neutered"],
+    ["pet", "is_microchipped"],
+    ["pet", "is_vaccinated"],
+    ["pet", "species"],
+    ["pet", "breed_category"],
+    ["pet", "breed_name"],
+    ["pet", "breed_source"],
+    ["pet", "has_pre_existing_conditions"]
+] %}
+
 with
     policy as (
         select policy.policy_id
@@ -10,10 +37,11 @@ with
             , policy.reference_number
             , policy.quote_source
             , policy.payment_plan_type
-            , policy.annual_price as annual_retail_price
+            , policy.annual_price
             , policy.notes
             , policy.accident_cover_start_date
             , policy.illness_cover_start_date
+            , policy.created_date
             , policy.start_date
             , policy.end_date
             , policy.cancel_date
@@ -135,34 +163,9 @@ with
         select
             *
             , struct(
-                {% for mta_fields in [
-                    ["policy", "annual_retail_price"],
-                    ["policy", "accident_cover_start_date"],
-                    ["policy", "illness_cover_start_date"],
-                    ["policy", "start_date"],
-                    ["policy", "end_date"],
-                    ["policy", "cancel_date"],
-                    ["customer", "first_name"],
-                    ["customer", "last_name"],
-                    ["customer", "email"],
-                    ["customer", "date_of_birth"],
-                    ["customer", "postal_code"],
-                    ["pet", "name"],
-                    ["pet", "date_of_birth"],
-                    ["pet", "gender"],
-                    ["pet", "size"],
-                    ["pet", "cost"],
-                    ["pet", "is_neutered"],
-                    ["pet", "is_microchipped"],
-                    ["pet", "is_vaccinated"],
-                    ["pet", "species"],
-                    ["pet", "breed_category"],
-                    ["pet", "breed_name"],
-                    ["pet", "breed_source"],
-                    ["pet", "has_pre_existing_conditions"]
-                ] -%}
-                {% set model = mta_fields[0] -%}
-                {% set column = mta_fields[1] -%}
+                {% for mta_field in mta_fields -%}
+                {% set model = mta_field[0] -%}
+                {% set column = mta_field[1] -%}
                 case
                     when {{ model }}.{{ column }} != lag({{ model }}.{{ column }}) over (partition by policy.policy_id order by row_effective_from)
                     or (
