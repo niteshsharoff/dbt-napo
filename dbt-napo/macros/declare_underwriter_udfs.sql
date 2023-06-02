@@ -51,15 +51,33 @@ create or replace function
     end
   );
 
+  
+create or replace function
+  {{target.schema}}.calculate_retail_price (
+    premium_price float64,
+    discount_percentage numeric
+  ) returns float64 as (
+    case
+      when discount_percentage is not null
+      then round(premium_price * (1 - discount_percentage / 100), 2)
+      else premium_price
+    end
+  );
 
-  create or replace function
-    {{target.schema}}.calculate_pro_rata_amount (
-      amount float64,
-      start_date date, 
-      end_date date
-    ) returns float64 as (
-      amount * (greatest(date_diff(end_date, start_date, day), 0) / 365)
-    );
+
+create or replace function
+  {{target.schema}}.calculate_consumed_amount(
+    amount float64,
+    start_date date, 
+    end_date date,
+    cancel_date date
+  ) returns float64 as (
+    case
+      when date_diff(end_date, start_date, day) > 0
+      then greatest(amount * (date_diff(cancel_date, start_date, day) / date_diff(end_date, start_date, day)), 0)
+      else 0.0
+    end 
+  );
 
 
 {% endmacro %}
