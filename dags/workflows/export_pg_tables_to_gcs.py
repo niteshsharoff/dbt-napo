@@ -4,6 +4,7 @@ from typing import Any, Optional, List, Tuple
 
 import pandas as pd
 import psycopg2
+from airflow.exceptions import AirflowSkipException
 from google.cloud import storage
 from jinja2 import Environment, FileSystemLoader
 
@@ -17,12 +18,14 @@ def query_pg(
     pg_database: str,
     pg_user: str,
     pg_password: str,
+    pg_port: int,
 ) -> Optional[Tuple[List[Any], List[Tuple[Any, ...]]]]:
     with psycopg2.connect(
         host=pg_host,
         database=pg_database,
         user=pg_user,
         password=pg_password,
+        port=pg_port,
     ) as conn:
         with conn.cursor() as cursor:
             cursor.execute(query)
@@ -63,6 +66,7 @@ def load_pg_table_to_gcs(
     start_date: datetime,
     end_date: datetime,
     date_column: str,
+    pg_port: int = 5432,
 ) -> None:
     log = logging.getLogger(__name__)
     column_names, rows = query_pg(
@@ -79,6 +83,7 @@ def load_pg_table_to_gcs(
         pg_database,
         pg_user,
         pg_password,
+        pg_port,
     )
     if rows:
         # Set dataframe dtype=object to prevent pandas from coercing int -> float
@@ -98,3 +103,4 @@ def load_pg_table_to_gcs(
                 run_date=start_date.strftime("%Y-%m-%d"),
             )
         )
+        raise AirflowSkipException

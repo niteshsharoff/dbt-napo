@@ -29,6 +29,7 @@ def create_external_bq_table(
     partition_uri: str,
     source_format: str,
     skip_leading_rows: Optional[int] = 1,
+    partition_key: str = "run_date",
 ) -> None:
     log = logging.getLogger(__name__)
     bq_client = bigquery.Client(project=project_name)
@@ -44,6 +45,9 @@ def create_external_bq_table(
     table_config = bigquery.ExternalConfig(
         bigquery.ExternalSourceFormat.NEWLINE_DELIMITED_JSON
     )
+
+    if source_format == "PARQUET":
+        table_config = bigquery.ExternalConfig(bigquery.ExternalSourceFormat.PARQUET)
 
     if source_format == "CSV":
         table_config = bigquery.ExternalConfig(bigquery.ExternalSourceFormat.CSV)
@@ -78,7 +82,7 @@ def create_external_bq_table(
             table_config.autodetect = False
             table_schema = bq_client.schema_from_json(schema_path)
             # Append run_date partition key to schema if table exists in BQ
-            table_schema.append(bigquery.SchemaField("run_date", "DATE"))
+            table_schema.append(bigquery.SchemaField(partition_key, "DATE"))
             table = bigquery.Table(dataset_ref.table(table_name), schema=table_schema)
         else:
             table = bigquery.Table(dataset_ref.table(table_name))

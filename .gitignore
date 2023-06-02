@@ -6,3 +6,4 @@ plugins
 .idea
 airflow-variables.json
 .kube
+*.ipynb
