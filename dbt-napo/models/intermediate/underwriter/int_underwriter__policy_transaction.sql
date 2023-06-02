@@ -3,15 +3,15 @@
 with
   add_cancel_date_to_reinstatements as (
     select *
-      -- Calculate premium price
+      -- premium price
       , {{ target.schema }}.calculate_premium_price(
           policy.annual_price, discount.discount_percentage
       ) as premium_price
-      -- Discount amount
+      -- discount amount = premium price - retail price
       , {{ target.schema }}.calculate_premium_price(
           policy.annual_price, discount.discount_percentage
       ) - policy.annual_price as discount_amount
-      -- Get cancel date from previous cancellation row for premium calculation
+      -- get cancel date from previous cancellation row for premium calculation
       , case
         when transaction_type = 'Reinstatement'
         then lag(policy.cancel_date) over (partition by policy.reference_number order by transaction_at)
@@ -20,8 +20,8 @@ with
     from {{ ref("int_policy_transaction") }}
   )
   , calculate_premium_position as (
+    -- Pro-rated consumed premium and discount amounts for cancellation events
     select *
-      -- Calculate premium price value based on transaction type
       , case
         when transaction_type = 'Cancellation' 
           or transaction_type = 'Cancel Reinstatement'
@@ -39,37 +39,28 @@ with
     from add_cancel_date_to_reinstatements
   )
   , calculate_differences as (
+    -- Events are sorted based on logical ordering
     select *
       , premium_position - lag(premium_position, 1, 0) over(
         partition by policy.policy_id 
         order by transaction_at
         , case 
-          when transaction_type = 'New Policy' or transaction_type = 'Renewal'
-          then 1
-          when transaction_type = 'MTA'
-          then 2
-          when transaction_type ='Cancellation'
-          then 3
-          when transaction_type = 'Cancellation MTA'
-          then 4
-          when transaction_type = 'Reinstatement'
-          then 5
+          when transaction_type = 'New Policy' or transaction_type = 'Renewal' then 1
+          when transaction_type = 'MTA' then 2
+          when transaction_type ='Cancellation' then 3
+          when transaction_type = 'Cancellation MTA' then 4
+          when transaction_type = 'Reinstatement' then 5
           else 6
         end
       ) as premium_difference
       , discount_position - lag(discount_position, 1, 0) over(
         partition by policy.policy_id order by transaction_at
         , case 
-          when transaction_type = 'New Policy' or transaction_type = 'Renewal'
-          then 1
-          when transaction_type = 'MTA'
-          then 2
-          when transaction_type ='Cancellation'
-          then 3
-          when transaction_type = 'Cancellation MTA'
-          then 4
-          when transaction_type = 'Reinstatement'
-          then 5
+          when transaction_type = 'New Policy' or transaction_type = 'Renewal' then 1
+          when transaction_type = 'MTA' then 2
+          when transaction_type ='Cancellation' then 3
+          when transaction_type = 'Cancellation MTA' then 4
+          when transaction_type = 'Reinstatement' then 5
           else 6
         end
       ) as discount_difference
