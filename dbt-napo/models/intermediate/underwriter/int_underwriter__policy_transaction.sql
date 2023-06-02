@@ -25,12 +25,14 @@ with
       , case
         when transaction_type = 'Cancellation' 
           or transaction_type = 'Cancel Reinstatement'
+          or transaction_type = 'Cancellation MTA'
         then {{ target.schema }}.calculate_consumed_amount(premium_price, policy.start_date, policy.end_date, policy.cancel_date)
         else premium_price
       end as premium_position
       , case
         when transaction_type = 'Cancellation' 
           or transaction_type = 'Cancel Reinstatement'
+          or transaction_type = 'Cancellation MTA'
         then {{ target.schema }}.calculate_consumed_amount(discount_amount, policy.start_date, policy.end_date, policy.cancel_date)
         else discount_amount
       end as discount_position

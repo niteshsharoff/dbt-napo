@@ -59,6 +59,6 @@ FROM
     GROUP BY
       policy_id
   ) AS subscription ON policy.policy_id = subscription.policy_id
-  AND TIMESTAMP_MILLIS(subscription.created_date) <= policy.effective_from
+  AND TIMESTAMP_MILLIS(subscription.created_date) <= _audit.policy_row_effective_from
   LEFT JOIN raw.product ON policy.product_id = product.id
   LEFT JOIN raw.renewal ON policy.policy_id = renewal.new_policy_id
