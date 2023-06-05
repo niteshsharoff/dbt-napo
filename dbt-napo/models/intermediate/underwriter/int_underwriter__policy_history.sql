@@ -69,7 +69,7 @@ SELECT
   pet.is_microchipped AS pet_is_microchipped,
   pet.size AS pet_size,
   pet.breed_category AS pet_breed_category,
-  quote.pricing_model_version AS quote_pricing_model_version,
+  -- quote.pricing_model_version AS quote_pricing_model_version,
   row_effective_from AS effective_from,
   row_effective_to AS effective_to
 FROM

@@ -31,7 +31,11 @@ with
         select 'New Policy' as transaction_type, row_effective_from as transaction_at, *
         from policy_history
         where policy.quote_source != 'renewal' 
-            and row_effective_from = policy.sold_at 
+            and row_effective_from = (
+                select min(policy.sold_at)
+                from policy_history
+                where policy.policy_id = r.policy.policy_id 
+            )
     ),
     first_time_cancellations as (
         select 'Cancellation' as transaction_type, row_effective_from as transaction_at, *
@@ -44,11 +48,11 @@ with
         from policy_history r
         -- TODO: Implement the same logic for new policies
         where policy.quote_source = 'renewal'
-        and row_effective_from = (
-            select min(policy.sold_at)
-            from policy_history
-            where policy.policy_id = r.policy.policy_id 
-        )
+            and row_effective_from = (
+                select min(policy.sold_at)
+                from policy_history
+                where policy.policy_id = r.policy.policy_id 
+            )
     ),
     reinstatements as (
         select 'Reinstatement' as transaction_type, row_effective_from as transaction_at, *

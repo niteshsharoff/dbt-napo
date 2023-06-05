@@ -77,9 +77,7 @@ with
       policy,
       customer,
       pet,
-      product,
-      discount,
-      _audit
+      product
     from calculate_differences
   )
 select *
