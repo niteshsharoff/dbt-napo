@@ -56,7 +56,7 @@ with
         where row_effective_from = policy.reinstated_at
     ),
     cancelled_reinstatements as (
-        select 'Cancel Reinstatement' as transaction_type, row_effective_from as transaction_at, *
+        select 'Cancellation' as transaction_type, row_effective_from as transaction_at, *
         from policy_history
         where row_effective_from = policy.cancelled_at and policy.reinstated_at is not null
     ),

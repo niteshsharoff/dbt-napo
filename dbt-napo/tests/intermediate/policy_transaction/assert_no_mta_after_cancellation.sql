@@ -6,7 +6,7 @@
     we have an MTA record following a cancellation
   
   THEN 
-    the record's transaction type should be 'Cancel'
+    the record's transaction type should be 'Cancellation' or 'Cancellation MTA'
 */
 select *
 from (
@@ -16,4 +16,5 @@ from (
     , lag(transaction_type) over(partition by policy.reference_number order by transaction_at) as prev_transaction_type
   from {{ref('int_underwriter__policy_transaction')}}
 )
-where transaction_type = 'MTA' and prev_transaction_type = 'Cancel'
+where transaction_type = 'MTA' 
+  and (prev_transaction_type = 'Cancellation' or prev_transaction_type = 'Cancellation MTA')
