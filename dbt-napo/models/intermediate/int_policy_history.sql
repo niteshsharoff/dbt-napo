@@ -1,5 +1,6 @@
 {% set MTA_FIELDS = [
     ["policy", "annual_price"],
+    ["policy", "payment_plan_type"],
     ["policy", "accident_cover_start_date"],
     ["policy", "illness_cover_start_date"],
     ["policy", "start_date"],
@@ -168,7 +169,8 @@ with
                 {% set model = mta_field[0] -%}
                 {% set column = mta_field[1] -%}
                 case
-                    when {{ model }}.{{ column }} != lag({{ model }}.{{ column }}) over (partition by policy.policy_id order by row_effective_from)
+                    when {{ model }}.{{ column }} 
+                    != lag({{ model }}.{{ column }}) over (partition by policy.policy_id order by row_effective_from)
                     or (
                         {{ model }}.{{ column }} is not null 
                         and lag({{ model }}.{{ column }}) over (partition by policy.policy_id order by row_effective_from) is null

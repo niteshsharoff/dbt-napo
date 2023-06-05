@@ -17,4 +17,8 @@ from (
   from {{ref('int_underwriter__policy_transaction')}}
 )
 where transaction_type = 'MTA' 
-  and (prev_transaction_type = 'Cancellation' or prev_transaction_type = 'Cancellation MTA')
+  and (
+    prev_transaction_type = 'NTU'
+    or prev_transaction_type = 'Cancellation'
+    or prev_transaction_type = 'Cancellation MTA'
+  )

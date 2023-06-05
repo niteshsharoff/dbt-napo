@@ -1,5 +1,6 @@
 {% set MTA_FIELDS = [
     ["policy", "annual_price"],
+    ["policy", "payment_plan_type"],
     ["policy", "accident_cover_start_date"],
     ["policy", "illness_cover_start_date"],
     ["policy", "start_date"],
@@ -26,7 +27,9 @@
 ] %}
 
 with
-    policy_history as (select * from {{ ref("int_policy_history") }}),
+    policy_history as (
+        select * from {{ ref("int_policy_history") }}
+    ),
     new_policies as (
         select 'New Policy' as transaction_type, row_effective_from as transaction_at, *
         from policy_history r
@@ -37,11 +40,19 @@ with
                 where policy.policy_id = r.policy.policy_id 
             )
     ),
-    first_time_cancellations as (
+    ntus as (
+        select 'NTU' as transaction_type, row_effective_from as transaction_at, *
+        from policy_history
+        where row_effective_from = policy.cancelled_at
+            and policy.reinstated_at is null
+            and date_diff(policy.cancel_date, policy.start_date, day) <= 14
+    ),
+    new_cancellations as (
         select 'Cancellation' as transaction_type, row_effective_from as transaction_at, *
         from policy_history
         where row_effective_from = policy.cancelled_at 
             and policy.reinstated_at is null
+            and date_diff(policy.cancel_date, policy.start_date, day) > 14
     ),
     renewals as (
         select 'Renewal' as transaction_type, row_effective_from as transaction_at, *
@@ -58,7 +69,8 @@ with
         from policy_history
         where row_effective_from = policy.reinstated_at
     ),
-    cancelled_reinstatements as (
+    reinstated_cancellations as (
+        -- TBD: Rename to 'Reinstated Cancellation'?
         select 'Cancellation' as transaction_type, row_effective_from as transaction_at, *
         from policy_history
         where row_effective_from = policy.cancelled_at and policy.reinstated_at is not null
@@ -92,11 +104,12 @@ with
     ),
     all_transactions as (
         select * from new_policies
-        union all select * from first_time_cancellations
+        union all select * from ntus
+        union all select * from new_cancellations
         union all select * from sold_mtas
         union all select * from renewals
         union all select * from reinstatements
-        union all select * from cancelled_reinstatements
+        union all select * from reinstated_cancellations
         union all select * from cancellation_mtas
     ),
     final as (
@@ -104,8 +117,16 @@ with
             transaction_type, 
             transaction_at,
             quote,
-            (select as struct policy.* except(quote_id, product_id, customer_id, pet_id, voucher_id)) as policy, 
-            customer, 
+            (
+                select as struct policy.* except(
+                    quote_id, 
+                    product_id, 
+                    customer_id, 
+                    pet_id, 
+                    voucher_id
+                )
+            ) as policy,
+            customer,
             pet,
             product,
             discount,

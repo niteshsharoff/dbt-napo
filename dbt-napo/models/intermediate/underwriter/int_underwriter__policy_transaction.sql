@@ -26,12 +26,16 @@ with
         when transaction_type = 'Cancellation' 
           or transaction_type = 'Cancellation MTA'
         then {{ target.schema }}.calculate_consumed_amount(premium_price, policy.start_date, policy.end_date, policy.cancel_date)
+        when transaction_type = 'NTU'
+        then 0.0
         else premium_price
       end as premium_position
       , case
         when transaction_type = 'Cancellation' 
           or transaction_type = 'Cancellation MTA'
         then {{ target.schema }}.calculate_consumed_amount(discount_amount, policy.start_date, policy.end_date, policy.cancel_date)
+        when transaction_type = 'NTU'
+        then 0.0
         else discount_amount
       end as discount_position
     from add_cancel_date_to_reinstatements
@@ -45,7 +49,7 @@ with
         , case 
           when transaction_type = 'New Policy' or transaction_type = 'Renewal' then 1
           when transaction_type = 'MTA' then 2
-          when transaction_type ='Cancellation' then 3
+          when transaction_type = 'Cancellation' or transaction_type = 'NTU' then 3
           when transaction_type = 'Cancellation MTA' then 4
           when transaction_type = 'Reinstatement' then 5
           else 6
@@ -56,7 +60,7 @@ with
         , case 
           when transaction_type = 'New Policy' or transaction_type = 'Renewal' then 1
           when transaction_type = 'MTA' then 2
-          when transaction_type ='Cancellation' then 3
+          when transaction_type = 'Cancellation' or transaction_type = 'NTU' then 3
           when transaction_type = 'Cancellation MTA' then 4
           when transaction_type = 'Reinstatement' then 5
           else 6
