@@ -103,7 +103,7 @@ with
         select 
             transaction_type, 
             transaction_at,
-            -- quote,
+            quote,
             (select as struct policy.* except(quote_id, product_id, customer_id, pet_id, voucher_id)) as policy, 
             customer, 
             pet,
