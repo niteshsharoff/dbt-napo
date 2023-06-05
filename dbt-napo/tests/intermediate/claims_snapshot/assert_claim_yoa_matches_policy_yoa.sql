@@ -15,7 +15,7 @@ select policy_reference_number
   , claim_received_date
   , policy_start_date
   , policy_end_date
-  , snapshot_at
-from {{ ref("int_underwriter__policy_claim_snapshot") }} c
-where cast(snapshot_at as date) = parse_date('%Y-%m-%d', '{{run_started_at.date()}}')
+  , snapshot_date
+from {{ ref("int_underwriter__claim_snapshot") }} c
+where snapshot_date = parse_date('%Y-%m-%d', '{{run_started_at.date()}}')
   and (policy_uuid is null or (claim_received_date < policy_start_date and claim_received_date > policy_end_date))

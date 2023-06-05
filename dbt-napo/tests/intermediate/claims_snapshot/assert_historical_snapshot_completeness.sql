@@ -9,15 +9,15 @@
     the claim id should be present in all snapshots following the first snapshot it's reported in
 */
 select *
-  , date_diff(snapshot_at, prev_snapshot_at, day) as diff
+  , date_diff(snapshot_date, prev_snapshot_date, day) as diff
 from (
   select policy_reference_number
     , claim_id
-    , cast(snapshot_at as date) as snapshot_at
-    , min(cast(snapshot_at as date)) over(partition by claim_id) as first_snapshot_at
-    , lag(cast(snapshot_at as date)) over(partition by claim_id order by snapshot_at) as prev_snapshot_at
-  from {{ ref("int_underwriter__policy_claim_snapshot") }}
-  order by snapshot_at
+    , snapshot_date
+    , min(snapshot_date) over(partition by claim_id) as first_snapshot_date
+    , lag(snapshot_date) over(partition by claim_id order by snapshot_date) as prev_snapshot_date
+  from {{ ref("int_underwriter__claim_snapshot") }}
+  order by snapshot_date
 )
-where date_diff(snapshot_at, prev_snapshot_at, day) != 1
-  and snapshot_at != first_snapshot_at
+where date_diff(snapshot_date, prev_snapshot_date, day) != 1
+  and snapshot_date != first_snapshot_date
