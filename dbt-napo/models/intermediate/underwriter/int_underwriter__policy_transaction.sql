@@ -76,7 +76,10 @@ with
       round(discount_difference, 2) as discount_difference,
       policy,
       customer,
-      pet
+      pet,
+      product,
+      discount,
+      _audit
     from calculate_differences
   )
 select *

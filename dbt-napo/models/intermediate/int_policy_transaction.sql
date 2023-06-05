@@ -27,7 +27,7 @@
 
 with
     policy_history as (select * from {{ ref("int_policy_history") }}),
-    sold_policies as (
+    new_policies as (
         select 'New Policy' as transaction_type, row_effective_from as transaction_at, *
         from policy_history
         where policy.quote_source != 'renewal' 
@@ -88,7 +88,7 @@ with
         where policy.cancelled_at is not null and (policy.cancelled_at > policy.reinstated_at)
     ),
     all_transactions as (
-        select * from sold_policies
+        select * from new_policies
         union all select * from first_time_cancellations
         union all select * from sold_mtas
         union all select * from renewals

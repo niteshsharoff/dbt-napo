@@ -37,6 +37,7 @@ with
             , policy.reference_number
             , policy.quote_source
             , policy.payment_plan_type
+            , policy.annual_payment_id
             , policy.annual_price
             , policy.notes
             , policy.accident_cover_start_date
@@ -119,12 +120,12 @@ with
         left join {{ source("raw", "breed") }} breed 
             on pet.breed_id = breed.id and breed.run_date = parse_date('%Y-%m-%d', '{{run_started_at.date()}}')
     ),
-    -- quote as (
-    --     select quote_request_id as quote_id
-    --     , msm_sales_tracking_urn
-    --     , timestamp_millis(created_at) as created_at
-    --     from {{ source("raw", "quoterequest") }}
-    -- ),
+    quote as (
+        select quote_request_id as quote_id
+        , msm_sales_tracking_urn
+        , timestamp_millis(created_at) as created_at
+        from {{ source("raw", "quoterequest") }}
+    ),
     discount as (
         select voucher_id
             , voucher_code
@@ -190,7 +191,7 @@ with
         from joint_history
     )
 select
-    -- quote,
+    quote,
     (select as struct policy.* except(change_reason, effective_from, effective_to)) as policy,
     (select as struct customer.* except(change_reason, effective_from, effective_to)) as customer,
     (select as struct pet.* except(change_reason, effective_from, effective_to)) as pet,
@@ -201,5 +202,5 @@ select
     row_effective_to,
 from joint_history_with_audit j
 left join product on j.policy.product_id = product.product_id
--- left join quote on j.policy.quote_id = quote.quote_id
+left join quote on j.policy.quote_id = quote.quote_id
 left join discount on j.policy.voucher_id = discount.voucher_id

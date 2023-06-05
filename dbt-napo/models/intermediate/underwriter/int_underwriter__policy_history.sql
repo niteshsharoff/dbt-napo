@@ -32,10 +32,16 @@ SELECT
     policy.annual_payment_id IS NOT NULL
     OR subscription.policy_id IS NOT NULL
   ) AS policy_is_purchased,
-  {{target.schema}}.calculate_policy_has_co_pay(pet.age_months) AS policy_has_co_pay,
+  {{target.schema}}.calculate_policy_has_co_pay({{target.schema}}.calculate_age_in_months(pet.date_of_birth, policy.start_date)) AS policy_has_co_pay,
   CASE
-    WHEN {{target.schema}}.calculate_policy_has_co_pay(pet.age_months) IS NULL THEN NULL
-    WHEN {{target.schema}}.calculate_policy_has_co_pay(pet.age_months) IS TRUE THEN product.co_pay
+    WHEN {{target.schema}}.calculate_policy_has_co_pay(
+      {{target.schema}}.calculate_age_in_months(pet.date_of_birth, policy.start_date)
+    ) IS NULL 
+    THEN NULL
+    WHEN {{target.schema}}.calculate_policy_has_co_pay(
+      {{target.schema}}.calculate_age_in_months(pet.date_of_birth, policy.start_date)
+    ) IS TRUE 
+    THEN product.co_pay
     ELSE 0
   END AS policy_co_pay_percent,
   policy.payment_plan_type AS policy_payment_plan_type,
@@ -56,7 +62,7 @@ SELECT
   pet.date_of_birth AS pet_date_of_birth,
   {{target.schema}}.calculate_age_in_years(pet.date_of_birth, policy.start_date) AS pet_age_in_years_at_start_date,
   {{target.schema}}.calculate_age_in_months(pet.date_of_birth, policy.start_date) AS pet_age_in_months_at_start_date,
-  breed.name AS pet_source_breed_name,
+  pet.breed_name AS pet_source_breed_name,
   pet.species AS pet_species,
   pet.gender AS pet_gender_iso_5218,
   pet.is_neutered AS pet_is_neutered,
@@ -77,7 +83,7 @@ FROM
     GROUP BY
       policy_id
   ) AS subscription ON policy.policy_id = subscription.policy_id
-  AND TIMESTAMP_MILLIS(subscription.created_date) <= policy.effective_to
+  AND TIMESTAMP_MILLIS(subscription.created_date) <= _audit.policy_row_effective_to
   LEFT JOIN {{ref("stg_raw__product")}} AS product ON policy.product_id = product.id
   LEFT JOIN raw.renewal ON policy.policy_id = renewal.new_policy_id
   LEFT JOIN {{ ref('postcode_area_region') }} ON postcode_area_region.postcode_area = {{target.schema}}.calculate_postcode_area(customer.postal_code)
