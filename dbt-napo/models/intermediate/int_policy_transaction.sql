@@ -46,7 +46,6 @@ with
     renewals as (
         select 'Renewal' as transaction_type, row_effective_from as transaction_at, *
         from policy_history r
-        -- TODO: Implement the same logic for new policies
         where policy.quote_source = 'renewal'
             and row_effective_from = (
                 select min(policy.sold_at)
