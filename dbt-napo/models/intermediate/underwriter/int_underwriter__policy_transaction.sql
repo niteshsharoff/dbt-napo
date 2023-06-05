@@ -72,7 +72,6 @@ with
       transaction_type,
       round(premium_price, 2) as premium_price,
       round(discount_amount, 2) as discount_amount,
-      policy.annual_price as retail_price,
       round(premium_position, 2) as premium_position,
       round(discount_position, 2) as discount_position, 
       round(premium_difference, 2) as premium_difference,

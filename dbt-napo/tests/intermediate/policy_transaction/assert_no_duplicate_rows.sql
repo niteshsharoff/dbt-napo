@@ -8,12 +8,12 @@
   THEN 
     there should be no duplicate records
 */
--- select transaction_date
---   , transaction_type
---   , policy_reference_number
---   , count(*) as row_count
--- from {{ref('policy_transaction_fixtures')}}
--- group by transaction_date
---   , transaction_type
---   , policy_reference_number
--- having row_count > 1
+select transaction_at
+  , transaction_type
+  , policy.reference_number
+  , count(*) as row_count
+from {{ref('int_underwriter__policy_transaction')}}
+group by transaction_at
+  , transaction_type
+  , policy.reference_number
+having row_count > 1
