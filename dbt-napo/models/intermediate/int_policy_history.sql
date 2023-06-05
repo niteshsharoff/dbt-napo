@@ -1,4 +1,4 @@
-{% set mta_fields = [
+{% set MTA_FIELDS = [
     ["policy", "annual_price"],
     ["policy", "accident_cover_start_date"],
     ["policy", "illness_cover_start_date"],
@@ -164,7 +164,7 @@ with
         select
             *
             , struct(
-                {% for mta_field in mta_fields -%}
+                {% for mta_field in MTA_FIELDS -%}
                 {% set model = mta_field[0] -%}
                 {% set column = mta_field[1] -%}
                 case

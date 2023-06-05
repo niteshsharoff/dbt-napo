@@ -1,4 +1,4 @@
-{% set mta_fields = [
+{% set MTA_FIELDS = [
     ["policy", "annual_price"],
     ["policy", "accident_cover_start_date"],
     ["policy", "illness_cover_start_date"],
@@ -29,7 +29,7 @@ with
     policy_history as (select * from {{ ref("int_policy_history") }}),
     new_policies as (
         select 'New Policy' as transaction_type, row_effective_from as transaction_at, *
-        from policy_history
+        from policy_history r
         where policy.quote_source != 'renewal' 
             and row_effective_from = (
                 select min(policy.sold_at)
@@ -71,7 +71,7 @@ with
             and (row_effective_from != policy.cancelled_at or policy.cancelled_at is null)
             and (row_effective_from != policy.reinstated_at or policy.reinstated_at is null)
             and (
-                {% for mta_field in mta_fields -%}
+                {% for mta_field in MTA_FIELDS -%}
                 {% set model = mta_field[0] -%}
                 {% set column = mta_field[1] -%}
                 _audit.{{ model }}_{{ column }}_changed
