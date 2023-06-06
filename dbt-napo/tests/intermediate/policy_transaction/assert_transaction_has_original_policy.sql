@@ -9,7 +9,7 @@
     they should all be attributable to a new policy or renewal
 */
 select policy.reference_number
-from dbt_jeremiahmai.int_underwriter__policy_transaction
+from {{ref('int_underwriter__policy_transaction')}}
 where policy.reference_number not in (
   select distinct(policy.reference_number) as reference_number
   from {{ref('int_underwriter__policy_transaction')}}
