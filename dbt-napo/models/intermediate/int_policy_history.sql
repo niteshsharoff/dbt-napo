@@ -34,9 +34,11 @@ with
             , policy.customer_id
             , policy.pet_id
             , policy.voucher_code_id as voucher_id
+            , original_policy.original_policy_id
             , policy.uuid
             , policy.reference_number
             , policy.quote_source
+            , original_policy.original_quote_source
             , policy.payment_plan_type
             , policy.annual_payment_id
             , policy.annual_price
@@ -56,8 +58,10 @@ with
             , policy.effective_from
             , policy.effective_to
         from {{ ref("stg_raw__policy_ledger") }} policy
-        left join {{ ref("lookup_policy_cancel_reason") }} cancel_mapping
+        left join {{ ref("lookup_policy_cancel_reason") }} cancel_mapping 
             on policy.cancel_reason = cancel_mapping.id
+        left join {{ ref("int_original_policy") }} original_policy
+            on policy.policy_id = original_policy.policy_id
     ),
     product as (
         select id as product_id
