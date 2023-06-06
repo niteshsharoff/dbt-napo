@@ -126,10 +126,11 @@ with
             on pet.breed_id = breed.id and breed.run_date = parse_date('%Y-%m-%d', '{{run_started_at.date()}}')
     ),
     quote as (
-        select quote_request_id as quote_id
+        select quote_id
+        , pricing_model_version
         , msm_sales_tracking_urn
         , timestamp_millis(created_at) as created_at
-        from {{ source("raw", "quoterequest") }}
+        from {{ ref("int_quote") }}
     ),
     discount as (
         select voucher_id
