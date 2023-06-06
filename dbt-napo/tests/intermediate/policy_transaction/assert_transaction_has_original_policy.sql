@@ -3,7 +3,7 @@
     a table of policy transactions
     
   WHEN 
-    we have MTA, Cancellations or Reinstatements transactions
+    we have any transaction type
   
   THEN 
     they should all be attributable to a new policy or renewal

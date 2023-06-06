@@ -68,21 +68,24 @@ with
       ) as discount_difference
     from calculate_premium_position
   )
-  , final as (
+  , add_underwriter_dimension as (
     select
-      transaction_at,
-      transaction_type,
-      round(premium_price, 2) as premium_price,
-      round(discount_amount, 2) as discount_amount,
-      round(premium_position, 2) as premium_position,
-      round(discount_position, 2) as discount_position,
-      round(premium_difference, 2) as premium_difference,
-      round(discount_difference, 2) as discount_difference,
-      policy,
-      customer,
-      pet,
-      product
+      transaction_at
+      , transaction_type
+      , struct(
+        round(premium_price, 2) as premium_price,
+        round(discount_amount, 2) as discount_amount,
+        round(premium_position, 2) as premium_position,
+        round(discount_position, 2) as discount_position,
+        round(premium_difference, 2) as premium_difference,
+        round(discount_difference, 2) as discount_difference
+      ) as underwriter,
+      , policy
+      , customer
+      , pet
+      , product
+      -- , _audit
     from calculate_differences
   )
 select *
-from final
+from add_underwriter_dimension

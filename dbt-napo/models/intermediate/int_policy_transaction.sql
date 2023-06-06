@@ -70,7 +70,6 @@ with
         where row_effective_from = policy.reinstated_at
     ),
     reinstated_cancellations as (
-        -- TBD: Rename to 'Reinstated Cancellation'?
         select 'Cancellation' as transaction_type, row_effective_from as transaction_at, *
         from policy_history
         where row_effective_from = policy.cancelled_at and policy.reinstated_at is not null
@@ -100,7 +99,8 @@ with
     cancellation_mtas as (
         select 'Cancellation MTA' as transaction_type, row_effective_from as transaction_at, *
         from all_mtas
-        where policy.cancelled_at is not null and (policy.cancelled_at > policy.reinstated_at)
+        where policy.cancelled_at is not null 
+            and ((policy.cancelled_at > policy.reinstated_at) or (policy.reinstated_at is null))
     ),
     all_transactions as (
         select * from new_policies
@@ -116,7 +116,7 @@ with
         select 
             transaction_type, 
             transaction_at,
-            quote,
+            -- quote,
             (
                 select as struct policy.* except(
                     quote_id, 
