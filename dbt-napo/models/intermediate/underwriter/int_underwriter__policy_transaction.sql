@@ -1,7 +1,7 @@
 {{ config(pre_hook=["{{declare_underwriter_udfs()}}"]) }}
 
 with
-  add_cancel_date_to_reinstatements as (
+  calculate_premium_price as (
     select *
       -- premium price
       , {{ target.schema }}.calculate_premium_price(
@@ -11,7 +11,7 @@ with
       , {{ target.schema }}.calculate_premium_price(
           policy.annual_price, discount.discount_percentage
       ) - policy.annual_price as discount_amount
-      -- get cancel date from previous cancellation row for premium calculation
+      -- get cancel date for premium calculation
       , case
         when transaction_type = 'Reinstatement'
         then lag(policy.cancel_date) over (partition by policy.reference_number order by transaction_at)
@@ -20,7 +20,7 @@ with
     from {{ ref("int_policy_transaction") }}
   )
   , calculate_premium_position as (
-    -- Pro-rated consumed premium and discount amounts for cancellation events
+    -- pro-rated consumed premium and discount amounts for cancellation events
     select *
       , case
         when transaction_type = 'Cancellation' 
@@ -38,10 +38,10 @@ with
         then 0.0
         else discount_amount
       end as discount_position
-    from add_cancel_date_to_reinstatements
+    from calculate_premium_price
   )
   , calculate_differences as (
-    -- Events are sorted based on logical ordering
+    -- events are sorted based by logical ordering
     select *
       , premium_position - lag(premium_position, 1, 0) over(
         partition by policy.policy_id 
