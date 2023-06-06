@@ -33,6 +33,9 @@ models:
   dbt_napo:
     marts:
       +materialized: table
+    intermediate:
+      int_policy_history:
+        +materialized: table
 
 tests:
   +severity: warn
