@@ -73,13 +73,13 @@ with
       transaction_at
       , transaction_type
       , struct(
-        round(premium_price, 2) as premium_price,
-        round(discount_amount, 2) as discount_amount,
-        round(premium_position, 2) as premium_position,
-        round(discount_position, 2) as discount_position,
-        round(premium_difference, 2) as premium_difference,
-        round(discount_difference, 2) as discount_difference
-      ) as underwriter,
+        cast(round(premium_price, 2) as numeric) as premium_price,
+        cast(round(discount_amount, 2) as numeric) as discount_amount,
+        cast(round(premium_position, 2) as numeric) as premium_position,
+        cast(round(discount_position, 2) as numeric) as discount_position,
+        cast(round(premium_difference, 2) as numeric) as premium_difference,
+        cast(round(discount_difference, 2) as numeric) as discount_difference
+      ) as underwriter
       , policy
       , customer
       , pet
