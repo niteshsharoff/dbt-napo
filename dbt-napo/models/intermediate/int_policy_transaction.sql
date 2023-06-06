@@ -116,7 +116,7 @@ with
         select 
             transaction_type, 
             transaction_at,
-            -- quote,
+            quote,
             (
                 select as struct policy.* except(
                     quote_id, 
