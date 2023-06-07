@@ -35,14 +35,10 @@ LEFT JOIN (
   SELECT
     policy_id,
     COALESCE(SUM(claim_incurred_amount), 0) AS policy_incurred_amount,
-    COUNTIF(claim_cover_type = 'vet_fee_cover' AND claim_cover_sub_type = 'Accident') AS policy_n_vet_fee_accident_claims,
-    COUNTIF(claim_cover_type = 'vet_fee_cover' AND claim_cover_sub_type = 'Illness') AS policy_n_vet_fee_illness_claims,
-    COUNT(DISTINCT(IF(claim_cover_type = 'vet_fee_cover' AND claim_cover_sub_type = 'Accident', claim_master_claim_id, NULL))) AS policy_n_vet_fee_accident_master_claims,
-    COUNT(DISTINCT(IF(claim_cover_type = 'vet_fee_cover' AND claim_cover_sub_type = 'Illness', claim_master_claim_id, NULL))) AS policy_n_vet_fee_illness_master_claims,
     SUM(IF(claim_cover_type = 'vet_fee_cover' AND claim_cover_sub_type = 'Accident', claim_paid_amount, 0)) AS policy_vet_fee_accident_paid_amount,
     SUM(IF(claim_cover_type = 'vet_fee_cover' AND claim_cover_sub_type = 'Illness', claim_paid_amount, 0)) AS policy_vet_fee_illness_paid_amount
   FROM
-    {{ ref("int_underwriter__claim_snapshot") }}
+    {{ ref("int_underwriter__claim_snapshot_2023_05") }}
   GROUP BY
     policy_id
 ) AS policy_claim ON
