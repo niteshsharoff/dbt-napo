@@ -22,7 +22,8 @@ with recursive
     from find_original_policy_id r
     left join raw.policy p on p.policy_id = r.old_policy_id
   )
-select new_policy_id as policy_id
+select distinct 
+  new_policy_id as policy_id
   , policy_year
   , old_policy_id as original_policy_id
   , quote_source as original_quote_source
