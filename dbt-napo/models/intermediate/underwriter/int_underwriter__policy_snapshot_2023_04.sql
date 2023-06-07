@@ -27,14 +27,16 @@ SELECT
     policy_cancel_date, 
     EXTRACT(DATE FROM snapshot_at)
   ) AS policy_gross_earned_premium,
-  COALESCE(policy_incurred_amount, 0) AS policy_incurred_amount
+  policy_claim.* EXCEPT (policy_id)
 FROM
   {{ ref ("int_underwriter__policy_history") }} AS policy,
   snapshot_details
 LEFT JOIN (
   SELECT
     policy_id,
-    SUM(claim_incurred_amount) AS policy_incurred_amount
+    COALESCE(SUM(claim_incurred_amount), 0) AS policy_incurred_amount,
+    SUM(IF(claim_cover_type = 'vet_fee_cover' AND claim_cover_sub_type = 'Accident', claim_paid_amount, 0)) AS policy_vet_fee_accident_paid_amount,
+    SUM(IF(claim_cover_type = 'vet_fee_cover' AND claim_cover_sub_type = 'Illness', claim_paid_amount, 0)) AS policy_vet_fee_illness_paid_amount
   FROM
     {{ ref("int_underwriter__claim_snapshot_2023_04") }}
   GROUP BY
