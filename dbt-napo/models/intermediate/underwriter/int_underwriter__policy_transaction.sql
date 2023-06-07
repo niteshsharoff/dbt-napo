@@ -41,7 +41,7 @@ with
     from calculate_premium_price
   )
   , calculate_differences as (
-    -- events are sorted based by logical ordering
+    -- event ordering when they have the same transaction_at timestamp
     select *
       , premium_position - lag(premium_position, 1, 0) over(
         partition by policy.policy_id 
