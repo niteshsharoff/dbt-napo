@@ -9,6 +9,6 @@
     we expect the row count to be <= 1
 */
 select policy.reference_number, transaction_type, count(*) as row_count
-from {{ref('int_underwriter__policy_transaction')}}
+from {{ref('fct_policy_transaction')}}
 group by policy.reference_number, transaction_type
 having (transaction_type = 'New Policy' or transaction_type = 'Renewal') and row_count > 1

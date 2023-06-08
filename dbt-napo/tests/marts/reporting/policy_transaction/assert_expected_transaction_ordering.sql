@@ -28,7 +28,7 @@ from (
         else 6
       end
     ) as prev_transaction_type
-  from {{ref('int_underwriter__policy_transaction')}}
+  from {{ref('fct_policy_transaction')}}
 )
 where (
   -- expect no cancellation events should precede MTA

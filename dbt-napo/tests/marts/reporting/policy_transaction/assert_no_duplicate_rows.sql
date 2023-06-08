@@ -12,7 +12,7 @@ select transaction_at
   , transaction_type
   , policy.reference_number
   , count(*) as row_count
-from {{ref('int_underwriter__policy_transaction')}}
+from {{ref('fct_policy_transaction')}}
 group by transaction_at
   , transaction_type
   , policy.reference_number

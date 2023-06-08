@@ -83,7 +83,7 @@ FROM
     GROUP BY
       policy_id
   ) AS subscription ON policy.policy_id = subscription.policy_id
-  AND TIMESTAMP_MILLIS(subscription.created_date) <= _audit.policy_row_effective_to
+  AND TIMESTAMP_MILLIS(subscription.created_date) <= policy.effective_to
   LEFT JOIN {{ref("stg_raw__product")}} AS product ON policy.product_id = product.id
   LEFT JOIN raw.renewal ON policy.policy_id = renewal.new_policy_id
   LEFT JOIN {{ ref('postcode_area_region') }} ON postcode_area_region.postcode_area = {{target.schema}}.calculate_postcode_area(customer.postal_code)

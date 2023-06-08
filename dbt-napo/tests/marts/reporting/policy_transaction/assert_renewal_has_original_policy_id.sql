@@ -13,5 +13,5 @@ select transaction_at
   , policy.reference_number
   , policy.quote_source
   , policy.original_quote_source
-from {{ref('int_underwriter__policy_transaction')}}
+from {{ref('fct_policy_transaction')}}
 where transaction_type = 'Renewal' and policy.original_quote_source is null
