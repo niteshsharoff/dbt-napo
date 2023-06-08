@@ -26,20 +26,38 @@ SELECT
     policy_cancel_date, 
     EXTRACT(DATE FROM snapshot_at)
   ) AS policy_gross_earned_premium,
-  COALESCE(policy_incurred_amount, 0) AS policy_incurred_amount
+  policy_claim.* EXCEPT (policy_id),
+  policy_paid_claim.* EXCEPT (policy_id)
 FROM
   {{ ref ("int_underwriter__policy_history") }} AS policy,
   snapshot_details
 LEFT JOIN (
   SELECT
     policy_id,
-    SUM(claim_incurred_amount) AS policy_incurred_amount
+    COALESCE(SUM(claim_incurred_amount), 0) AS policy_incurred_amount,
+    SUM(IF(claim_cover_type = 'vet_fee_cover' AND claim_cover_sub_type = 'Accident', claim_paid_amount, 0)) AS policy_vet_fee_accident_paid_amount,
+    SUM(IF(claim_cover_type = 'vet_fee_cover' AND claim_cover_sub_type = 'Illness', claim_paid_amount, 0)) AS policy_vet_fee_illness_paid_amount
   FROM
     {{ ref("int_underwriter__claim_snapshot") }}
   GROUP BY
     policy_id
 ) AS policy_claim ON
   policy_claim.policy_id = policy.policy_id
+LEFT JOIN (
+  SELECT
+    policy_id,
+    COUNTIF(claim_cover_type = 'vet_fee_cover' AND claim_cover_sub_type = 'Accident') AS policy_n_accepted_vet_fee_accident_claims,
+    COUNTIF(claim_cover_type = 'vet_fee_cover' AND claim_cover_sub_type = 'Illness') AS policy_n_accepted_vet_fee_illness_claims,
+    COUNT(DISTINCT(IF(claim_cover_type = 'vet_fee_cover' AND claim_cover_sub_type = 'Accident', claim_master_claim_id, NULL))) AS policy_n_accepted_vet_fee_accident_master_claims,
+    COUNT(DISTINCT(IF(claim_cover_type = 'vet_fee_cover' AND claim_cover_sub_type = 'Illness', claim_master_claim_id, NULL))) AS policy_n_accepted_vet_fee_illness_master_claims
+  FROM
+    {{ ref("int_underwriter__claim_snapshot") }}
+  WHERE
+    claim_status = 'accepted'
+  GROUP BY
+    policy_id
+) AS policy_paid_claim ON
+  policy_paid_claim.policy_id = policy.policy_id
 WHERE
   effective_from <= snapshot_at
   AND snapshot_at < effective_to
