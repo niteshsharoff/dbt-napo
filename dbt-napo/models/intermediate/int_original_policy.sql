@@ -24,7 +24,7 @@ with recursive
   )
 select distinct 
   new_policy_id as policy_id
-  , policy_year
+  , policy_year as current_policy_year
   , old_policy_id as original_policy_id
   , quote_source as original_quote_source
 from with_max_policy_year

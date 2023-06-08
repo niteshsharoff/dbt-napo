@@ -39,6 +39,7 @@ with
             , policy.reference_number
             , policy.quote_source
             , original_policy.original_quote_source
+            , original_policy.current_policy_year as policy_year
             , policy.payment_plan_type
             , policy.annual_payment_id
             , policy.annual_price
@@ -119,6 +120,7 @@ with
             , breed.source as breed_source
             , pet.has_pre_existing_conditions
             , pet.change_reason
+            , pet.multipet_number
             , pet.effective_from
             , pet.effective_to
         from {{ ref("stg_raw__pet_ledger") }} pet

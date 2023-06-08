@@ -80,6 +80,7 @@ with
         cast(round(premium_difference, 2) as numeric) as premium_difference,
         cast(round(discount_difference, 2) as numeric) as discount_difference
       ) as underwriter
+      , quote
       , policy
       , customer
       , pet
