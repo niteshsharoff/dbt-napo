@@ -35,7 +35,7 @@ with
             quote.quote_id
             , quote.pricing_model_version
             , quote.msm_sales_tracking_urn
-            , quote.created_at
+            , timestamp_millis(quote.created_at) as created_at
         ) as quote
         , struct(
             policy.policy_id

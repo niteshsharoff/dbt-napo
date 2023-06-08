@@ -1,3 +1,6 @@
+{% set today = modules.datetime.datetime.now() %}
+{% set yesterday = (today - modules.datetime.timedelta(1)).date() %}
+
 with
     policy as (
         select * except(policy_id, cancel_reason, run_date), policy.policy_id, cancel_mapping.cancel_reason
@@ -22,7 +25,7 @@ with
             , breed.source as breed_source
         from {{ ref("stg_raw__pet_ledger") }} pet
         left join {{ source("raw", "breed") }} breed 
-            on pet.breed_id = breed.id and breed.run_date = parse_date('%Y-%m-%d', '{{run_started_at.date()}}')
+            on pet.breed_id = breed.id and breed.run_date = parse_date('%Y-%m-%d', '{{yesterday}}')
     ),
     quote as (select * from {{ ref("int_policy_quote") }}),
     discount as (select * from {{ ref("stg_raw__vouchercode") }}),
