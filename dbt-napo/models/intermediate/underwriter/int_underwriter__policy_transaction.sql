@@ -85,6 +85,7 @@ with
       , customer
       , pet
       , product
+      , discount
       -- , _audit
     from calculate_differences
   )
