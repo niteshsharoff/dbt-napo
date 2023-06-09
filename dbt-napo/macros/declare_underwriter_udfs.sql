@@ -116,7 +116,7 @@ create or replace function
   ) returns float64 as (
     case
       when discount_percentage is not null
-      then round(retail_price / (1 - discount_percentage / 100), 2)
+      then retail_price / (1 - discount_percentage / 100)
       else retail_price
     end
   );
@@ -129,7 +129,7 @@ create or replace function
   ) returns float64 as (
     case
       when discount_percentage is not null
-      then round(premium_price * (1 - discount_percentage / 100), 2)
+      then premium_price * (1 - discount_percentage / 100)
       else premium_price
     end
   );
@@ -147,6 +147,12 @@ create or replace function
       then greatest(amount * (date_diff(cancel_date, start_date, day) / date_diff(end_date, start_date, day)), 0)
       else 0.0
     end 
+  );
+
+
+create or replace function
+  {{target.schema}}.calculate_amount_exc_ipt(amount float64) returns float64 as (
+    amount / (1 + 12 / 100)
   );
 
 
