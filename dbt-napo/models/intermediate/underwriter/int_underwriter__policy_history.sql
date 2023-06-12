@@ -14,7 +14,7 @@ SELECT
   product.reference AS product_reference,
   policy.annual_price AS policy_annual_retail_price,
   policy.annual_price AS policy_annual_premium_price,
-  {{target.schema}}.calculate_premium_price(policy.annual_price, discount.discount_percentage) as policy_annual_premium_price_inc_discount,  
+  {{target.schema}}.calculate_premium_price(policy.annual_price, campaign.discount_percentage) as policy_annual_premium_price_inc_discount,  
   customer.date_of_birth AS customer_date_of_birth,
   policy.created_date AS policy_created_date,
   policy.start_date AS policy_start_date,

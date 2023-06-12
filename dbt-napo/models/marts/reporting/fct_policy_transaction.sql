@@ -104,6 +104,12 @@ with
     select
       transaction_at
       , transaction_type
+      , quote
+      , policy
+      , customer
+      , pet
+      , product
+      , campaign
       , struct(
         retail_price as retail_price
         , ifnull(campaign.discount_percentage, 0) as discount_percent
@@ -120,12 +126,6 @@ with
         , cast(discount_difference as numeric) as discount_difference
         , cast(ipt_difference as numeric) as ipt_difference
       ) as underwriter
-      , quote
-      , policy
-      , customer
-      , pet
-      , product
-      , campaign
       -- , _audit
     from differences
   )
