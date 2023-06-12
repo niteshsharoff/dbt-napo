@@ -167,7 +167,7 @@ def weekly_data_integrity_check(data_interval_end: pendulum.datetime = None):
     start_date, _, run_date = get_weekly_reporting_period(data_interval_end)
     client = bigquery.Client(project=GCP_PROJECT_ID)
     query = PARTITION_INTEGRITY_CHECK.render(
-        source_tables=["policy", "customer", "pet"],
+        source_tables=["policy", "customer", "pet", "quoterequest"],
         start_date=start_date,
         end_date=run_date,
     )

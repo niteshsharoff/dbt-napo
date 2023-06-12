@@ -64,6 +64,18 @@
     },
     "price_elasticity_test": {
       "type": "boolean"
+    },
+    "pricing_service_request": {
+      "type": [
+        "null",
+        "object"
+      ]
+    },
+    "pricing_service_response": {
+      "type": [
+        "null",
+        "object"
+      ]
     }
   },
   "additionalProperties": false
