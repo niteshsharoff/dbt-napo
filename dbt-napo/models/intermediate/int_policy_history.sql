@@ -3,7 +3,9 @@
 
 with
     policy as (
-        select * except(policy_id, cancel_reason, run_date), policy.policy_id, cancel_mapping.cancel_reason
+        select * except(policy_id, cancel_reason, run_date)
+            , policy.policy_id
+            , cancel_mapping.cancel_reason
         from {{ ref("stg_raw__policy_ledger") }} policy
         left join {{ ref("lookup_policy_cancel_reason") }} cancel_mapping 
             on policy.cancel_reason = cancel_mapping.id
@@ -28,7 +30,7 @@ with
             on pet.breed_id = breed.id and breed.run_date = parse_date('%Y-%m-%d', '{{yesterday}}')
     ),
     quote as (select * from {{ ref("int_policy_quote") }}),
-    discount as (select * from {{ ref("stg_raw__vouchercode") }}),
+    campaign as (select * from {{ ref("stg_raw__vouchercode") }}),
     joint_history as (
         select
             policy,
@@ -62,10 +64,10 @@ select
     customer,
     pet,
     product,
-    discount,
+    campaign,
     row_effective_from,
     row_effective_to,
 from joint_history j
 left join product on j.policy.product_id = product.id
 left join quote on j.policy.quote_id = quote.quote_id
-left join discount on j.policy.voucher_code_id = discount.voucher_id
+left join campaign on j.policy.voucher_code_id = campaign.voucher_id

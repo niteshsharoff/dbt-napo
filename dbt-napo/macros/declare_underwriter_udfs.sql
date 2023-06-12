@@ -112,7 +112,7 @@ CREATE OR REPLACE FUNCTION -- TODO: Include retail discounts
 create or replace function
   {{target.schema}}.calculate_premium_price (
     retail_price float64,
-    discount_percentage numeric
+    discount_percentage float64
   ) returns float64 as (
     case
       when discount_percentage is not null
@@ -125,7 +125,7 @@ create or replace function
 create or replace function
   {{target.schema}}.calculate_retail_price (
     premium_price float64,
-    discount_percentage numeric
+    discount_percentage float64
   ) returns float64 as (
     case
       when discount_percentage is not null
@@ -146,7 +146,7 @@ create or replace function
       when date_diff(end_date, start_date, day) > 0
       then greatest(amount * (date_diff(cancel_date, start_date, day) / date_diff(end_date, start_date, day)), 0)
       else 0.0
-    end 
+    end
   );
 
 

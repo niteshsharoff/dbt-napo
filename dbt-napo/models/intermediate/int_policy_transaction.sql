@@ -52,7 +52,7 @@ with
             , ifnull(policy.current_policy_year, 0) as policy_year
             , policy.payment_plan_type
             , policy.annual_payment_id
-            , policy.annual_price
+            , cast(policy.annual_price as numeric)  as annual_price
             , policy.notes
             , policy.accident_cover_start_date
             , policy.illness_cover_start_date
@@ -127,11 +127,11 @@ with
             , product.excess
         ) as product
         , struct (
-            discount.voucher_id
-            , discount.voucher_code
-            , discount.discount_percentage
-            , discount.affiliate_channel
-        ) as discount
+            campaign.voucher_id
+            , campaign.voucher_code
+            , cast(campaign.discount_percentage as numeric) as discount_percentage
+            , campaign.affiliate_channel
+        ) as campaign
         from {{ ref("int_policy_history") }}
     ),
     policy_history_with_audit_dimension as (
@@ -140,7 +140,7 @@ with
             , (select as struct customer.* except(change_reason, effective_from, effective_to)) as customer
             , (select as struct pet.* except(change_reason, effective_from, effective_to)) as pet
             , product
-            , discount
+            , campaign
             , struct(
                 {% for mta_field in MTA_FIELDS -%}
                 {% set model = mta_field[0] -%}
@@ -270,7 +270,7 @@ with
             customer,
             pet,
             product,
-            discount
+            campaign
             -- _audit
         from all_transactions
         order by transaction_at
