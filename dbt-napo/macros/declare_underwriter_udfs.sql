@@ -142,11 +142,17 @@ create or replace function
     end_date date,
     cancel_date date
   ) returns float64 as (
-    case
-      when date_diff(end_date, start_date, day) > 0
-      then greatest(amount * (date_diff(cancel_date, start_date, day) / date_diff(end_date, start_date, day)), 0)
-      else 0.0
-    end
+    round(
+      cast(
+        case
+          when date_diff(end_date, start_date, day) > 0
+          then greatest(amount * (date_diff(cancel_date, start_date, day) / date_diff(end_date, start_date, day)), 0)
+          else 0.0
+        end as numeric
+      ),
+      2,
+      "ROUND_HALF_EVEN"
+    )
   );
 
 
