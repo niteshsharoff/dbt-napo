@@ -175,7 +175,7 @@ export_policy_service_data()
     dag_id="quote_service_data_export",
     start_date=pendulum.datetime(2021, 10, 17, tz="UTC"),
     schedule_interval="@daily",
-    catchup=True,
+    catchup=False,
     default_args={"retries": 3},
     max_active_runs=7,
     max_active_tasks=128,
