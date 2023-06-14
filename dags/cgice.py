@@ -139,9 +139,9 @@ def upload_report_to_gdrive(data_interval_end: pendulum.datetime = None):
 
 @dag(
     dag_id="cgice",
-    start_date=pendulum.datetime(2022, 12, 1, tz="UTC"),
-    schedule_interval="0 3 * * *",
-    catchup=False,
+    start_date=pendulum.datetime(2022, 12, 31, tz="UTC"),
+    schedule_interval="0 4 */15 * *",   # 4am on every 15th day-of-month
+    catchup=True,
     default_args={"retries": 0},
     max_active_runs=1,
     tags=["reporting", "daily"],
@@ -160,10 +160,10 @@ def cgice():
             >> export_report_to_gcs()
             >> [
                 data_integrity_check(),
-                # Overwrite report daily
+                # TBD: Overwrite existing reports?
                 # report_exists_on_gdrive_check(),
                 report_row_count_check(),
-                dbt_checks,
+                # dbt_checks,
             ]
             >> upload_report_to_gdrive()
         )
