@@ -99,6 +99,7 @@ def export_query_to_gcs(
     query: str,
     gcs_bucket: str,
     gcs_uri: str,
+    encoding: str = "utf-8",
 ):
     """
     Write query results to a temp table in Big Query. The temp table is set to expire
@@ -108,14 +109,13 @@ def export_query_to_gcs(
     :param query: Big Query dataset name
     :param gcs_bucket: Source table to execute query against
     :param gcs_uri: SQL DML statement
+    :param encoding: Uploaded csv file encoding
     """
     df = pd.read_gbq(query)
     df = df.rename(columns=lambda x: x.replace("_", " "))  # update column names
 
     storage_client = storage.Client(project=project_name)
     bucket = storage_client.get_bucket(gcs_bucket)
+    content = df.to_csv(index=False, quoting=csv.QUOTE_ALL).encode(encoding)
     blob = bucket.blob(gcs_uri)
-    blob.upload_from_string(
-        df.to_csv(index=False, encoding="utf-8", quoting=csv.QUOTE_ALL),
-        content_type="application/octet-stream",
-    )
+    blob.upload_from_string(content, content_type="application/octet-stream")

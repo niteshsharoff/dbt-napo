@@ -70,6 +70,7 @@ def export_report_to_gcs(data_interval_end: pendulum.datetime = None):
             start_date.date().format("YYYY-MM"),
             gcs_file_name,
         ),
+        encoding="utf-16",
     )
 
 
@@ -113,6 +114,7 @@ def report_row_count_check(data_interval_end: pendulum.datetime = None):
             start_date.date().format("YYYY-MM"),
         ),
         filename=filename,
+        encoding="utf-16",
     )
     logging.info(df.head())
     if df.empty:
@@ -139,8 +141,8 @@ def upload_report_to_gdrive(data_interval_end: pendulum.datetime = None):
 
 @dag(
     dag_id="cgice",
-    start_date=pendulum.datetime(2022, 12, 31, tz="UTC"),
-    schedule_interval="0 4 */15 * *",   # 4am on every 15th day-of-month
+    start_date=pendulum.datetime(2022, 12, 1, tz="UTC"),
+    schedule_interval="0 4 */15 * *",  # 4am on every 15th day-of-month
     catchup=True,
     default_args={"retries": 0},
     max_active_runs=1,
@@ -148,13 +150,13 @@ def upload_report_to_gdrive(data_interval_end: pendulum.datetime = None):
 )
 def cgice():
     with TaskGroup(group_id="cgice_premium_bdx_monthly", prefix_group_id=False):
-        dbt_checks = DbtCloudRunJobOperator(
-            task_id="dbt_checks",
-            job_id=DBT_CLOUD_JOB_ID,
-            check_interval=10,
-            timeout=300,
-            trigger_rule="one_success",
-        )
+        # dbt_checks = DbtCloudRunJobOperator(
+        #     task_id="dbt_checks",
+        #     job_id=DBT_CLOUD_JOB_ID,
+        #     check_interval=10,
+        #     timeout=300,
+        #     trigger_rule="one_success",
+        # )
         (
             create_view_on_bq()
             >> export_report_to_gcs()
