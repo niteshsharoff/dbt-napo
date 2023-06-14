@@ -9,6 +9,7 @@ from airflow.providers.dbt.cloud.operators.dbt import DbtCloudRunJobOperator
 from google.cloud import bigquery
 from jinja2 import Environment, FileSystemLoader
 
+from dags.workflows.common import gcs_csv_to_dataframe
 from dags.workflows.create_bq_view import create_bq_view
 from dags.workflows.export_bq_result_to_gcs import export_query_to_gcs
 from dags.workflows.reporting.cgice.utils import (
@@ -97,7 +98,19 @@ def report_exists_on_gdrive_check(data_interval_end: pendulum.datetime = None):
 
 @task
 def report_row_count_check(data_interval_end: pendulum.datetime = None):
-    pass
+    start_date, end_date = get_monthly_reporting_period(data_interval_end)
+    filename = get_monthly_report_name(start_date)
+    df = gcs_csv_to_dataframe(
+        gcs_bucket=GCS_BUCKET,
+        gcs_folder="{}/cgice_premium_bdx_monthly/run_date={}".format(
+            BQ_DATASET,
+            start_date.date().format("YYYY-MM"),
+        ),
+        filename=filename,
+    )
+    logging.info(df.head())
+    if df.empty:
+        raise AirflowFailException
 
 
 @task
