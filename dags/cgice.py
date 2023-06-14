@@ -10,7 +10,8 @@ from google.cloud import bigquery
 from jinja2 import Environment, FileSystemLoader
 
 from dags.workflows.create_bq_view import create_bq_view
-from dags.workflows.reporting.cgice.utils import get_monthly_reporting_period
+from dags.workflows.reporting.cgice.utils import get_monthly_reporting_period, \
+    get_monthly_report_name
 from dags.workflows.upload_to_google_drive import file_exists_on_google_drive
 
 JINJA_ENV = Environment(loader=FileSystemLoader("dags/"))
@@ -50,11 +51,6 @@ def export_monthly_report(data_interval_end: pendulum.datetime = None):
 
 
 @task
-def process_monthly_report(data_interval_end: pendulum.datetime = None):
-    pass
-
-
-@task
 def data_integrity_check(data_interval_end: pendulum.datetime = None):
     run_date = data_interval_end
     start_date, end_date = get_monthly_reporting_period(data_interval_end)
@@ -74,7 +70,7 @@ def data_integrity_check(data_interval_end: pendulum.datetime = None):
 @task
 def report_exists_on_gdrive_check(data_interval_end: pendulum.datetime = None):
     start_date, end_date = get_monthly_reporting_period(data_interval_end)
-    report_name = start_date(start_date)
+    report_name = get_monthly_report_name(start_date)
     if file_exists_on_google_drive(
         file_name=report_name,
         token_file=OAUTH_TOKEN_FILE,
