@@ -10,8 +10,11 @@ from google.cloud import bigquery
 from jinja2 import Environment, FileSystemLoader
 
 from dags.workflows.create_bq_view import create_bq_view
-from dags.workflows.reporting.cgice.utils import get_monthly_reporting_period, \
-    get_monthly_report_name
+from dags.workflows.export_bq_result_to_gcs import export_query_to_gcs
+from dags.workflows.reporting.cgice.utils import (
+    get_monthly_reporting_period,
+    get_monthly_report_name,
+)
 from dags.workflows.upload_to_google_drive import file_exists_on_google_drive
 
 JINJA_ENV = Environment(loader=FileSystemLoader("dags/"))
@@ -22,6 +25,7 @@ OAUTH_TOKEN_FILE = Variable.get("OAUTH_CREDENTIALS")
 GCP_PROJECT_ID = Variable.get("GCP_PROJECT_ID")
 GCP_REGION = Variable.get("GCP_REGION")
 GCS_BUCKET = "data-warehouse-harbour"
+BQ_DATASET = "reporting"
 
 # https://cloud.getdbt.com/deploy/67538/projects/106847/jobs/235012
 DBT_CLOUD_JOB_ID = 289269
@@ -34,7 +38,7 @@ def create_monthly_view(data_interval_end: pendulum.datetime = None):
     start_date, end_date = get_monthly_reporting_period(data_interval_end)
     create_bq_view(
         project_name=GCP_PROJECT_ID,
-        dataset_name="reporting",
+        dataset_name=BQ_DATASET,
         view_name=f"cgice_premium_bdx_monthly_{start_date.format('YYYYMMDD')}",
         view_query=CUMULATIVE_BDX_REPORT_QUERY.render(
             dict(
@@ -47,7 +51,20 @@ def create_monthly_view(data_interval_end: pendulum.datetime = None):
 
 @task
 def export_monthly_report(data_interval_end: pendulum.datetime = None):
-    pass
+    start_date, end_date = get_monthly_reporting_period(data_interval_end)
+    view_name = f"cgice_premium_bdx_monthly_{start_date.format('YYYYMMDD')}"
+    gcs_file_name = get_monthly_report_name(start_date)
+    export_query_to_gcs(
+        project_name=GCP_PROJECT_ID,
+        query=f"select * from `{GCP_PROJECT_ID}.{BQ_DATASET}.{view_name}`",
+        gcs_bucket=GCS_BUCKET,
+        gcs_uri="{}/{}/run_date={}/{}".format(
+            BQ_DATASET,
+            "cgice_premium_bdx_monthly",
+            start_date.date().format("YYYY-MM"),
+            gcs_file_name,
+        ),
+    )
 
 
 @task
