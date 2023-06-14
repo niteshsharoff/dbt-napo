@@ -18,4 +18,5 @@ def get_monthly_reporting_period(
 
 
 def get_monthly_report_name(start_date: pendulum.datetime) -> str:
-    return f"Napo_Pet_Premium_Bdx_New_{start_date.format('YYYY_MM')}.csv"
+    # Original report name is Napo_Pet_Premium_Bdx_New_{year}_{month}
+    return f"Napo_Pet_Premium_Bdx_Monthly_{start_date.format('YYYY_MM')}.csv"

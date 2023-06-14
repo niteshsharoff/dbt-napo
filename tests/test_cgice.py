@@ -43,15 +43,15 @@ def test_get_monthly_reporting_period(
     (
         (
             pendulum.datetime(2023, 5, 31, 0, 0, 0),
-            "Napo_Pet_Premium_Bdx_New_2023_05.csv",
+            "Napo_Pet_Premium_Bdx_Monthly_2023_05.csv",
         ),
         (
             pendulum.datetime(2023, 6, 1, 0, 0, 0),
-            "Napo_Pet_Premium_Bdx_New_2023_06.csv",
+            "Napo_Pet_Premium_Bdx_Monthly_2023_06.csv",
         ),
         (
             pendulum.datetime(2023, 6, 2, 0, 0, 0),
-            "Napo_Pet_Premium_Bdx_New_2023_06.csv",
+            "Napo_Pet_Premium_Bdx_Monthly_2023_06.csv",
         ),
     ),
 )

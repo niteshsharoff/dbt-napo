@@ -6,6 +6,7 @@ from airflow.models import Variable
 from airflow.models.dag import dag
 from airflow.operators.python import task
 from airflow.providers.dbt.cloud.operators.dbt import DbtCloudRunJobOperator
+from airflow.utils.task_group import TaskGroup
 from google.cloud import bigquery
 from jinja2 import Environment, FileSystemLoader
 
@@ -16,7 +17,10 @@ from dags.workflows.reporting.cgice.utils import (
     get_monthly_reporting_period,
     get_monthly_report_name,
 )
-from dags.workflows.upload_to_google_drive import file_exists_on_google_drive
+from dags.workflows.upload_to_google_drive import (
+    file_exists_on_google_drive,
+    upload_to_google_drive,
+)
 
 JINJA_ENV = Environment(loader=FileSystemLoader("dags/"))
 PARTITION_INTEGRITY_CHECK = JINJA_ENV.get_template("sql/partition_integrity_check.sql")
@@ -31,11 +35,12 @@ BQ_DATASET = "reporting"
 # https://cloud.getdbt.com/deploy/67538/projects/106847/jobs/235012
 DBT_CLOUD_JOB_ID = 289269
 
-GOOGLE_DRIVE_FOLDER_ID = ""
+# Temporary folder, switch to 1541hzsET3OMSyc4JKlCdl3HmbK9wmXH3 once approved
+GOOGLE_DRIVE_FOLDER_ID = "1J14XpnVmAvMuOkRr8rXb12QX2po3Z2km"
 
 
 @task
-def create_monthly_view(data_interval_end: pendulum.datetime = None):
+def create_view_on_bq(data_interval_end: pendulum.datetime = None):
     start_date, end_date = get_monthly_reporting_period(data_interval_end)
     create_bq_view(
         project_name=GCP_PROJECT_ID,
@@ -51,7 +56,7 @@ def create_monthly_view(data_interval_end: pendulum.datetime = None):
 
 
 @task
-def export_monthly_report(data_interval_end: pendulum.datetime = None):
+def export_report_to_gcs(data_interval_end: pendulum.datetime = None):
     start_date, end_date = get_monthly_reporting_period(data_interval_end)
     view_name = f"cgice_premium_bdx_monthly_{start_date.format('YYYYMMDD')}"
     gcs_file_name = get_monthly_report_name(start_date)
@@ -89,6 +94,7 @@ def data_integrity_check(data_interval_end: pendulum.datetime = None):
 def report_exists_on_gdrive_check(data_interval_end: pendulum.datetime = None):
     start_date, end_date = get_monthly_reporting_period(data_interval_end)
     report_name = get_monthly_report_name(start_date)
+    logging.info(report_name)
     if file_exists_on_google_drive(
         file_name=report_name,
         token_file=OAUTH_TOKEN_FILE,
@@ -114,8 +120,21 @@ def report_row_count_check(data_interval_end: pendulum.datetime = None):
 
 
 @task
-def upload_report(data_interval_end: pendulum.datetime = None):
-    pass
+def upload_report_to_gdrive(data_interval_end: pendulum.datetime = None):
+    start_date, end_date = get_monthly_reporting_period(data_interval_end)
+    report_name = get_monthly_report_name(start_date)
+    upload_to_google_drive(
+        project_name=GCP_PROJECT_ID,
+        gcs_bucket=GCS_BUCKET,
+        gcs_path="{}/cgice_premium_bdx_monthly/run_date={}/{}".format(
+            BQ_DATASET,
+            start_date.date().format("YYYY-MM"),
+            report_name,
+        ),
+        gdrive_folder_id=GOOGLE_DRIVE_FOLDER_ID,
+        gdrive_file_name=report_name,
+        token_file=OAUTH_TOKEN_FILE,
+    )
 
 
 @dag(
@@ -128,24 +147,26 @@ def upload_report(data_interval_end: pendulum.datetime = None):
     tags=["reporting", "daily"],
 )
 def cgice():
-    dbt_checks = DbtCloudRunJobOperator(
-        task_id="dbt_checks",
-        job_id=DBT_CLOUD_JOB_ID,
-        check_interval=10,
-        timeout=300,
-        trigger_rule="one_success",
-    )
-    (
-        create_monthly_view()
-        >> export_monthly_report()
-        >> [
-            data_integrity_check(),
-            report_exists_on_gdrive_check(),
-            report_row_count_check(),
-            dbt_checks,
-        ]
-        >> upload_report()
-    )
+    with TaskGroup(group_id="cgice_premium_bdx_monthly", prefix_group_id=False):
+        dbt_checks = DbtCloudRunJobOperator(
+            task_id="dbt_checks",
+            job_id=DBT_CLOUD_JOB_ID,
+            check_interval=10,
+            timeout=300,
+            trigger_rule="one_success",
+        )
+        (
+            create_view_on_bq()
+            >> export_report_to_gcs()
+            >> [
+                data_integrity_check(),
+                # Overwrite report daily
+                # report_exists_on_gdrive_check(),
+                report_row_count_check(),
+                dbt_checks,
+            ]
+            >> upload_report_to_gdrive()
+        )
 
 
 cgice()
