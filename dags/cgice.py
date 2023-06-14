@@ -1,14 +1,20 @@
+import logging
+
 import pendulum
+from airflow.exceptions import AirflowFailException, AirflowSkipException
 from airflow.models import Variable
 from airflow.models.dag import dag
 from airflow.operators.python import task
 from airflow.providers.dbt.cloud.operators.dbt import DbtCloudRunJobOperator
+from google.cloud import bigquery
 from jinja2 import Environment, FileSystemLoader
 
 from dags.workflows.create_bq_view import create_bq_view
 from dags.workflows.reporting.cgice.utils import get_monthly_reporting_period
+from dags.workflows.upload_to_google_drive import file_exists_on_google_drive
 
 JINJA_ENV = Environment(loader=FileSystemLoader("dags/"))
+PARTITION_INTEGRITY_CHECK = JINJA_ENV.get_template("sql/partition_integrity_check.sql")
 CUMULATIVE_BDX_REPORT_QUERY = JINJA_ENV.get_template("sql/cgice_premium_bdx.sql")
 
 OAUTH_TOKEN_FILE = Variable.get("OAUTH_CREDENTIALS")
@@ -17,7 +23,7 @@ GCP_REGION = Variable.get("GCP_REGION")
 GCS_BUCKET = "data-warehouse-harbour"
 
 # https://cloud.getdbt.com/deploy/67538/projects/106847/jobs/235012
-DBT_CLOUD_JOB_ID = 235012
+DBT_CLOUD_JOB_ID = 289269
 
 GOOGLE_DRIVE_FOLDER_ID = ""
 
@@ -44,13 +50,36 @@ def export_monthly_report(data_interval_end: pendulum.datetime = None):
 
 
 @task
-def data_integrity_check(data_interval_end: pendulum.datetime = None):
+def process_monthly_report(data_interval_end: pendulum.datetime = None):
     pass
 
 
 @task
-def gdrive_report_exists_check(data_interval_end: pendulum.datetime = None):
-    pass
+def data_integrity_check(data_interval_end: pendulum.datetime = None):
+    run_date = data_interval_end
+    start_date, end_date = get_monthly_reporting_period(data_interval_end)
+    client = bigquery.Client(project=GCP_PROJECT_ID)
+    query = PARTITION_INTEGRITY_CHECK.render(
+        source_tables=["policy", "customer", "pet", "quoterequest"],
+        start_date=start_date.format("YYYY-MM-DD"),
+        end_date=run_date.format("YYYY-MM-DD"),
+    )
+    logging.info("Checking source table partition integrity with query: \n" + query)
+    query_job = client.query(query)
+    result = query_job.result()
+    if result.total_rows != 0:
+        raise AirflowFailException
+
+
+@task
+def report_exists_on_gdrive_check(data_interval_end: pendulum.datetime = None):
+    start_date, end_date = get_monthly_reporting_period(data_interval_end)
+    report_name = start_date(start_date)
+    if file_exists_on_google_drive(
+        file_name=report_name,
+        token_file=OAUTH_TOKEN_FILE,
+    ):
+        raise AirflowSkipException
 
 
 @task
@@ -85,7 +114,7 @@ def cgice():
         >> export_monthly_report()
         >> [
             data_integrity_check(),
-            gdrive_report_exists_check(),
+            report_exists_on_gdrive_check(),
             report_row_count_check(),
             dbt_checks,
         ]

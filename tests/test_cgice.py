@@ -1,7 +1,10 @@
 import pendulum
 import pytest
 
-from dags.workflows.reporting.cgice.utils import get_monthly_reporting_period
+from dags.workflows.reporting.cgice.utils import (
+    get_monthly_reporting_period,
+    get_monthly_report_name,
+)
 
 
 @pytest.mark.parametrize(
@@ -33,3 +36,27 @@ def test_get_monthly_reporting_period(
         expected_start_date,
         expected_end_date,
     )
+
+
+@pytest.mark.parametrize(
+    "start_date,expected_report_name",
+    (
+        (
+            pendulum.datetime(2023, 5, 31, 0, 0, 0),
+            "Napo_Pet_Premium_Bdx_New_2023_05",
+        ),
+        (
+            pendulum.datetime(2023, 6, 1, 0, 0, 0),
+            "Napo_Pet_Premium_Bdx_New_2023_06",
+        ),
+        (
+            pendulum.datetime(2023, 6, 2, 0, 0, 0),
+            "Napo_Pet_Premium_Bdx_New_2023_06",
+        ),
+    ),
+)
+def test_get_monthly_reporting_period(
+    start_date: pendulum.datetime,
+    expected_report_name: str,
+):
+    assert get_monthly_report_name(start_date) == expected_report_name

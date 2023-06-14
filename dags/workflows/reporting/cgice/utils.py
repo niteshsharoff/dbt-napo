@@ -15,3 +15,7 @@ def get_monthly_reporting_period(
         end_date = run_date.end_of("month").add(days=1).start_of("day")
 
     return start_date, end_date
+
+
+def get_monthly_report_name(start_date: pendulum.datetime) -> str:
+    return f"Napo_Pet_Premium_Bdx_New_{start_date.format('YYYY_MM')}"
