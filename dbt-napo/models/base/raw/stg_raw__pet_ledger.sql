@@ -13,5 +13,5 @@ with
         from {{ source("raw", "pet") }}
     )
 -- The age_months column from Django is wrong, we should calculate pet age using DOB instead
-select * -- except(age_months)
+select * except(age_months)
 from pet_ledger

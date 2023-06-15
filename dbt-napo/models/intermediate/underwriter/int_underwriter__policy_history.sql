@@ -14,7 +14,7 @@ SELECT
   product.reference AS product_reference,
   policy.annual_price AS policy_annual_retail_price,
   policy.annual_price AS policy_annual_premium_price,
-  {{target.schema}}.calculate_premium_price(policy.annual_price, discount.discount_percentage) as policy_annual_premium_price_inc_discount,  
+  {{target.schema}}.calculate_premium_price(policy.annual_price, campaign.discount_percentage) as policy_annual_premium_price_inc_discount,  
   customer.date_of_birth AS customer_date_of_birth,
   policy.created_date AS policy_created_date,
   policy.start_date AS policy_start_date,
@@ -32,10 +32,16 @@ SELECT
     policy.annual_payment_id IS NOT NULL
     OR subscription.policy_id IS NOT NULL
   ) AS policy_is_purchased,
-  {{target.schema}}.calculate_policy_has_co_pay(pet.age_months) AS policy_has_co_pay,
+  {{target.schema}}.calculate_policy_has_co_pay({{target.schema}}.calculate_age_in_months(pet.date_of_birth, policy.start_date)) AS policy_has_co_pay,
   CASE
-    WHEN {{target.schema}}.calculate_policy_has_co_pay(pet.age_months) IS NULL THEN NULL
-    WHEN {{target.schema}}.calculate_policy_has_co_pay(pet.age_months) IS TRUE THEN product.co_pay
+    WHEN {{target.schema}}.calculate_policy_has_co_pay(
+      {{target.schema}}.calculate_age_in_months(pet.date_of_birth, policy.start_date)
+    ) IS NULL 
+    THEN NULL
+    WHEN {{target.schema}}.calculate_policy_has_co_pay(
+      {{target.schema}}.calculate_age_in_months(pet.date_of_birth, policy.start_date)
+    ) IS TRUE 
+    THEN product.co_pay
     ELSE 0
   END AS policy_co_pay_percent,
   policy.payment_plan_type AS policy_payment_plan_type,
@@ -56,7 +62,7 @@ SELECT
   pet.date_of_birth AS pet_date_of_birth,
   {{target.schema}}.calculate_age_in_years(pet.date_of_birth, policy.start_date) AS pet_age_in_years_at_start_date,
   {{target.schema}}.calculate_age_in_months(pet.date_of_birth, policy.start_date) AS pet_age_in_months_at_start_date,
-  breed.name AS pet_source_breed_name,
+  pet.breed_name AS pet_source_breed_name,
   pet.species AS pet_species,
   pet.gender AS pet_gender_iso_5218,
   pet.is_neutered AS pet_is_neutered,

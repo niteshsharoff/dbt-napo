@@ -112,13 +112,53 @@ CREATE OR REPLACE FUNCTION -- TODO: Include retail discounts
 create or replace function
   {{target.schema}}.calculate_premium_price (
     retail_price float64,
-    discount_percentage numeric
+    discount_percentage float64
   ) returns float64 as (
     case
       when discount_percentage is not null
-      then round(retail_price / (1 - discount_percentage / 100), 2)
+      then retail_price / (1 - discount_percentage / 100)
       else retail_price
     end
+  );
+
+  
+create or replace function
+  {{target.schema}}.calculate_retail_price (
+    premium_price float64,
+    discount_percentage float64
+  ) returns float64 as (
+    case
+      when discount_percentage is not null
+      then premium_price * (1 - discount_percentage / 100)
+      else premium_price
+    end
+  );
+
+
+create or replace function
+  {{target.schema}}.calculate_consumed_amount(
+    amount float64,
+    start_date date, 
+    end_date date,
+    cancel_date date
+  ) returns float64 as (
+    round(
+      cast(
+        case
+          when date_diff(end_date, start_date, day) > 0
+          then greatest(amount * (date_diff(cancel_date, start_date, day) / 365), 0)
+          else 0.0
+        end as numeric
+      ),
+      2,
+      "ROUND_HALF_EVEN"
+    )
+  );
+
+
+create or replace function
+  {{target.schema}}.calculate_amount_exc_ipt(amount float64) returns float64 as (
+    amount / (1 + 12 / 100)
   );
 
 
