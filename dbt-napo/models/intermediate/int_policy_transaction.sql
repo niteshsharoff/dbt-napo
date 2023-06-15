@@ -270,8 +270,8 @@ with
             customer,
             pet,
             product,
-            campaign
-            -- _audit
+            campaign,
+            _audit
         from all_transactions
         order by transaction_at
     )

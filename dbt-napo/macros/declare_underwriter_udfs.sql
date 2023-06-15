@@ -146,7 +146,7 @@ create or replace function
       cast(
         case
           when date_diff(end_date, start_date, day) > 0
-          then greatest(amount * (date_diff(cancel_date, start_date, day) / date_diff(end_date, start_date, day)), 0)
+          then greatest(amount * (date_diff(cancel_date, start_date, day) / 365), 0)
           else 0.0
         end as numeric
       ),
