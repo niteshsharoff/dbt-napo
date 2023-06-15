@@ -5,6 +5,7 @@ with
     policy as (
         select * except(policy_id, cancel_reason, run_date)
             , policy.policy_id
+            , policy.cancel_reason as cancel_reason_id
             , cancel_mapping.cancel_reason
         from {{ ref("stg_raw__policy_ledger") }} policy
         left join {{ ref("lookup_policy_cancel_reason") }} cancel_mapping 

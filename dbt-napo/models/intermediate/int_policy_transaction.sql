@@ -60,8 +60,9 @@ with
             , policy.start_date
             , policy.end_date
             , policy.cancel_date
-            , policy.cancel_detail
+            , policy.cancel_reason_id
             , policy.cancel_reason
+            , policy.cancel_detail
             , policy.sold_at
             , policy.cancelled_at
             , policy.reinstated_at
