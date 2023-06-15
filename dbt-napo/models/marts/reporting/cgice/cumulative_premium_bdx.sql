@@ -69,6 +69,7 @@ with policy_transactions as (
     or transaction_type = 'Reinstatement'
 )
 , cancellations as (
+  -- CGICE wants 'NTU', 'Cancellation' and 'Cancellation MTA' transactions to be called 'Cancel'
   select 'Cancel' as transaction_type, * except(transaction_type)
   from cgice_transactions 
   where transaction_type = 'NTU' 
@@ -81,6 +82,7 @@ with policy_transactions as (
   select * from cancellations
 )
 , agg_differences_by_day as (
+  -- CGICE wants multiple MTA or Cancel transactions to be aggregated by day
   select * except(
       gross_premium_ipt_exc,
       gross_premium_ipt_inc,
