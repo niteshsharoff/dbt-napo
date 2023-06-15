@@ -5,16 +5,16 @@ with report as (
 )
 , new_policies as (
   select *
-  from dbt.int_policy_transaction, report
+  from dbt.fct_policy_transaction, report
   where policy.quote_source = pcw_name
     and transaction_type = 'New Policy'
     and (cast(policy.sold_at as date) >= start_date and cast(policy.sold_at as date) < end_date)
 )
 , cancellations as (
   select *
-  from dbt.int_policy_transaction, report
+  from dbt.fct_policy_transaction, report
   where policy.quote_source = pcw_name
-    and transaction_type = 'Cancel Policy'
+    and transaction_type = 'NTU'
     and (cast(policy.cancelled_at as date) >= start_date and cast(policy.cancelled_at as date) < end_date)
     -- NTU
     -- and date_diff(policy.cancel_date, policy.start_date, day) < 14
@@ -27,7 +27,7 @@ with report as (
 , msm_report as (
   select
     case
-      when transaction_type = 'Cancel Policy' then 'Cancellation'
+      when transaction_type = 'NTU' then 'Cancellation'
       else 'Sale'
     end as RecordType
     , format_timestamp('%h-%Y', policy.created_date) as SalesMonth
@@ -35,21 +35,21 @@ with report as (
     , 'Napo' as Provider
     , 'Napo' as Brand
     , quote.msm_sales_tracking_urn as URN
-    , user.email as EmailAddress
+    , customer.email as EmailAddress
     , customer.street_address as HouseNameorNumber
     , customer.postal_code as Postcode
-    , user.first_name as Firstname
-    , user.last_name as Surname
+    , customer.first_name as Firstname
+    , customer.last_name as Surname
     , format_timestamp('%d/%m/%Y', customer.date_of_birth) as DOB
     , format_timestamp('%d/%m/%Y', policy.start_date) as PolicyStartDate
-    , policy.quote_id as ProviderQuoteReference
+    , quote.quote_id as ProviderQuoteReference
     , policy.reference_number as PolicyQuoteReference
     , 'Online' as PurchaseChannel
     , product.reference as ProductType
     , '1' as IPTIncluded
     , case
-      when transaction_type = 'Cancel Policy' then -1.0 * policy.annual_price
-      else policy.annual_price
+      when transaction_type = 'NTU' then cast(-1.0 * policy.annual_price as string)
+      else cast(policy.annual_price as string)
     end as Premium
     , format_timestamp('%d/%m/%Y', policy.sold_at) as PolicyPurchaseDate
     , c.cancel_reason as CancellationReason
@@ -65,7 +65,7 @@ with report as (
     , pet.name as `Pet Name`
     , 'Life Time' as CoverType
   from all_rows r
-  left join dbt.lookup_msm_cancel_reason c on r.policy.cancel_reason = c.id
+  left join dbt.lookup_msm_cancel_reason c on r.policy.cancel_reason_id = c.id
 )
 select distinct *
 from msm_report
