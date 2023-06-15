@@ -2,8 +2,9 @@ with report as (
   select date('{{ start_date }}') as t1
   , date('{{ end_date }}') as t2
 )
--- This is a legacy requirement for the monthly report
 , drop_reinstated_cancellations as (
+    -- This is a requirement from CGICE, reinstatements and cancellations adding up to
+    -- a premium position of 0 should be removed as they cancel each other out
   select *
     , case
       when (

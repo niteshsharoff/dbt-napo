@@ -24,7 +24,7 @@ from dags.workflows.upload_to_google_drive import (
 
 JINJA_ENV = Environment(loader=FileSystemLoader("dags/"))
 PARTITION_INTEGRITY_CHECK = JINJA_ENV.get_template("sql/partition_integrity_check.sql")
-CUMULATIVE_BDX_REPORT_QUERY = JINJA_ENV.get_template("sql/cgice_premium_bdx.sql")
+CUMULATIVE_BDX_REPORT_QUERY = JINJA_ENV.get_template("sql/cgice_premium_bdx_monthly.sql")
 
 OAUTH_TOKEN_FILE = Variable.get("OAUTH_CREDENTIALS")
 GCP_PROJECT_ID = Variable.get("GCP_PROJECT_ID")
@@ -150,22 +150,20 @@ def upload_report_to_gdrive(data_interval_end: pendulum.datetime = None):
 )
 def cgice():
     with TaskGroup(group_id="cgice_premium_bdx_monthly", prefix_group_id=False):
-        # dbt_checks = DbtCloudRunJobOperator(
-        #     task_id="dbt_checks",
-        #     job_id=DBT_CLOUD_JOB_ID,
-        #     check_interval=10,
-        #     timeout=300,
-        #     trigger_rule="one_success",
-        # )
+        dbt_checks = DbtCloudRunJobOperator(
+            task_id="dbt_checks",
+            job_id=DBT_CLOUD_JOB_ID,
+            check_interval=10,
+            timeout=300,
+            trigger_rule="one_success",
+        )
         (
             create_view_on_bq()
             >> export_report_to_gcs()
             >> [
                 data_integrity_check(),
-                # TBD: Overwrite existing reports?
-                # report_exists_on_gdrive_check(),
                 report_row_count_check(),
-                # dbt_checks,
+                dbt_checks,
             ]
             >> upload_report_to_gdrive()
         )
