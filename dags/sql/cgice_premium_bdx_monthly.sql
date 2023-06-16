@@ -20,7 +20,7 @@ with report as (
       then True
       else False
     end as _exclude
-  from dbt_jeremiahmai.cumulative_premium_bdx, report
+  from dbt.cgice_cumulative_premium_bdx, report
   where transaction_date >= report.t1 and transaction_date < report.t2
 )
 , monthly_premium_bdx as (
