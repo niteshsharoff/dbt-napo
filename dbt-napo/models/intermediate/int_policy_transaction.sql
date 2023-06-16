@@ -249,6 +249,8 @@ with
         from all_mtas
         where policy.cancelled_at is not null 
             and ((policy.cancelled_at > policy.reinstated_at) or (policy.reinstated_at is null))
+            -- exclude MTAs on NTU policies (i.e. ADV-CIR-0002), can result in inaccurate reporting
+            and date_diff(policy.cancel_date, policy.start_date, day) > 14
     ),
     all_transactions as (
         select * from new_policies
@@ -284,4 +286,3 @@ with
     )
 select *
 from final
-

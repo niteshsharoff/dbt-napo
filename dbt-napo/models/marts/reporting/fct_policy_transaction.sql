@@ -14,7 +14,9 @@ with
   , with_premium_and_retail_price as (
     select *
       , policy.annual_price as retail_price
-      , {{ target.schema }}.calculate_premium_price(policy.annual_price, campaign.discount_percentage) as premium_price
+      -- TBD: discounts not factored into premium price as of 2023-06-15
+      -- , {{ target.schema }}.calculate_premium_price(policy.annual_price, campaign.discount_percentage) as premium_price
+      , policy.annual_price as premium_price
     from add_cancel_date_to_reinstatements
   )
   , with_discount_and_ipt_amount as (
@@ -126,7 +128,7 @@ with
         , cast(discount_difference as numeric) as discount_difference
         , cast(ipt_difference as numeric) as ipt_difference
       ) as underwriter
-      -- , _audit
+      , _audit
     from differences
   )
 select *
