@@ -1,172 +1,136 @@
-import logging
-
 import pendulum
-from airflow.exceptions import AirflowFailException, AirflowSkipException
+from airflow.datasets import Dataset
+from airflow.decorators import task
 from airflow.models import Variable
 from airflow.models.dag import dag
-from airflow.operators.python import task
-from airflow.providers.dbt.cloud.operators.dbt import DbtCloudRunJobOperator
-from airflow.utils.task_group import TaskGroup
-from google.cloud import bigquery
-from jinja2 import Environment, FileSystemLoader
-
-from dags.workflows.common import gcs_csv_to_dataframe
-from dags.workflows.create_bq_view import create_bq_view
-from dags.workflows.export_bq_result_to_gcs import export_query_to_gcs
-from dags.workflows.reporting.cgice.utils import (
-    get_monthly_reporting_period,
-    get_monthly_report_name,
+from airflow.operators.empty import EmptyOperator
+from airflow.providers.dbt.cloud.operators.dbt import (
+    DbtCloudRunJobOperator,
 )
+from airflow.utils.edgemodifier import Label
+
+from dags.workflows.create_bq_external_table import create_external_bq_table
 from dags.workflows.upload_to_google_drive import (
-    file_exists_on_google_drive,
     upload_to_google_drive,
+    file_exists_on_google_drive,
 )
-
-JINJA_ENV = Environment(loader=FileSystemLoader("dags/"))
-PARTITION_INTEGRITY_CHECK = JINJA_ENV.get_template("sql/partition_integrity_check.sql")
-CUMULATIVE_BDX_REPORT_QUERY = JINJA_ENV.get_template("sql/cgice_premium_bdx_monthly.sql")
 
 OAUTH_TOKEN_FILE = Variable.get("OAUTH_CREDENTIALS")
 GCP_PROJECT_ID = Variable.get("GCP_PROJECT_ID")
 GCP_REGION = Variable.get("GCP_REGION")
 GCS_BUCKET = "data-warehouse-harbour"
-BQ_DATASET = "reporting"
 
 # https://cloud.getdbt.com/deploy/67538/projects/106847/jobs/235012
-DBT_CLOUD_JOB_ID = 289269
+DBT_CLOUD_JOB_ID = 235012
 
-# Temporary folder, switch to 1541hzsET3OMSyc4JKlCdl3HmbK9wmXH3 once approved
-GOOGLE_DRIVE_FOLDER_ID = "1J14XpnVmAvMuOkRr8rXb12QX2po3Z2km"
+GOOGLE_DRIVE_FOLDER_ID = "1541hzsET3OMSyc4JKlCdl3HmbK9wmXH3"
 
 
-@task
-def create_view_on_bq(data_interval_end: pendulum.datetime = None):
-    start_date, end_date = get_monthly_reporting_period(data_interval_end)
-    create_bq_view(
+@task(
+    task_id="update_bq_table",
+    outlets=[Dataset("reporting.cgice_premium_bdx_monthly")],
+)
+def update_bq_table():
+    """
+    This task creates an external Big Query table on top of the monthly
+    cgice_premium_bdx report partitioned by snapshot date.
+
+    The Created Big Query table is:
+        ae32-vpcservice-datawarehouse.reporting.cgice_premium_bdx_monthly
+
+    """
+    create_external_bq_table(
         project_name=GCP_PROJECT_ID,
-        dataset_name=BQ_DATASET,
-        view_name=f"cgice_premium_bdx_monthly_{start_date.format('YYYYMMDD')}",
-        view_query=CUMULATIVE_BDX_REPORT_QUERY.render(
-            dict(
-                start_date=start_date.format("YYYY-MM-DD"),
-                end_date=end_date.format("YYYY-MM-DD"),
-            )
-        ),
+        region=GCP_REGION,
+        dataset_name="reporting",
+        table_name="cgice_premium_bdx_monthly",
+        source_uri=f"gs://{GCS_BUCKET}/tmp/cgice_premium_bdx_monthly/*",
+        partition_uri=f"gs://{GCS_BUCKET}/tmp/cgice_premium_bdx_monthly",
+        source_format="CSV",
+        schema_path="dags/schemas/reporting/cgice_premium_bdx/bq_schema.json",
+        skip_leading_rows=1,
     )
 
 
-@task
-def export_report_to_gcs(data_interval_end: pendulum.datetime = None):
-    start_date, end_date = get_monthly_reporting_period(data_interval_end)
-    view_name = f"cgice_premium_bdx_monthly_{start_date.format('YYYYMMDD')}"
-    gcs_file_name = get_monthly_report_name(start_date)
-    export_query_to_gcs(
-        project_name=GCP_PROJECT_ID,
-        query=f"select * from `{GCP_PROJECT_ID}.{BQ_DATASET}.{view_name}`",
-        gcs_bucket=GCS_BUCKET,
-        gcs_uri="{}/{}/run_date={}/{}".format(
-            BQ_DATASET,
-            "cgice_premium_bdx_monthly",
-            start_date.date().format("YYYY-MM"),
-            gcs_file_name,
-        ),
-        encoding="utf-16",
-    )
+@task.branch(task_id="upload_branch")
+def upload_branch(data_interval_start: pendulum.datetime = None):
+    """
+    Branch and upload the monthly report to Google Drive only if the report is not yet
+    on Google Drive.
+    """
+    start_date = data_interval_start
+    filename = f"Napo_Pet_Premium_Bdx_New_{start_date.year}_{start_date.month}.csv"
+    if file_exists_on_google_drive(file_name=filename, token_file=OAUTH_TOKEN_FILE):
+        return "no_op"
+
+    return "upload_report"
 
 
-@task
-def data_integrity_check(data_interval_end: pendulum.datetime = None):
-    run_date = data_interval_end
-    start_date, end_date = get_monthly_reporting_period(data_interval_end)
-    client = bigquery.Client(project=GCP_PROJECT_ID)
-    query = PARTITION_INTEGRITY_CHECK.render(
-        source_tables=["policy", "customer", "pet", "quoterequest"],
-        start_date=start_date.format("YYYY-MM-DD"),
-        end_date=run_date.format("YYYY-MM-DD"),
-    )
-    logging.info("Checking source table partition integrity with query: \n" + query)
-    query_job = client.query(query)
-    result = query_job.result()
-    if result.total_rows != 0:
-        raise AirflowFailException
+@task(task_id="upload_report")
+def upload_report(
+    data_interval_start: pendulum.datetime = None,
+    data_interval_end: pendulum.datetime = None,
+):
+    """
+    This task uploads a monthly report to a shared Google Drive folder in csv format.
+    The reporting period starts from the first of the previous month up to the first
+    of the reporting month (exclusive).
 
+    The Google shared drive folder is currently:
+        https://drive.google.com/drive/folders/1DSxToVHiaXdaEoNxT9XoyX_IsF_y4j8u
 
-@task
-def report_exists_on_gdrive_check(data_interval_end: pendulum.datetime = None):
-    start_date, end_date = get_monthly_reporting_period(data_interval_end)
-    report_name = get_monthly_report_name(start_date)
-    logging.info(report_name)
-    if file_exists_on_google_drive(
-        file_name=report_name,
-        token_file=OAUTH_TOKEN_FILE,
-    ):
-        raise AirflowSkipException
-
-
-@task
-def report_row_count_check(data_interval_end: pendulum.datetime = None):
-    start_date, end_date = get_monthly_reporting_period(data_interval_end)
-    filename = get_monthly_report_name(start_date)
-    df = gcs_csv_to_dataframe(
-        gcs_bucket=GCS_BUCKET,
-        gcs_folder="{}/cgice_premium_bdx_monthly/run_date={}".format(
-            BQ_DATASET,
-            start_date.date().format("YYYY-MM"),
-        ),
-        filename=filename,
-        encoding="utf-16",
-    )
-    logging.info(df.head())
-    if df.empty:
-        raise AirflowFailException
-
-
-@task
-def upload_report_to_gdrive(data_interval_end: pendulum.datetime = None):
-    start_date, end_date = get_monthly_reporting_period(data_interval_end)
-    report_name = get_monthly_report_name(start_date)
+    """
+    start_date = data_interval_start
+    end_date = data_interval_end
+    filename = f"Napo_Pet_Premium_Bdx_New_{start_date.year}_{start_date.month:02d}.csv"
     upload_to_google_drive(
         project_name=GCP_PROJECT_ID,
         gcs_bucket=GCS_BUCKET,
-        gcs_path="{}/cgice_premium_bdx_monthly/run_date={}/{}".format(
-            BQ_DATASET,
-            start_date.date().format("YYYY-MM"),
-            report_name,
-        ),
+        gcs_path=f"tmp/cgice_premium_bdx_monthly/run_date={end_date.date()}/{filename}",
         gdrive_folder_id=GOOGLE_DRIVE_FOLDER_ID,
-        gdrive_file_name=report_name,
+        gdrive_file_name=f"{filename}",
         token_file=OAUTH_TOKEN_FILE,
     )
 
 
 @dag(
-    dag_id="cgice",
-    start_date=pendulum.datetime(2021, 12, 1, tz="UTC"),
-    schedule_interval="0 4 */15 * *",  # 4am on every 15th day-of-month
-    catchup=False,
+    dag_id="cgice_premium_bdx",
+    start_date=pendulum.datetime(2022, 12, 1, tz="UTC"),
+    schedule_interval="0 2 1 * *",
+    catchup=True,
     default_args={"retries": 0},
     max_active_runs=1,
-    tags=["reporting", "daily"],
+    tags=["reporting", "monthly"],
 )
-def cgice():
-    with TaskGroup(group_id="cgice_premium_bdx_monthly", prefix_group_id=False):
-        dbt_checks = DbtCloudRunJobOperator(
-            task_id="dbt_checks",
-            job_id=DBT_CLOUD_JOB_ID,
-            check_interval=10,
-            timeout=300,
-            trigger_rule="one_success",
-        )
-        (
-            create_view_on_bq()
-            >> export_report_to_gcs()
-            >> [
-                data_integrity_check(),
-                report_row_count_check(),
-                dbt_checks,
-            ]
-            >> upload_report_to_gdrive()
-        )
+def cgice_premium_bdx():
+    """
+    The cgice_premium_bdx sales report is generated on a reporting instance via a
+    Django management command.
+
+    A k8s cronjob is setup on the production cluster to sync monthly reports to GCS at
+    01:00 on the first of each month. [0 1 1 * *]
+
+    This Airflow pipeline will automate Big Query table creation, DBT tests cases and
+    Google Drive upload.
+
+    This pipeline is scheduled to run monthly at 02:00 on the first of each month.
+    """
+    report_stub = EmptyOperator(task_id="report_stub")
+    no_op = EmptyOperator(task_id="no_op")
+
+    t1 = update_bq_table()
+    t2 = DbtCloudRunJobOperator(
+        task_id="run_dbt_tests",
+        job_id=DBT_CLOUD_JOB_ID,
+        check_interval=10,
+        timeout=300,
+    )
+    t3 = upload_branch()
+    t4 = upload_report()
+
+    report_stub >> t1 >> t3 >> t4
+    t1 >> t2
+    t3 >> Label("File exists") >> no_op
 
 
-cgice()
+cgice_premium_bdx()
