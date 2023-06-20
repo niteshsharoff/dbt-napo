@@ -20,7 +20,6 @@
     ["pet", "name"],
     ["pet", "date_of_birth"],
     ["pet", "gender"],
-    ["pet", "size"],
     ["pet", "cost"],
     ["pet", "is_neutered"],
     ["pet", "is_microchipped"],
