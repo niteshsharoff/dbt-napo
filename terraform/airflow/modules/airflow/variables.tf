@@ -4,9 +4,9 @@ variable "owner" {
   default     = ""
 }
 
-variable "project_id" {
+variable "environment" {
   type        = string
-  description = "ID of the project where the Airflow resources are going to be deployed."
+  description = "Deployment environment."
 }
 
 variable "region" {
@@ -15,17 +15,40 @@ variable "region" {
   default     = "europe-west2"
 }
 
-variable "host_network" {
-  type        = string
-  description = "Resource link of the VPC network from which instance is accessible via private IP."
+variable "host_project" {
+  type = object({
+    id      = string
+    network = string
+  })
 }
 
-variable "cluster_name" {
-  type        = string
-  description = "The GKE cluster name that the Airflow node pools will be added to"
+variable "service_project" {
+  type = object({
+    id     = string
+    subnet = string
+  })
 }
 
-variable "node_pool" {
+variable "db_config" {
+  type = object({
+    name         = string
+    engine       = string
+    machine_type = string
+  })
+  description = "Airflow DB configuration."
+}
+
+variable "cluster_config" {
+  type = object({
+    name                 = string
+    master_ip_cidr_range = string
+    pod_ip_cidr_range    = string
+    svc_ip_cidr_range    = string
+  })
+  description = "Airflow GKE cluster configuration."
+}
+
+variable "master_node_pool" {
   type = object({
     machine_type  = string
     disk_size     = number
@@ -33,5 +56,10 @@ variable "node_pool" {
     min_count     = number
     max_count     = number
   })
-  description = "Node pool configuration"
+  description = "Airflow master node pool configuration."
+}
+
+variable "bastion_host_ip" {
+  type        = string
+  description = "Bastion box private IP address."
 }
