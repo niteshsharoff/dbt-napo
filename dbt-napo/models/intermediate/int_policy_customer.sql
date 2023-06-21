@@ -21,6 +21,7 @@ select
       ,p.monthly_price
       ,p.annual_price
       ,p.customer_id
+      ,c.uuid as customer_uuid
       ,p.pet_id
       ,p.product_id
       ,p.quote_source_reference
