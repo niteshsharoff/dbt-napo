@@ -1,3 +1,5 @@
+{{ config(schema='reporting') }}
+
 with policy_transactions as (
   select *
   from {{ref('fct_policy_transaction')}}
