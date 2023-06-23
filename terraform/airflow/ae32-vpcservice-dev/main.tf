@@ -1,5 +1,5 @@
 data "google_storage_bucket_object_content" "shared_vpc_network_manifest" {
-  bucket = "ae32-vpcservice-prod-terraform-bucket"
+  bucket = "ae32-vpcservice-dev-terraform-bucket"
   name   = "core-infrastructure/ae32-vpc-host/networking"
 }
 
@@ -9,7 +9,7 @@ locals {
   region      = "europe-west2"
   environment = "development"
   cluster = {
-    name                 = "data"
+    name                 = "airflow"
     master_ip_cidr_range = "172.19.0.16/28"
   }
 }
