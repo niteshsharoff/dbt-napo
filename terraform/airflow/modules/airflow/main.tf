@@ -29,10 +29,6 @@ module "airflow_db" {
   engine            = var.db_config.engine
   machine_type      = var.db_config.machine_type
   num_read_replicas = 0
-
-  database_flags = [
-    "cloudsql.logical_decoding"
-  ]
 }
 
 # Airflow GKE cluster
