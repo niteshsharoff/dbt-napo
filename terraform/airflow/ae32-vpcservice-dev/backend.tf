@@ -6,7 +6,7 @@ terraform {
   }
 
   backend "gcs" {
-    bucket = "ae32-vpcservice-prod-terraform-bucket"
+    bucket = "ae32-vpcservice-dev-terraform-bucket"
     prefix = "data-infrastructure/airflow/terraform/state"
   }
 }
