@@ -93,4 +93,8 @@ module "airflow_master_node_pool" {
       "https://www.googleapis.com/auth/bigquery",
     ]
   }
+
+  depends_on = [
+    module.gke_cluster
+  ]
 }
