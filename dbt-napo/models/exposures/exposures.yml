@@ -1,0 +1,3204 @@
+version: 2
+exposures:
+  - name: Academy
+    description: '### Dashboard Cards: 15
+
+
+      Puppy Academy dashboard - WIP
+
+
+      #### Metadata
+
+
+      Metabase Id: __8__
+
+
+      Created On: __2022-12-02T08:21:05.643897Z__'
+    type: dashboard
+    url: https://napo.metabaseapp.com/dashboard/8
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_academy_bookings')
+      - ref('dim_policy_detail')
+  - name: Assert_Claim_Reserve_Is_0_When_Closed
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __101__
+
+
+      Created On: __2023-04-25T13:34:20.670296Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/101
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Assert_Reserves_Is_Within_Cover_Limits
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __116__
+
+
+      Created On: __2023-04-25T16:18:38.101383Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/116
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Book_LR
+    description: '### Visualization: Scalar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __49__
+
+
+      Created On: __2022-11-10T17:35:19.205597Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/49
+    maturity: medium
+    owner:
+      name: Will Marsh
+      email: will@napo.pet
+    depends_on: []
+  - name: Cancellations_by_date
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __47__
+
+
+      Created On: __2022-08-28T10:10:09.647513Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/47
+    maturity: medium
+    owner:
+      name: Ludovic Lacay
+      email: ludo@napo.pet
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: Days_taken_to_attend_Academy_session_(median)
+    description: "### Visualization: Scalar\n\nNo description provided in Metabase\n\
+      \n#### Query\n\n```\nwith academy_data as (\r\nselect * \r\n--except(class_date)\r\
+      \n--      ,cast(class_date as date) as class_date\r\nfrom `dbt.dim_academy_bookings`\r\
+      \nwhere {{class_date_filt}}\r\nAND status = \"ATTENDED\"\r\n),\r\nacademy_and_policy_data\
+      \ as (\r\nselect a.* except(class_date)\r\n      ,cast(class_date as date) as\
+      \ class_date\r\n      ,b.species\r\n      ,b.size\r\n      ,b.age_months\r\n\
+      \      ,b.customer_age\r\n      ,b.year_of_birth\r\n      ,cast(b.created_date\
+      \ as date) as policy_created_date\r\n      ,b.policy_start_date\r\nfrom academy_data\
+      \ a\r\nleft join dbt.dim_policy_detail b\r\non b.customer_id = cast(a.customer_id\
+      \ as numeric)\r\n),\r\nraw as (\r\n  select customer_id\r\n        ,policy_created_date\r\
+      \n        ,policy_start_date\r\n        ,class_date as academy_class_date\r\n\
+      \        ,count(class_date) over(partition by customer_id order by class_date\
+      \ asc rows between unbounded preceding and unbounded following) as booking_session_count\
+      \ \r\n        ,date_diff(class_date,policy_created_date,DAY) as date_diff_days\r\
+      \n        ,customer_age\r\n        ,species as pet_type\r\n  from academy_and_policy_data\r\
+      \n  group by 1,2,3,4,6,7,8\r\n),\r\nfinal as (\r\nselect  * \r\n       ,floor(date_diff_days/5)*5\
+      \ as bin_size\r\n       ,concat(\r\n         cast(floor(date_diff_days/5)*5\
+      \ as string)\r\n        ,'-'\r\n        ,cast(floor(date_diff_days/5)*5+5 as\
+      \ string)\r\n        ) as bin_name\r\nfrom raw\r\nwhere booking_session_count\
+      \ = 1\r\n),\r\nmean_days_ as (\r\nselect\r\n    avg(date_diff_days) as mean_days\r\
+      \n--   ,percentile_cont(date_diff_days,0.5) over() as median_days\r\nfrom final\r\
+      \n--group by date_diff_days\r\n),\r\nmedian_days_ as (\r\nselect distinct\r\n\
+      --    avg(date_diff_days) as mean_days\r\n   percentile_cont(date_diff_days,0.5)\
+      \ over() as median_days\r\nfrom final\r\n--group by date_diff_days\r\n)\r\n\
+      select \r\n --   (select mean_days from mean_days_) as mean_days\r\n    (select\
+      \ median_days from median_days_) as median_days\n```\n\n#### Metadata\n\nMetabase\
+      \ Id: __265__\n\nCreated On: __2023-06-01T15:07:02.910382Z__"
+    type: analysis
+    url: https://napo.metabaseapp.com/card/265
+    maturity: medium
+    owner:
+      name: Kaveh Nader
+      email: kaveh.nader@napo.pet
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: Gross_Earned_Loss_Ratio_(last_month)
+    description: '### Dashboard Cards: 9
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __76__
+
+
+      Created On: __2023-05-16T10:45:29.871197Z__'
+    type: dashboard
+    url: https://napo.metabaseapp.com/dashboard/76
+    maturity: medium
+    owner:
+      name: Tim Halford
+      email: tim@napo.pet
+    depends_on: []
+  - name: '[Growth_OKR]_Acquisition_Volume'
+    description: "### Visualization: Combo\n\nNo description provided in Metabase\n\
+      \n#### Query\n\n```\nWITH\r\n  year_1 AS (\r\n SELECT\r\n    pet_id,\r\n   \
+      \ DATE(policy_start_date) AS policy_start_date,\r\n    DATE(policy_end_date)\
+      \ AS policy_end_date,\r\n    DATE(policy_cancel_date) AS policy_cancel_date,\r\
+      \n    policy_cancel_reason,\r\n    annual_price,\r\n    product_id \r\n  FROM\r\
+      \n    dbt.dim_policy_detail\r\n  WHERE\r\n    (is_subscription_active IS NOT\
+      \ NULL\r\n      OR annual_payment_id IS NOT NULL)\r\n    AND quote_source !=\
+      \ 'renewal'), \r\n  year_2 AS (\r\n  SELECT\r\n    pet_id,\r\n    annual_price,\r\
+      \n    DATE(policy_start_date) AS y2_start_date,\r\n    DATE(policy_cancel_date)\
+      \ AS policy_cancel_date,\r\n    DATE(policy_end_date) AS policy_end_date,\r\n\
+      \    policy_cancel_reason\r\n  FROM\r\n    dbt.dim_policy_detail\r\n  WHERE\r\
+      \n    quote_source = 'renewal'),\r\n  merged_data AS (\r\n  SELECT\r\n    year_1.pet_id,\r\
+      \n    policy_start_date,\r\n    y2_start_date,\r\n    year_1.annual_price AS\
+      \ y1_price,\r\n    year_2.annual_price AS y2_price,\r\n    CASE WHEN year_2.policy_end_date\
+      \ > year_1.policy_end_date THEN year_2.policy_end_date ELSE year_1.policy_end_date\
+      \ END AS end_date,\r\n    COALESCE(year_2.policy_cancel_date, year_1.policy_cancel_date)\
+      \ AS cancel_date,\r\n    COALESCE(year_2.policy_cancel_reason, year_1.policy_cancel_reason)\
+      \ AS cancel_reason\r\n  FROM\r\n    year_1\r\n  LEFT JOIN\r\n    year_2\r\n\
+      \  ON\r\n    year_1.pet_id = year_2.pet_id),\r\nuser_level_details AS (\r\n\
+      SELECT\r\n  pet_id,\r\n  FORMAT_DATE('%Y-%m', policy_start_date) AS cohort,\r\
+      \n  cancel_date,\r\n  end_date,\r\n  y2_start_date,\r\n  CASE\r\n    WHEN DATE_DIFF(cancel_date,\
+      \ policy_start_date, DAY) < 0 THEN 0\r\n  ELSE\r\n  DATE_DIFF(cancel_date, policy_start_date,\
+      \ DAY)\r\nEND\r\n  AS days_to_cancellation,\r\n  y1_price,\r\n  y2_price\r\n\
+      FROM\r\n  merged_data),\r\nt1 AS (\r\nSELECT\r\ncohort, \r\nCOUNT(pet_id) as\
+      \ new_started,\r\nCOUNTIF(days_to_cancellation <= 14) as ntu,\r\nCOUNT(pet_id)\
+      \ - COUNTIF(days_to_cancellation <= 14) AS new_started_post_ntu,\r\nCOUNTIF(days_to_cancellation\
+      \ > 14 AND days_to_cancellation <=335) AS num_cancellations,\r\nCOUNTIF((days_to_cancellation\
+      \ BETWEEN 336 AND 379) OR (y2_start_date IS NULL AND cancel_date IS NULL AND\
+      \ end_date < CURRENT_DATE())) as non_renewals_incl_lapsed,\r\nCOUNTIF((days_to_cancellation\
+      \ BETWEEN 380 AND 700)) AS post_renewal_cancellations,\r\nROUND(AVG(CASE WHEN\
+      \ days_to_cancellation BETWEEN 15 AND 335 THEN days_to_cancellation END),0)\
+      \ AS avg_y1_days_to_cancellation,\r\nROUND(AVG(CASE WHEN days_to_cancellation\
+      \ BETWEEN 15 AND 335 THEN y1_price END),2) AS cancellation_app,\r\nROUND(AVG(CASE\
+      \ WHEN days_to_cancellation > 14 OR days_to_cancellation IS NULL THEN y1_price\
+      \ END),2) AS new_app_started,\r\nROUND(AVG(CASE WHEN y2_price IS NOT NULL AND\
+      \ (days_to_cancellation IS NULL OR days_to_cancellation > 379) THEN y2_price\
+      \ END),2) AS renewed_app,\r\nFROM user_level_details\r\nGROUP BY 1\r\nORDER\
+      \ BY 1 ASC),\r\nt2 AS (\r\nSELECT\r\nFORMAT_DATE('%Y-%m',DATE(created_date))\
+      \ AS cohort,\r\nCOUNT(pet_id) AS new_sold, \r\nROUND(AVG(annual_price),2) AS\
+      \ new_app\r\nFROM\r\n    dbt.dim_policy_detail\r\n  WHERE\r\n    (is_subscription_active\
+      \ IS NOT NULL\r\n      OR annual_payment_id IS NOT NULL)\r\n    AND quote_source\
+      \ != 'renewal'\r\n  GROUP BY 1\r\n  ORDER BY 1 ASC)\r\nSELECT\r\nt1.cohort,\r\
+      \nnew_sold,\r\nnew_started,\r\nntu,\r\nnew_started_post_ntu,\r\nnum_cancellations,\r\
+      \navg_y1_days_to_cancellation,\r\nnon_renewals_incl_lapsed,\r\npost_renewal_cancellations,\r\
+      \nnew_app,\r\nnew_app_started,\r\ncancellation_app,\r\nrenewed_app\r\nFROM t1\
+      \ JOIN t2 ON t1.cohort = t2.cohort\r\nORDER BY 1 ASC\n```\n\n#### Metadata\n\
+      \nMetabase Id: __155__\n\nCreated On: __2023-05-15T12:08:28.095571Z__"
+    type: analysis
+    url: https://napo.metabaseapp.com/card/155
+    maturity: medium
+    owner:
+      name: Kaveh Nader
+      email: kaveh.nader@napo.pet
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: '[Growth_OKR]_Cancellations_GWP_Lost'
+    description: "### Visualization: Combo\n\nNo description provided in Metabase\n\
+      \n#### Query\n\n```\nWITH\r\n  year_1 AS (\r\n SELECT\r\n    pet_id,\r\n   \
+      \ DATE(policy_start_date) AS policy_start_date,\r\n    DATE(policy_end_date)\
+      \ AS policy_end_date,\r\n    DATE(policy_cancel_date) AS policy_cancel_date,\r\
+      \n    policy_cancel_reason,\r\n    annual_price,\r\n    product_id \r\n  FROM\r\
+      \n    dbt.dim_policy_detail\r\n  WHERE\r\n    (is_subscription_active IS NOT\
+      \ NULL\r\n      OR annual_payment_id IS NOT NULL)\r\n    AND quote_source !=\
+      \ 'renewal'), \r\n  year_2 AS (\r\n  SELECT\r\n    pet_id,\r\n    annual_price,\r\
+      \n    DATE(policy_start_date) AS y2_start_date,\r\n    DATE(policy_cancel_date)\
+      \ AS policy_cancel_date,\r\n    DATE(policy_end_date) AS policy_end_date,\r\n\
+      \    policy_cancel_reason\r\n  FROM\r\n    dbt.dim_policy_detail\r\n  WHERE\r\
+      \n    quote_source = 'renewal'),\r\n  merged_data AS (\r\n  SELECT\r\n    year_1.pet_id,\r\
+      \n    policy_start_date,\r\n    y2_start_date,\r\n    year_1.annual_price AS\
+      \ y1_price,\r\n    year_2.annual_price AS y2_price,\r\n    CASE WHEN year_2.policy_end_date\
+      \ > year_1.policy_end_date THEN year_2.policy_end_date ELSE year_1.policy_end_date\
+      \ END AS end_date,\r\n    COALESCE(year_2.policy_cancel_date, year_1.policy_cancel_date)\
+      \ AS cancel_date,\r\n    COALESCE(year_2.policy_cancel_reason, year_1.policy_cancel_reason)\
+      \ AS cancel_reason\r\n  FROM\r\n    year_1\r\n  LEFT JOIN\r\n    year_2\r\n\
+      \  ON\r\n    year_1.pet_id = year_2.pet_id),\r\nuser_level_details AS (\r\n\
+      SELECT\r\n  pet_id,\r\n  FORMAT_DATE('%Y-%m', policy_start_date) AS cohort,\r\
+      \n  cancel_date,\r\n  end_date,\r\n  y2_start_date,\r\n  CASE\r\n    WHEN DATE_DIFF(cancel_date,\
+      \ policy_start_date, DAY) < 0 THEN 0\r\n  ELSE\r\n  DATE_DIFF(cancel_date, policy_start_date,\
+      \ DAY)\r\nEND\r\n  AS days_to_cancellation,\r\n  y1_price,\r\n  y2_price\r\n\
+      FROM\r\n  merged_data),\r\nt1 AS (\r\nSELECT\r\ncohort, \r\nCOUNT(pet_id) as\
+      \ new_started,\r\nCOUNTIF(days_to_cancellation <= 14) as ntu,\r\nCOUNT(pet_id)\
+      \ - COUNTIF(days_to_cancellation <= 14) AS new_started_post_ntu,\r\nCOUNTIF(days_to_cancellation\
+      \ > 14 AND days_to_cancellation <=335) AS num_cancellations,\r\nCOUNTIF((days_to_cancellation\
+      \ BETWEEN 336 AND 379) OR (y2_start_date IS NULL AND cancel_date IS NULL AND\
+      \ end_date < CURRENT_DATE())) as non_renewals_incl_lapsed,\r\nCOUNTIF((days_to_cancellation\
+      \ BETWEEN 380 AND 700)) AS post_renewal_cancellations,\r\nROUND(AVG(CASE WHEN\
+      \ days_to_cancellation BETWEEN 15 AND 335 THEN days_to_cancellation END),0)\
+      \ AS avg_y1_days_to_cancellation,\r\nROUND(AVG(CASE WHEN days_to_cancellation\
+      \ BETWEEN 15 AND 335 THEN y1_price END),2) AS cancellation_app,\r\nROUND(AVG(CASE\
+      \ WHEN days_to_cancellation > 14 OR days_to_cancellation IS NULL THEN y1_price\
+      \ END),2) AS new_app_started,\r\nROUND(AVG(CASE WHEN y2_price IS NOT NULL AND\
+      \ (days_to_cancellation IS NULL OR days_to_cancellation > 379) THEN y2_price\
+      \ END),2) AS renewed_app,\r\nFROM user_level_details\r\nGROUP BY 1\r\nORDER\
+      \ BY 1 ASC),\r\nt2 AS (\r\nSELECT\r\nFORMAT_DATE('%Y-%m',DATE(created_date))\
+      \ AS cohort,\r\nCOUNT(pet_id) AS new_sold, \r\nROUND(AVG(annual_price),2) AS\
+      \ new_app\r\nFROM\r\n    dbt.dim_policy_detail\r\n  WHERE\r\n    (is_subscription_active\
+      \ IS NOT NULL\r\n      OR annual_payment_id IS NOT NULL)\r\n    AND quote_source\
+      \ != 'renewal'\r\n  GROUP BY 1\r\n  ORDER BY 1 ASC)\r\nSELECT * \r\nFROM (\r\
+      \nSELECT\r\nt1.cohort,\r\nnew_sold,\r\nnew_started,\r\nntu,\r\nnew_started_post_ntu,\r\
+      \nnum_cancellations,\r\navg_y1_days_to_cancellation,\r\nnon_renewals_incl_lapsed,\r\
+      \nnew_started_post_ntu - num_cancellations - non_renewals_incl_lapsed AS renewals,\r\
+      \npost_renewal_cancellations,\r\nnew_app,\r\nnew_app_started,\r\ncancellation_app,\r\
+      \nrenewed_app,\r\nnew_started_post_ntu*new_app_started AS new_gwp_created,\r\
+      \nROUND((new_started_post_ntu - num_cancellations - non_renewals_incl_lapsed)\
+      \ * renewed_app,2) AS renewed_gwp,\r\nROUND(num_cancellations*((365-avg_y1_days_to_cancellation)/365)*cancellation_app,2)\
+      \ AS cancellations_gwp_lost,\r\nROUND(new_started_post_ntu*new_app_started +\
+      \ (new_started_post_ntu - num_cancellations - non_renewals_incl_lapsed) * renewed_app\
+      \ - num_cancellations*((365-avg_y1_days_to_cancellation)/365)*cancellation_app,2)\
+      \ AS cohort_gwp\r\nFROM t1 JOIN t2 ON t1.cohort = t2.cohort\r\nORDER BY 1 ASC)\r\
+      \nWHERE cohort <= '2022-05'\n```\n\n#### Metadata\n\nMetabase Id: __159__\n\n\
+      Created On: __2023-05-15T12:58:19.327128Z__"
+    type: analysis
+    url: https://napo.metabaseapp.com/card/159
+    maturity: medium
+    owner:
+      name: Kaveh Nader
+      email: kaveh.nader@napo.pet
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: '[Growth_OKR]_New_GWP_Created'
+    description: "### Visualization: Combo\n\nNo description provided in Metabase\n\
+      \n#### Query\n\n```\nWITH\r\n  year_1 AS (\r\n SELECT\r\n    pet_id,\r\n   \
+      \ DATE(policy_start_date) AS policy_start_date,\r\n    DATE(policy_end_date)\
+      \ AS policy_end_date,\r\n    DATE(policy_cancel_date) AS policy_cancel_date,\r\
+      \n    policy_cancel_reason,\r\n    annual_price,\r\n    product_id \r\n  FROM\r\
+      \n    dbt.dim_policy_detail\r\n  WHERE\r\n    (is_subscription_active IS NOT\
+      \ NULL\r\n      OR annual_payment_id IS NOT NULL)\r\n    AND quote_source !=\
+      \ 'renewal'), \r\n  year_2 AS (\r\n  SELECT\r\n    pet_id,\r\n    annual_price,\r\
+      \n    DATE(policy_start_date) AS y2_start_date,\r\n    DATE(policy_cancel_date)\
+      \ AS policy_cancel_date,\r\n    DATE(policy_end_date) AS policy_end_date,\r\n\
+      \    policy_cancel_reason\r\n  FROM\r\n    dbt.dim_policy_detail\r\n  WHERE\r\
+      \n    quote_source = 'renewal'),\r\n  merged_data AS (\r\n  SELECT\r\n    year_1.pet_id,\r\
+      \n    policy_start_date,\r\n    y2_start_date,\r\n    year_1.annual_price AS\
+      \ y1_price,\r\n    year_2.annual_price AS y2_price,\r\n    CASE WHEN year_2.policy_end_date\
+      \ > year_1.policy_end_date THEN year_2.policy_end_date ELSE year_1.policy_end_date\
+      \ END AS end_date,\r\n    COALESCE(year_2.policy_cancel_date, year_1.policy_cancel_date)\
+      \ AS cancel_date,\r\n    COALESCE(year_2.policy_cancel_reason, year_1.policy_cancel_reason)\
+      \ AS cancel_reason\r\n  FROM\r\n    year_1\r\n  LEFT JOIN\r\n    year_2\r\n\
+      \  ON\r\n    year_1.pet_id = year_2.pet_id),\r\nuser_level_details AS (\r\n\
+      SELECT\r\n  pet_id,\r\n  FORMAT_DATE('%Y-%m', policy_start_date) AS cohort,\r\
+      \n  cancel_date,\r\n  end_date,\r\n  y2_start_date,\r\n  CASE\r\n    WHEN DATE_DIFF(cancel_date,\
+      \ policy_start_date, DAY) < 0 THEN 0\r\n  ELSE\r\n  DATE_DIFF(cancel_date, policy_start_date,\
+      \ DAY)\r\nEND\r\n  AS days_to_cancellation,\r\n  y1_price,\r\n  y2_price\r\n\
+      FROM\r\n  merged_data),\r\nt1 AS (\r\nSELECT\r\ncohort, \r\nCOUNT(pet_id) as\
+      \ new_started,\r\nCOUNTIF(days_to_cancellation <= 14) as ntu,\r\nCOUNT(pet_id)\
+      \ - COUNTIF(days_to_cancellation <= 14) AS new_started_post_ntu,\r\nCOUNTIF(days_to_cancellation\
+      \ > 14 AND days_to_cancellation <=335) AS num_cancellations,\r\nCOUNTIF((days_to_cancellation\
+      \ BETWEEN 336 AND 379) OR (y2_start_date IS NULL AND cancel_date IS NULL AND\
+      \ end_date < CURRENT_DATE())) as non_renewals_incl_lapsed,\r\nCOUNTIF((days_to_cancellation\
+      \ BETWEEN 380 AND 700)) AS post_renewal_cancellations,\r\nROUND(AVG(CASE WHEN\
+      \ days_to_cancellation BETWEEN 15 AND 335 THEN days_to_cancellation END),0)\
+      \ AS avg_y1_days_to_cancellation,\r\nROUND(AVG(CASE WHEN days_to_cancellation\
+      \ BETWEEN 15 AND 335 THEN y1_price END),2) AS cancellation_app,\r\nROUND(AVG(CASE\
+      \ WHEN days_to_cancellation > 14 OR days_to_cancellation IS NULL THEN y1_price\
+      \ END),2) AS new_app_started,\r\nROUND(AVG(CASE WHEN y2_price IS NOT NULL AND\
+      \ (days_to_cancellation IS NULL OR days_to_cancellation > 379) THEN y2_price\
+      \ END),2) AS renewed_app,\r\nFROM user_level_details\r\nGROUP BY 1\r\nORDER\
+      \ BY 1 ASC),\r\nt2 AS (\r\nSELECT\r\nFORMAT_DATE('%Y-%m',DATE(created_date))\
+      \ AS cohort,\r\nCOUNT(pet_id) AS new_sold, \r\nROUND(AVG(annual_price),2) AS\
+      \ new_app\r\nFROM\r\n    dbt.dim_policy_detail\r\n  WHERE\r\n    (is_subscription_active\
+      \ IS NOT NULL\r\n      OR annual_payment_id IS NOT NULL)\r\n    AND quote_source\
+      \ != 'renewal'\r\n  GROUP BY 1\r\n  ORDER BY 1 ASC)\r\nSELECT\r\nt1.cohort,\r\
+      \nnew_sold,\r\nnew_started,\r\nntu,\r\nnew_started_post_ntu,\r\nnum_cancellations,\r\
+      \navg_y1_days_to_cancellation,\r\nnon_renewals_incl_lapsed,\r\npost_renewal_cancellations,\r\
+      \nnew_app,\r\nnew_app_started,\r\ncancellation_app,\r\nrenewed_app,\r\nnew_started_post_ntu*new_app_started\
+      \ AS new_gwp_created\r\nFROM t1 JOIN t2 ON t1.cohort = t2.cohort\r\nORDER BY\
+      \ 1 ASC\n```\n\n#### Metadata\n\nMetabase Id: __156__\n\nCreated On: __2023-05-15T12:19:01.335614Z__"
+    type: analysis
+    url: https://napo.metabaseapp.com/card/156
+    maturity: medium
+    owner:
+      name: Kaveh Nader
+      email: kaveh.nader@napo.pet
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: '[Growth_OKR]_Renewed_GWP'
+    description: "### Visualization: Combo\n\nNo description provided in Metabase\n\
+      \n#### Query\n\n```\nWITH\r\n  year_1 AS (\r\n SELECT\r\n    pet_id,\r\n   \
+      \ DATE(policy_start_date) AS policy_start_date,\r\n    DATE(policy_end_date)\
+      \ AS policy_end_date,\r\n    DATE(policy_cancel_date) AS policy_cancel_date,\r\
+      \n    policy_cancel_reason,\r\n    annual_price,\r\n    product_id \r\n  FROM\r\
+      \n    dbt.dim_policy_detail\r\n  WHERE\r\n    (is_subscription_active IS NOT\
+      \ NULL\r\n      OR annual_payment_id IS NOT NULL)\r\n    AND quote_source !=\
+      \ 'renewal'), \r\n  year_2 AS (\r\n  SELECT\r\n    pet_id,\r\n    annual_price,\r\
+      \n    DATE(policy_start_date) AS y2_start_date,\r\n    DATE(policy_cancel_date)\
+      \ AS policy_cancel_date,\r\n    DATE(policy_end_date) AS policy_end_date,\r\n\
+      \    policy_cancel_reason\r\n  FROM\r\n    dbt.dim_policy_detail\r\n  WHERE\r\
+      \n    quote_source = 'renewal'),\r\n  merged_data AS (\r\n  SELECT\r\n    year_1.pet_id,\r\
+      \n    policy_start_date,\r\n    y2_start_date,\r\n    year_1.annual_price AS\
+      \ y1_price,\r\n    year_2.annual_price AS y2_price,\r\n    CASE WHEN year_2.policy_end_date\
+      \ > year_1.policy_end_date THEN year_2.policy_end_date ELSE year_1.policy_end_date\
+      \ END AS end_date,\r\n    COALESCE(year_2.policy_cancel_date, year_1.policy_cancel_date)\
+      \ AS cancel_date,\r\n    COALESCE(year_2.policy_cancel_reason, year_1.policy_cancel_reason)\
+      \ AS cancel_reason\r\n  FROM\r\n    year_1\r\n  LEFT JOIN\r\n    year_2\r\n\
+      \  ON\r\n    year_1.pet_id = year_2.pet_id),\r\nuser_level_details AS (\r\n\
+      SELECT\r\n  pet_id,\r\n  FORMAT_DATE('%Y-%m', policy_start_date) AS cohort,\r\
+      \n  cancel_date,\r\n  end_date,\r\n  y2_start_date,\r\n  CASE\r\n    WHEN DATE_DIFF(cancel_date,\
+      \ policy_start_date, DAY) < 0 THEN 0\r\n  ELSE\r\n  DATE_DIFF(cancel_date, policy_start_date,\
+      \ DAY)\r\nEND\r\n  AS days_to_cancellation,\r\n  y1_price,\r\n  y2_price\r\n\
+      FROM\r\n  merged_data),\r\nt1 AS (\r\nSELECT\r\ncohort, \r\nCOUNT(pet_id) as\
+      \ new_started,\r\nCOUNTIF(days_to_cancellation <= 14) as ntu,\r\nCOUNT(pet_id)\
+      \ - COUNTIF(days_to_cancellation <= 14) AS new_started_post_ntu,\r\nCOUNTIF(days_to_cancellation\
+      \ > 14 AND days_to_cancellation <=335) AS num_cancellations,\r\nCOUNTIF((days_to_cancellation\
+      \ BETWEEN 336 AND 379) OR (y2_start_date IS NULL AND cancel_date IS NULL AND\
+      \ end_date < CURRENT_DATE())) as non_renewals_incl_lapsed,\r\nCOUNTIF((days_to_cancellation\
+      \ BETWEEN 380 AND 700)) AS post_renewal_cancellations,\r\nROUND(AVG(CASE WHEN\
+      \ days_to_cancellation BETWEEN 15 AND 335 THEN days_to_cancellation END),0)\
+      \ AS avg_y1_days_to_cancellation,\r\nROUND(AVG(CASE WHEN days_to_cancellation\
+      \ BETWEEN 15 AND 335 THEN y1_price END),2) AS cancellation_app,\r\nROUND(AVG(CASE\
+      \ WHEN days_to_cancellation > 14 OR days_to_cancellation IS NULL THEN y1_price\
+      \ END),2) AS new_app_started,\r\nROUND(AVG(CASE WHEN y2_price IS NOT NULL AND\
+      \ (days_to_cancellation IS NULL OR days_to_cancellation > 379) THEN y2_price\
+      \ END),2) AS renewed_app,\r\nFROM user_level_details\r\nGROUP BY 1\r\nORDER\
+      \ BY 1 ASC),\r\nt2 AS (\r\nSELECT\r\nFORMAT_DATE('%Y-%m',DATE(created_date))\
+      \ AS cohort,\r\nCOUNT(pet_id) AS new_sold, \r\nROUND(AVG(annual_price),2) AS\
+      \ new_app\r\nFROM\r\n    dbt.dim_policy_detail\r\n  WHERE\r\n    (is_subscription_active\
+      \ IS NOT NULL\r\n      OR annual_payment_id IS NOT NULL)\r\n    AND quote_source\
+      \ != 'renewal'\r\n  GROUP BY 1\r\n  ORDER BY 1 ASC)\r\nSELECT *\r\nFROM (\r\n\
+      SELECT\r\nt1.cohort,\r\nnew_sold,\r\nnew_started,\r\nntu,\r\nnew_started_post_ntu,\r\
+      \nnum_cancellations,\r\navg_y1_days_to_cancellation,\r\nnon_renewals_incl_lapsed,\r\
+      \nnew_started_post_ntu - num_cancellations - non_renewals_incl_lapsed AS renewals,\r\
+      \npost_renewal_cancellations,\r\nnew_app,\r\nnew_app_started,\r\ncancellation_app,\r\
+      \nrenewed_app,\r\nnew_started_post_ntu*new_app_started AS new_gwp_created,\r\
+      \nROUND((new_started_post_ntu - num_cancellations - non_renewals_incl_lapsed)\
+      \ * renewed_app,2) AS renewed_gwp,\r\nROUND(num_cancellations*((365-avg_y1_days_to_cancellation)/365)*cancellation_app,2)\
+      \ AS cancellations_gwp_lost,\r\nROUND(new_started_post_ntu*new_app_started +\
+      \ (new_started_post_ntu - num_cancellations - non_renewals_incl_lapsed) * renewed_app\
+      \ - num_cancellations*((365-avg_y1_days_to_cancellation)/365)*cancellation_app,2)\
+      \ AS cohort_gwp\r\nFROM t1 JOIN t2 ON t1.cohort = t2.cohort\r\nORDER BY 1 ASC)\r\
+      \nWHERE cohort <= '2022-05'\n```\n\n#### Metadata\n\nMetabase Id: __158__\n\n\
+      Created On: __2023-05-15T12:52:53.795172Z__"
+    type: analysis
+    url: https://napo.metabaseapp.com/card/158
+    maturity: medium
+    owner:
+      name: Kaveh Nader
+      email: kaveh.nader@napo.pet
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: '[Growth_OKR]_Retention'
+    description: "### Visualization: Bar\n\nNo description provided in Metabase\n\n\
+      #### Query\n\n```\nWITH\r\n  year_1 AS (\r\n SELECT\r\n    pet_id,\r\n    DATE(policy_start_date)\
+      \ AS policy_start_date,\r\n    DATE(policy_end_date) AS policy_end_date,\r\n\
+      \    DATE(policy_cancel_date) AS policy_cancel_date,\r\n    policy_cancel_reason,\r\
+      \n    annual_price,\r\n    product_id \r\n  FROM\r\n    dbt.dim_policy_detail\r\
+      \n  WHERE\r\n    (is_subscription_active IS NOT NULL\r\n      OR annual_payment_id\
+      \ IS NOT NULL)\r\n    AND quote_source != 'renewal'), \r\n  year_2 AS (\r\n\
+      \  SELECT\r\n    pet_id,\r\n    annual_price,\r\n    DATE(policy_start_date)\
+      \ AS y2_start_date,\r\n    DATE(policy_cancel_date) AS policy_cancel_date,\r\
+      \n    DATE(policy_end_date) AS policy_end_date,\r\n    policy_cancel_reason\r\
+      \n  FROM\r\n    dbt.dim_policy_detail\r\n  WHERE\r\n    quote_source = 'renewal'),\r\
+      \n  merged_data AS (\r\n  SELECT\r\n    year_1.pet_id,\r\n    policy_start_date,\r\
+      \n    y2_start_date,\r\n    year_1.annual_price AS y1_price,\r\n    year_2.annual_price\
+      \ AS y2_price,\r\n    CASE WHEN year_2.policy_end_date > year_1.policy_end_date\
+      \ THEN year_2.policy_end_date ELSE year_1.policy_end_date END AS end_date,\r\
+      \n    COALESCE(year_2.policy_cancel_date, year_1.policy_cancel_date) AS cancel_date,\r\
+      \n    COALESCE(year_2.policy_cancel_reason, year_1.policy_cancel_reason) AS\
+      \ cancel_reason\r\n  FROM\r\n    year_1\r\n  LEFT JOIN\r\n    year_2\r\n  ON\r\
+      \n    year_1.pet_id = year_2.pet_id),\r\nuser_level_details AS (\r\nSELECT\r\
+      \n  pet_id,\r\n  FORMAT_DATE('%Y-%m', policy_start_date) AS cohort,\r\n  cancel_date,\r\
+      \n  end_date,\r\n  y2_start_date,\r\n  CASE\r\n    WHEN DATE_DIFF(cancel_date,\
+      \ policy_start_date, DAY) < 0 THEN 0\r\n  ELSE\r\n  DATE_DIFF(cancel_date, policy_start_date,\
+      \ DAY)\r\nEND\r\n  AS days_to_cancellation,\r\n  y1_price,\r\n  y2_price\r\n\
+      FROM\r\n  merged_data),\r\nt1 AS (\r\nSELECT\r\ncohort, \r\nCOUNT(pet_id) as\
+      \ new_started,\r\nCOUNTIF(days_to_cancellation <= 14) as ntu,\r\nCOUNT(pet_id)\
+      \ - COUNTIF(days_to_cancellation <= 14) AS new_started_post_ntu,\r\nCOUNTIF(days_to_cancellation\
+      \ > 14 AND days_to_cancellation <=335) AS num_cancellations,\r\nCOUNTIF((days_to_cancellation\
+      \ BETWEEN 336 AND 379) OR (y2_start_date IS NULL AND cancel_date IS NULL AND\
+      \ end_date < CURRENT_DATE())) as non_renewals_incl_lapsed,\r\nCOUNTIF((days_to_cancellation\
+      \ BETWEEN 380 AND 700)) AS post_renewal_cancellations,\r\nROUND(AVG(CASE WHEN\
+      \ days_to_cancellation BETWEEN 15 AND 335 THEN days_to_cancellation END),0)\
+      \ AS avg_y1_days_to_cancellation,\r\nROUND(AVG(CASE WHEN days_to_cancellation\
+      \ BETWEEN 15 AND 335 THEN y1_price END),2) AS cancellation_app,\r\nROUND(AVG(CASE\
+      \ WHEN days_to_cancellation > 14 OR days_to_cancellation IS NULL THEN y1_price\
+      \ END),2) AS new_app_started,\r\nROUND(AVG(CASE WHEN y2_price IS NOT NULL AND\
+      \ (days_to_cancellation IS NULL OR days_to_cancellation > 379) THEN y2_price\
+      \ END),2) AS renewed_app,\r\nFROM user_level_details\r\nGROUP BY 1\r\nORDER\
+      \ BY 1 ASC),\r\nt2 AS (\r\nSELECT\r\nFORMAT_DATE('%Y-%m',DATE(created_date))\
+      \ AS cohort,\r\nCOUNT(pet_id) AS new_sold, \r\nROUND(AVG(annual_price),2) AS\
+      \ new_app\r\nFROM\r\n    dbt.dim_policy_detail\r\n  WHERE\r\n    (is_subscription_active\
+      \ IS NOT NULL\r\n      OR annual_payment_id IS NOT NULL)\r\n    AND quote_source\
+      \ != 'renewal'\r\n  GROUP BY 1\r\n  ORDER BY 1 ASC)\r\nSELECT * \r\nFROM (\r\
+      \nSELECT\r\nt1.cohort,\r\nnew_sold,\r\nnew_started,\r\nntu,\r\nnew_started_post_ntu,\r\
+      \nnum_cancellations,\r\navg_y1_days_to_cancellation,\r\nnon_renewals_incl_lapsed,\r\
+      \nnew_started_post_ntu - num_cancellations - non_renewals_incl_lapsed AS renewals,\r\
+      \npost_renewal_cancellations,\r\nnew_app,\r\nnew_app_started,\r\ncancellation_app,\r\
+      \nrenewed_app,\r\nnew_started_post_ntu*new_app_started AS new_gwp_created,\r\
+      \nFROM t1 JOIN t2 ON t1.cohort = t2.cohort\r\nORDER BY 1 ASC)\r\nWHERE cohort\
+      \ <= '2022-05'\n```\n\n#### Metadata\n\nMetabase Id: __157__\n\nCreated On:\
+      \ __2023-05-15T12:37:42.427848Z__"
+    type: analysis
+    url: https://napo.metabaseapp.com/card/157
+    maturity: medium
+    owner:
+      name: Kaveh Nader
+      email: kaveh.nader@napo.pet
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: '[Growth_OKR]_Total_GWP_of_Cohort'
+    description: "### Visualization: Combo\n\nNo description provided in Metabase\n\
+      \n#### Query\n\n```\nWITH\r\n  year_1 AS (\r\n SELECT\r\n    pet_id,\r\n   \
+      \ DATE(policy_start_date) AS policy_start_date,\r\n    DATE(policy_end_date)\
+      \ AS policy_end_date,\r\n    DATE(policy_cancel_date) AS policy_cancel_date,\r\
+      \n    policy_cancel_reason,\r\n    annual_price,\r\n    product_id \r\n  FROM\r\
+      \n    dbt.dim_policy_detail\r\n  WHERE\r\n    (is_subscription_active IS NOT\
+      \ NULL\r\n      OR annual_payment_id IS NOT NULL)\r\n    AND quote_source !=\
+      \ 'renewal'), \r\n  year_2 AS (\r\n  SELECT\r\n    pet_id,\r\n    annual_price,\r\
+      \n    DATE(policy_start_date) AS y2_start_date,\r\n    DATE(policy_cancel_date)\
+      \ AS policy_cancel_date,\r\n    DATE(policy_end_date) AS policy_end_date,\r\n\
+      \    policy_cancel_reason\r\n  FROM\r\n    dbt.dim_policy_detail\r\n  WHERE\r\
+      \n    quote_source = 'renewal'),\r\n  merged_data AS (\r\n  SELECT\r\n    year_1.pet_id,\r\
+      \n    policy_start_date,\r\n    y2_start_date,\r\n    year_1.annual_price AS\
+      \ y1_price,\r\n    year_2.annual_price AS y2_price,\r\n    CASE WHEN year_2.policy_end_date\
+      \ > year_1.policy_end_date THEN year_2.policy_end_date ELSE year_1.policy_end_date\
+      \ END AS end_date,\r\n    COALESCE(year_2.policy_cancel_date, year_1.policy_cancel_date)\
+      \ AS cancel_date,\r\n    COALESCE(year_2.policy_cancel_reason, year_1.policy_cancel_reason)\
+      \ AS cancel_reason\r\n  FROM\r\n    year_1\r\n  LEFT JOIN\r\n    year_2\r\n\
+      \  ON\r\n    year_1.pet_id = year_2.pet_id),\r\nuser_level_details AS (\r\n\
+      SELECT\r\n  pet_id,\r\n  FORMAT_DATE('%Y-%m', policy_start_date) AS cohort,\r\
+      \n  cancel_date,\r\n  end_date,\r\n  y2_start_date,\r\n  CASE\r\n    WHEN DATE_DIFF(cancel_date,\
+      \ policy_start_date, DAY) < 0 THEN 0\r\n  ELSE\r\n  DATE_DIFF(cancel_date, policy_start_date,\
+      \ DAY)\r\nEND\r\n  AS days_to_cancellation,\r\n  y1_price,\r\n  y2_price\r\n\
+      FROM\r\n  merged_data),\r\nt1 AS (\r\nSELECT\r\ncohort, \r\nCOUNT(pet_id) as\
+      \ new_started,\r\nCOUNTIF(days_to_cancellation <= 14) as ntu,\r\nCOUNT(pet_id)\
+      \ - COUNTIF(days_to_cancellation <= 14) AS new_started_post_ntu,\r\nCOUNTIF(days_to_cancellation\
+      \ > 14 AND days_to_cancellation <=335) AS num_cancellations,\r\nCOUNTIF((days_to_cancellation\
+      \ BETWEEN 336 AND 379) OR (y2_start_date IS NULL AND cancel_date IS NULL AND\
+      \ end_date < CURRENT_DATE())) as non_renewals_incl_lapsed,\r\nCOUNTIF((days_to_cancellation\
+      \ BETWEEN 380 AND 700)) AS post_renewal_cancellations,\r\nROUND(AVG(CASE WHEN\
+      \ days_to_cancellation BETWEEN 15 AND 335 THEN days_to_cancellation END),0)\
+      \ AS avg_y1_days_to_cancellation,\r\nROUND(AVG(CASE WHEN days_to_cancellation\
+      \ BETWEEN 15 AND 335 THEN y1_price END),2) AS cancellation_app,\r\nROUND(AVG(CASE\
+      \ WHEN days_to_cancellation > 14 OR days_to_cancellation IS NULL THEN y1_price\
+      \ END),2) AS new_app_started,\r\nROUND(AVG(CASE WHEN y2_price IS NOT NULL AND\
+      \ (days_to_cancellation IS NULL OR days_to_cancellation > 379) THEN y2_price\
+      \ END),2) AS renewed_app,\r\nFROM user_level_details\r\nGROUP BY 1\r\nORDER\
+      \ BY 1 ASC),\r\nt2 AS (\r\nSELECT\r\nFORMAT_DATE('%Y-%m',DATE(created_date))\
+      \ AS cohort,\r\nCOUNT(pet_id) AS new_sold, \r\nROUND(AVG(annual_price),2) AS\
+      \ new_app\r\nFROM\r\n    dbt.dim_policy_detail\r\n  WHERE\r\n    (is_subscription_active\
+      \ IS NOT NULL\r\n      OR annual_payment_id IS NOT NULL)\r\n    AND quote_source\
+      \ != 'renewal'\r\n  GROUP BY 1\r\n  ORDER BY 1 ASC)\r\nSELECT *\r\nFROM (\r\n\
+      SELECT\r\nt1.cohort,\r\nnew_sold,\r\nnew_started,\r\nntu,\r\nnew_started_post_ntu,\r\
+      \nnum_cancellations,\r\navg_y1_days_to_cancellation,\r\nnon_renewals_incl_lapsed,\r\
+      \nnew_started_post_ntu - num_cancellations - non_renewals_incl_lapsed AS renewals,\r\
+      \npost_renewal_cancellations,\r\nnew_app,\r\nnew_app_started,\r\ncancellation_app,\r\
+      \nrenewed_app,\r\nnew_started_post_ntu*new_app_started AS new_gwp_created,\r\
+      \nROUND((new_started_post_ntu - num_cancellations - non_renewals_incl_lapsed)\
+      \ * renewed_app,2) AS renewed_gwp,\r\nROUND(num_cancellations*((365-avg_y1_days_to_cancellation)/365)*cancellation_app,2)\
+      \ AS cancellations_gwp_lost,\r\nROUND(new_started_post_ntu*new_app_started +\
+      \ (new_started_post_ntu - num_cancellations - non_renewals_incl_lapsed) * renewed_app\
+      \ - num_cancellations*((365-avg_y1_days_to_cancellation)/365)*cancellation_app,2)\
+      \ AS cohort_gwp\r\nFROM t1 JOIN t2 ON t1.cohort = t2.cohort\r\nORDER BY 1 ASC)\r\
+      \nWHERE cohort <= '2022-05'\n```\n\n#### Metadata\n\nMetabase Id: __160__\n\n\
+      Created On: __2023-05-15T13:05:33.462973Z__"
+    type: analysis
+    url: https://napo.metabaseapp.com/card/160
+    maturity: medium
+    owner:
+      name: Kaveh Nader
+      email: kaveh.nader@napo.pet
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: Growth:_OKR_Tracker
+    description: '### Dashboard Cards: 6
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __75__
+
+
+      Created On: __2023-05-15T11:59:17.157572Z__'
+    type: dashboard
+    url: https://napo.metabaseapp.com/dashboard/75
+    maturity: medium
+    owner:
+      name: Kaveh Nader
+      email: kaveh.nader@napo.pet
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: Monthly_Cohort_GELR
+    description: '### Visualization: Bar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __70__
+
+
+      Created On: __2023-01-25T12:05:58.679536Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/70
+    maturity: medium
+    owner:
+      name: Will Marsh
+      email: will@napo.pet
+    depends_on: []
+  - name: Most_Popular_Breed_GELR
+    description: '### Visualization: Bar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __71__
+
+
+      Created On: __2023-01-25T12:21:37.097335Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/71
+    maturity: medium
+    owner:
+      name: Will Marsh
+      email: will@napo.pet
+    depends_on: []
+  - name: Policies_-_Core_metrics
+    description: '### Dashboard Cards: 12
+
+
+      Active policies, sold policies, cancelled policies etc
+
+
+      #### Metadata
+
+
+      Metabase Id: __3__
+
+
+      Created On: __2022-05-25T07:26:09.609912Z__'
+    type: dashboard
+    url: https://napo.metabaseapp.com/dashboard/3
+    maturity: medium
+    owner:
+      name: Growthrunner Data
+      email: data@growthrunner.com
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: Policies_-_Sold_policies
+    description: '### Dashboard Cards: 2
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __5__
+
+
+      Created On: __2022-08-01T09:18:58.821663Z__'
+    type: dashboard
+    url: https://napo.metabaseapp.com/dashboard/5
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: Pricing_Model_GELR
+    description: '### Visualization: Bar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __72__
+
+
+      Created On: __2023-01-25T12:24:46.978843Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/72
+    maturity: medium
+    owner:
+      name: Will Marsh
+      email: will@napo.pet
+    depends_on: []
+  - name: Product_GELR
+    description: '### Visualization: Bar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __51__
+
+
+      Created On: __2022-11-16T15:33:28.47314Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/51
+    maturity: medium
+    owner:
+      name: Will Marsh
+      email: will@napo.pet
+    depends_on: []
+  - name: Region_GELR
+    description: '### Visualization: Bar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __73__
+
+
+      Created On: __2023-01-25T12:28:48.614163Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/73
+    maturity: medium
+    owner:
+      name: Will Marsh
+      email: will@napo.pet
+    depends_on: []
+  - name: Species_By_Age_GELR
+    description: '### Visualization: Bar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __52__
+
+
+      Created On: __2022-11-16T15:37:56.337639Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/52
+    maturity: medium
+    owner:
+      name: Will Marsh
+      email: will@napo.pet
+    depends_on: []
+  - name: Species_Gender_GELR
+    description: '### Visualization: Bar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __74__
+
+
+      Created On: __2023-01-25T12:30:51.812533Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/74
+    maturity: medium
+    owner:
+      name: Will Marsh
+      email: will@napo.pet
+    depends_on: []
+  - name: What_is_our_GELR_by_age_and_species?
+    description: '### Visualization: Bar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __201__
+
+
+      Created On: __2023-05-29T16:20:16.904373Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/201
+    maturity: medium
+    owner:
+      name: Tim Halford
+      email: tim@napo.pet
+    depends_on: []
+  - name: What_is_our_GELR_by_policy_start_month?
+    description: '### Visualization: Bar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __199__
+
+
+      Created On: __2023-05-29T15:18:14.975277Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/199
+    maturity: medium
+    owner:
+      name: Tim Halford
+      email: tim@napo.pet
+    depends_on: []
+  - name: What_is_our_GELR_by_pricing_algorithm_version?
+    description: '### Visualization: Bar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __203__
+
+
+      Created On: __2023-05-29T21:36:17.164425Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/203
+    maturity: medium
+    owner:
+      name: Tim Halford
+      email: tim@napo.pet
+    depends_on: []
+  - name: What_is_our_GELR_by_product?
+    description: '### Visualization: Bar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __166__
+
+
+      Created On: __2023-05-29T14:57:38.862362Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/166
+    maturity: medium
+    owner:
+      name: Tim Halford
+      email: tim@napo.pet
+    depends_on: []
+  - name: What_is_our_GELR_by_region?
+    description: '### Visualization: Bar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __200__
+
+
+      Created On: __2023-05-29T16:01:10.008793Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/200
+    maturity: medium
+    owner:
+      name: Tim Halford
+      email: tim@napo.pet
+    depends_on: []
+  - name: What_is_our_GELR_by_year_and_business_type
+    description: '### Visualization: Bar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __202__
+
+
+      Created On: __2023-05-29T16:53:00.98156Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/202
+    maturity: medium
+    owner:
+      name: Tim Halford
+      email: tim@napo.pet
+    depends_on: []
+  - name: What_is_our_Gross_Earned_Loss_Ratio?
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __161__
+
+
+      Created On: __2023-05-16T10:49:30.910042Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/161
+    maturity: medium
+    owner:
+      name: Tim Halford
+      email: tim@napo.pet
+    depends_on: []
+  - name: What_is_our_Incurred_Amount?
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __162__
+
+
+      Created On: __2023-05-16T11:06:10.71756Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/162
+    maturity: medium
+    owner:
+      name: Tim Halford
+      email: tim@napo.pet
+    depends_on: []
+  - name: Whats_is_our_Gross_Earned_Premium?
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __163__
+
+
+      Created On: __2023-05-16T11:23:25.25734Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/163
+    maturity: medium
+    owner:
+      name: Tim Halford
+      email: tim@napo.pet
+    depends_on: []
+  - name: Yearly_Cohort_LR_(Renewal_=1)
+    description: '### Visualization: Bar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __75__
+
+
+      Created On: __2023-01-25T12:34:17.800575Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/75
+    maturity: medium
+    owner:
+      name: Will Marsh
+      email: will@napo.pet
+    depends_on: []
+  - name: Bookings
+    description: '### Visualization: Scalar
+
+
+      Total users that booked sessions irrelevant of attendance
+
+
+      #### Metadata
+
+
+      Metabase Id: __78__
+
+
+      Created On: __2023-02-02T08:23:41.045929Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/78
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_academy_bookings')
+  - name: Bookings_attended
+    description: '### Visualization: Scalar
+
+
+      Number of attended bookings
+
+
+      #### Metadata
+
+
+      Metabase Id: __80__
+
+
+      Created On: __2023-02-02T08:25:15.96084Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/80
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_academy_bookings')
+  - name: Classes_by_popularity
+    description: '### Visualization: Row
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __88__
+
+
+      Created On: __2023-02-06T13:39:54.649629Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/88
+    maturity: medium
+    owner:
+      name: Esther Bretschneider
+      email: esther.bretschneider@napo.pet
+    depends_on:
+      - ref('dim_academy_bookings')
+  - name: Class_popularity_by_day_of_the_week_(user_count)
+    description: '### Visualization: Bar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __57__
+
+
+      Created On: __2022-12-02T09:22:50.095944Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/57
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_academy_bookings')
+  - name: Class_popularity_by_time_(user_count)
+    description: '### Visualization: Row
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __58__
+
+
+      Created On: __2022-12-02T09:25:27.939685Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/58
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_academy_bookings')
+  - name: Daily_attendance_rate_over_time
+    description: '### Visualization: Line
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __87__
+
+
+      Created On: __2023-02-03T08:42:31.433596Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/87
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on: []
+  - name: Days_taken_to_book_Academy_session_(mean)
+    description: "### Visualization: Scalar\n\nDays taken to book first academy session\
+      \ (mean)\n\n#### Query\n\n```\nwith academy_data as (\r\nselect * except(class_date)\r\
+      \n      ,cast(class_date as date) as class_date\r\nfrom `dbt.dim_academy_bookings`\r\
+      \nwhere {{class_date_filt}}\r\n),\r\nacademy_and_policy_data as (\r\nselect\
+      \ a.* except(class_date)\r\n      ,cast(class_date as date) as class_date\r\n\
+      \      ,b.species\r\n      ,b.size\r\n      ,b.age_months\r\n      ,b.customer_age\r\
+      \n      ,b.year_of_birth\r\n      ,cast(b.created_date as date) as policy_created_date\r\
+      \n      ,b.policy_start_date\r\nfrom academy_data a\r\nleft join dbt.dim_policy_detail\
+      \ b\r\non b.customer_id = cast(a.customer_id as numeric)\r\n),\r\nraw as (\r\
+      \n  select customer_id\r\n        ,policy_created_date\r\n        ,policy_start_date\r\
+      \n        ,class_date as academy_class_date\r\n        ,count(class_date) over(partition\
+      \ by customer_id order by class_date asc rows between unbounded preceding and\
+      \ unbounded following) as booking_session_count \r\n        ,date_diff(class_date,policy_created_date,DAY)\
+      \ as date_diff_days\r\n        ,customer_age\r\n        ,species as pet_type\r\
+      \n  from academy_and_policy_data\r\n  group by 1,2,3,4,6,7,8\r\n),\r\nfinal\
+      \ as (\r\nselect  * \r\n       ,floor(date_diff_days/5)*5 as bin_size\r\n  \
+      \     ,concat(\r\n         cast(floor(date_diff_days/5)*5 as string)\r\n   \
+      \     ,'-'\r\n        ,cast(floor(date_diff_days/5)*5+5 as string)\r\n     \
+      \   ) as bin_name\r\nfrom raw\r\nwhere booking_session_count = 1\r\n),\r\nmean_days_\
+      \ as (\r\nselect\r\n    avg(date_diff_days) as mean_days\r\n--   ,percentile_cont(date_diff_days,0.5)\
+      \ over() as median_days\r\nfrom final\r\n--group by date_diff_days\r\n),\r\n\
+      median_days_ as (\r\nselect distinct\r\n--    avg(date_diff_days) as mean_days\r\
+      \n   percentile_cont(date_diff_days,0.5) over() as median_days\r\nfrom final\r\
+      \n--group by date_diff_days\r\n)\r\nselect \r\n    (select mean_days from mean_days_)\
+      \ as mean_days\r\n --   ,(select median_days from median_days_) as median_days\n\
+      ```\n\n#### Metadata\n\nMetabase Id: __68__\n\nCreated On: __2023-01-17T08:59:39.164766Z__"
+    type: analysis
+    url: https://napo.metabaseapp.com/card/68
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: Days_taken_to_book_Academy_session_(median)
+    description: "### Visualization: Scalar\n\nDays taken to book first academy session\
+      \ (median)\n\n#### Query\n\n```\nwith academy_data as (\r\nselect * \r\n--except(class_date)\r\
+      \n--      ,cast(class_date as date) as class_date\r\nfrom `dbt.dim_academy_bookings`\r\
+      \nwhere {{class_date_filt}}\r\n),\r\nacademy_and_policy_data as (\r\nselect\
+      \ a.* except(class_date)\r\n      ,cast(class_date as date) as class_date\r\n\
+      \      ,b.species\r\n      ,b.size\r\n      ,b.age_months\r\n      ,b.customer_age\r\
+      \n      ,b.year_of_birth\r\n      ,cast(b.created_date as date) as policy_created_date\r\
+      \n      ,b.policy_start_date\r\nfrom academy_data a\r\nleft join dbt.dim_policy_detail\
+      \ b\r\non b.customer_id = cast(a.customer_id as numeric)\r\n),\r\nraw as (\r\
+      \n  select customer_id\r\n        ,policy_created_date\r\n        ,policy_start_date\r\
+      \n        ,class_date as academy_class_date\r\n        ,count(class_date) over(partition\
+      \ by customer_id order by class_date asc rows between unbounded preceding and\
+      \ unbounded following) as booking_session_count \r\n        ,date_diff(class_date,policy_created_date,DAY)\
+      \ as date_diff_days\r\n        ,customer_age\r\n        ,species as pet_type\r\
+      \n  from academy_and_policy_data\r\n  group by 1,2,3,4,6,7,8\r\n),\r\nfinal\
+      \ as (\r\nselect  * \r\n       ,floor(date_diff_days/5)*5 as bin_size\r\n  \
+      \     ,concat(\r\n         cast(floor(date_diff_days/5)*5 as string)\r\n   \
+      \     ,'-'\r\n        ,cast(floor(date_diff_days/5)*5+5 as string)\r\n     \
+      \   ) as bin_name\r\nfrom raw\r\nwhere booking_session_count = 1\r\n),\r\nmean_days_\
+      \ as (\r\nselect\r\n    avg(date_diff_days) as mean_days\r\n--   ,percentile_cont(date_diff_days,0.5)\
+      \ over() as median_days\r\nfrom final\r\n--group by date_diff_days\r\n),\r\n\
+      median_days_ as (\r\nselect distinct\r\n--    avg(date_diff_days) as mean_days\r\
+      \n   percentile_cont(date_diff_days,0.5) over() as median_days\r\nfrom final\r\
+      \n--group by date_diff_days\r\n)\r\nselect \r\n --   (select mean_days from\
+      \ mean_days_) as mean_days\r\n    (select median_days from median_days_) as\
+      \ median_days\n```\n\n#### Metadata\n\nMetabase Id: __69__\n\nCreated On: __2023-01-17T08:59:59.572661Z__"
+    type: analysis
+    url: https://napo.metabaseapp.com/card/69
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: Newly_eligible_customers_(uniques)
+    description: '### Visualization: Scalar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __154__
+
+
+      Created On: __2023-05-12T13:10:24.256177Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/154
+    maturity: medium
+    owner:
+      name: Esther Bretschneider
+      email: esther.bretschneider@napo.pet
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: New_puppy_policies
+    description: '### Visualization: Scalar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __89__
+
+
+      Created On: __2023-02-13T11:30:55.027007Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/89
+    maturity: medium
+    owner:
+      name: Esther Bretschneider
+      email: esther.bretschneider@napo.pet
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: New_Puppy_Policies_vs_PA_Sign-Ups
+    description: "### Visualization: Line\n\nNo description provided in Metabase\n\
+      \n#### Query\n\n```\nWITH puppy_academy_details AS (\r\n  SELECT DATE(class_date)\
+      \ AS class_date, \r\n    COUNT(customer_id) AS num_bookings, \r\n    COUNTIF(status\
+      \ = \"ATTENDED\") AS num_attended\r\n  FROM dbt.dim_academy_bookings\r\n  GROUP\
+      \ BY 1\r\n  ORDER BY 1 ASC),\r\npuppy_policies AS (\r\n  SELECT created_date,\
+      \ \r\n    COUNT(policy_id) AS new_puppy_policies\r\n  FROM dbt.dim_policy_detail\r\
+      \n  WHERE (is_subscription_active IS NOT NULL OR annual_payment_id IS NOT NULL)\r\
+      \n    AND quote_source != 'renewal'\r\n    AND species = 'dog' \r\n    AND age_months\
+      \ <= 5 \r\n    AND (policy_cancel_date IS NULL OR policy_cancel_date != created_date)\r\
+      \n    AND created_date >= DATE_ADD(CURRENT_DATE(), INTERVAL -90 DAY)\r\n  GROUP\
+      \ BY 1\r\n  ORDER BY 1 ASC)\r\nSELECT DATE_TRUNC(a.created_date, week(monday))\
+      \ AS created_date,\r\n  SUM(new_puppy_policies) AS new_puppy_policies,\r\n \
+      \ SUM(num_bookings) AS num_bookings,\r\n  SUM(num_attended) AS num_attended\r\
+      \nFROM puppy_policies a LEFT JOIN puppy_academy_details b ON a.created_date\
+      \ = b.class_date\r\nGROUP BY 1\r\nORDER BY 1 ASC\n```\n\n#### Metadata\n\nMetabase\
+      \ Id: __232__\n\nCreated On: __2023-05-31T08:24:02.525459Z__"
+    type: analysis
+    url: https://napo.metabaseapp.com/card/232
+    maturity: medium
+    owner:
+      name: Kaveh Nader
+      email: kaveh.nader@napo.pet
+    depends_on:
+      - ref('dim_academy_bookings')
+      - ref('dim_policy_detail')
+  - name: New_total_PHs_per_month
+    description: '### Visualization: Line
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __298__
+
+
+      Created On: __2023-06-14T16:36:46.307909Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/298
+    maturity: medium
+    owner:
+      name: Esther Bretschneider
+      email: esther.bretschneider@napo.pet
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: Number_of_cancelled_bookings
+    description: '### Visualization: Scalar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __82__
+
+
+      Created On: __2023-02-02T08:26:35.568316Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/82
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_academy_bookings')
+  - name: Total_Classes_in_period
+    description: '### Visualization: Scalar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __84__
+
+
+      Created On: __2023-02-02T08:28:46.584014Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/84
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_academy_bookings')
+  - name: Unique_users_that_attended_bookings
+    description: '### Visualization: Scalar
+
+
+      Number of unique users that attended bookings
+
+
+      #### Metadata
+
+
+      Metabase Id: __81__
+
+
+      Created On: __2023-02-02T08:25:57.315552Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/81
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_academy_bookings')
+  - name: Unique_users_that_booked_sessions
+    description: '### Visualization: Scalar
+
+
+      Unique users that booked sessions irrelevant of attendance
+
+
+      #### Metadata
+
+
+      Metabase Id: __79__
+
+
+      Created On: __2023-02-02T08:24:21.305472Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/79
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_academy_bookings')
+  - name: Unique_users_that_cancelled_bookings
+    description: '### Visualization: Scalar
+
+
+      Number of unique users with cancelled bookings
+
+
+      #### Metadata
+
+
+      Metabase Id: __83__
+
+
+      Created On: __2023-02-02T08:27:57.557329Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/83
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_academy_bookings')
+  - name: User_attendance_by_class_name
+    description: '### Visualization: Row
+
+
+      User attendance by class name (distinct user count)
+
+
+      #### Metadata
+
+
+      Metabase Id: __85__
+
+
+      Created On: __2023-02-02T08:31:51.894928Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/85
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_academy_bookings')
+  - name: User_attendance_ratio_by_class
+    description: '### Visualization: Row
+
+
+      User attendance ratio by class
+
+
+      #### Metadata
+
+
+      Metabase Id: __86__
+
+
+      Created On: __2023-02-02T08:32:32.155219Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/86
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_academy_bookings')
+  - name: Users_that_attended_a_session
+    description: '### Visualization: Scalar
+
+
+      Users that attended a session
+
+
+      #### Metadata
+
+
+      Metabase Id: __77__
+
+
+      Created On: __2023-02-02T08:01:45.069781Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/77
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_academy_bookings')
+  - name: Academy_-_Staging
+    description: '### Dashboard Cards: 15
+
+
+      Puppy Academy dashboard - WIP
+
+
+      #### Metadata
+
+
+      Metabase Id: __100__
+
+
+      Created On: __2023-06-15T15:31:45.918594Z__'
+    type: dashboard
+    url: https://napo.metabaseapp.com/dashboard/100
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_academy_bookings')
+      - ref('dim_policy_detail')
+  - name: Bookings_1
+    description: '### Visualization: Scalar
+
+
+      Total users that booked sessions irrelevant of attendance
+
+
+      #### Metadata
+
+
+      Metabase Id: __308__
+
+
+      Created On: __2023-06-15T15:31:45.918594Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/308
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_academy_bookings')
+  - name: Bookings_attended_1
+    description: '### Visualization: Scalar
+
+
+      Number of attended bookings
+
+
+      #### Metadata
+
+
+      Metabase Id: __312__
+
+
+      Created On: __2023-06-15T15:31:45.918594Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/312
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_academy_bookings')
+  - name: Class_popularity_by_day_of_the_week_(user_count)_1
+    description: '### Visualization: Bar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __304__
+
+
+      Created On: __2023-06-15T15:31:45.918594Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/304
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_academy_bookings')
+  - name: Class_popularity_by_time_(user_count)_1
+    description: '### Visualization: Row
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __300__
+
+
+      Created On: __2023-06-15T15:31:45.918594Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/300
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_academy_bookings')
+  - name: Daily_attendance_rate_over_time_1
+    description: '### Visualization: Line
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __311__
+
+
+      Created On: __2023-06-15T15:31:45.918594Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/311
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on: []
+  - name: Days_taken_to_attend_Academy_session_(median)_1
+    description: "### Visualization: Scalar\n\nNo description provided in Metabase\n\
+      \n#### Query\n\n```\nwith academy_data as (\r\nselect * \r\n--except(class_date)\r\
+      \n--      ,cast(class_date as date) as class_date\r\nfrom `dbt.dim_academy_bookings`\r\
+      \nwhere {{class_date_filt}}\r\nAND status = \"ATTENDED\"\r\n),\r\nacademy_and_policy_data\
+      \ as (\r\nselect a.* except(class_date)\r\n      ,cast(class_date as date) as\
+      \ class_date\r\n      ,b.species\r\n      ,b.size\r\n      ,b.age_months\r\n\
+      \      ,b.customer_age\r\n      ,b.year_of_birth\r\n      ,cast(b.created_date\
+      \ as date) as policy_created_date\r\n      ,b.policy_start_date\r\nfrom academy_data\
+      \ a\r\nleft join dbt.dim_policy_detail b\r\non b.customer_id = cast(a.customer_id\
+      \ as numeric)\r\n),\r\nraw as (\r\n  select customer_id\r\n        ,policy_created_date\r\
+      \n        ,policy_start_date\r\n        ,class_date as academy_class_date\r\n\
+      \        ,count(class_date) over(partition by customer_id order by class_date\
+      \ asc rows between unbounded preceding and unbounded following) as booking_session_count\
+      \ \r\n        ,date_diff(class_date,policy_created_date,DAY) as date_diff_days\r\
+      \n        ,customer_age\r\n        ,species as pet_type\r\n  from academy_and_policy_data\r\
+      \n  group by 1,2,3,4,6,7,8\r\n),\r\nfinal as (\r\nselect  * \r\n       ,floor(date_diff_days/5)*5\
+      \ as bin_size\r\n       ,concat(\r\n         cast(floor(date_diff_days/5)*5\
+      \ as string)\r\n        ,'-'\r\n        ,cast(floor(date_diff_days/5)*5+5 as\
+      \ string)\r\n        ) as bin_name\r\nfrom raw\r\nwhere booking_session_count\
+      \ = 1\r\n),\r\nmean_days_ as (\r\nselect\r\n    avg(date_diff_days) as mean_days\r\
+      \n--   ,percentile_cont(date_diff_days,0.5) over() as median_days\r\nfrom final\r\
+      \n--group by date_diff_days\r\n),\r\nmedian_days_ as (\r\nselect distinct\r\n\
+      --    avg(date_diff_days) as mean_days\r\n   percentile_cont(date_diff_days,0.5)\
+      \ over() as median_days\r\nfrom final\r\n--group by date_diff_days\r\n)\r\n\
+      select \r\n --   (select mean_days from mean_days_) as mean_days\r\n    (select\
+      \ median_days from median_days_) as median_days\n```\n\n#### Metadata\n\nMetabase\
+      \ Id: __307__\n\nCreated On: __2023-06-15T15:31:45.918594Z__"
+    type: analysis
+    url: https://napo.metabaseapp.com/card/307
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: Days_taken_to_book_Academy_session_(mean)_1
+    description: "### Visualization: Scalar\n\nDays taken to book first academy session\
+      \ (mean)\n\n#### Query\n\n```\nwith academy_data as (\r\nselect * except(class_date)\r\
+      \n      ,cast(class_date as date) as class_date\r\nfrom `dbt.dim_academy_bookings`\r\
+      \nwhere {{class_date_filt}}\r\n),\r\nacademy_and_policy_data as (\r\nselect\
+      \ a.* except(class_date)\r\n      ,cast(class_date as date) as class_date\r\n\
+      \      ,b.species\r\n      ,b.size\r\n      ,b.age_months\r\n      ,b.customer_age\r\
+      \n      ,b.year_of_birth\r\n      ,cast(b.created_date as date) as policy_created_date\r\
+      \n      ,b.policy_start_date\r\nfrom academy_data a\r\nleft join dbt.dim_policy_detail\
+      \ b\r\non b.customer_id = cast(a.customer_id as numeric)\r\n),\r\nraw as (\r\
+      \n  select customer_id\r\n        ,policy_created_date\r\n        ,policy_start_date\r\
+      \n        ,class_date as academy_class_date\r\n        ,count(class_date) over(partition\
+      \ by customer_id order by class_date asc rows between unbounded preceding and\
+      \ unbounded following) as booking_session_count \r\n        ,date_diff(class_date,policy_created_date,DAY)\
+      \ as date_diff_days\r\n        ,customer_age\r\n        ,species as pet_type\r\
+      \n  from academy_and_policy_data\r\n  group by 1,2,3,4,6,7,8\r\n),\r\nfinal\
+      \ as (\r\nselect  * \r\n       ,floor(date_diff_days/5)*5 as bin_size\r\n  \
+      \     ,concat(\r\n         cast(floor(date_diff_days/5)*5 as string)\r\n   \
+      \     ,'-'\r\n        ,cast(floor(date_diff_days/5)*5+5 as string)\r\n     \
+      \   ) as bin_name\r\nfrom raw\r\nwhere booking_session_count = 1\r\n),\r\nmean_days_\
+      \ as (\r\nselect\r\n    avg(date_diff_days) as mean_days\r\n--   ,percentile_cont(date_diff_days,0.5)\
+      \ over() as median_days\r\nfrom final\r\n--group by date_diff_days\r\n),\r\n\
+      median_days_ as (\r\nselect distinct\r\n--    avg(date_diff_days) as mean_days\r\
+      \n   percentile_cont(date_diff_days,0.5) over() as median_days\r\nfrom final\r\
+      \n--group by date_diff_days\r\n)\r\nselect \r\n    (select mean_days from mean_days_)\
+      \ as mean_days\r\n --   ,(select median_days from median_days_) as median_days\n\
+      ```\n\n#### Metadata\n\nMetabase Id: __305__\n\nCreated On: __2023-06-15T15:31:45.918594Z__"
+    type: analysis
+    url: https://napo.metabaseapp.com/card/305
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: Days_taken_to_book_Academy_session_(median)_1
+    description: "### Visualization: Scalar\n\nDays taken to book first academy session\
+      \ (median)\n\n#### Query\n\n```\nwith academy_data as (\r\nselect * \r\n--except(class_date)\r\
+      \n--      ,cast(class_date as date) as class_date\r\nfrom `dbt.dim_academy_bookings`\r\
+      \nwhere {{class_date_filt}}\r\n),\r\nacademy_and_policy_data as (\r\nselect\
+      \ a.* except(class_date)\r\n      ,cast(class_date as date) as class_date\r\n\
+      \      ,b.species\r\n      ,b.size\r\n      ,b.age_months\r\n      ,b.customer_age\r\
+      \n      ,b.year_of_birth\r\n      ,cast(b.created_date as date) as policy_created_date\r\
+      \n      ,b.policy_start_date\r\nfrom academy_data a\r\nleft join dbt.dim_policy_detail\
+      \ b\r\non b.customer_id = cast(a.customer_id as numeric)\r\n),\r\nraw as (\r\
+      \n  select customer_id\r\n        ,policy_created_date\r\n        ,policy_start_date\r\
+      \n        ,class_date as academy_class_date\r\n        ,count(class_date) over(partition\
+      \ by customer_id order by class_date asc rows between unbounded preceding and\
+      \ unbounded following) as booking_session_count \r\n        ,date_diff(class_date,policy_created_date,DAY)\
+      \ as date_diff_days\r\n        ,customer_age\r\n        ,species as pet_type\r\
+      \n  from academy_and_policy_data\r\n  group by 1,2,3,4,6,7,8\r\n),\r\nfinal\
+      \ as (\r\nselect  * \r\n       ,floor(date_diff_days/5)*5 as bin_size\r\n  \
+      \     ,concat(\r\n         cast(floor(date_diff_days/5)*5 as string)\r\n   \
+      \     ,'-'\r\n        ,cast(floor(date_diff_days/5)*5+5 as string)\r\n     \
+      \   ) as bin_name\r\nfrom raw\r\nwhere booking_session_count = 1\r\n),\r\nmean_days_\
+      \ as (\r\nselect\r\n    avg(date_diff_days) as mean_days\r\n--   ,percentile_cont(date_diff_days,0.5)\
+      \ over() as median_days\r\nfrom final\r\n--group by date_diff_days\r\n),\r\n\
+      median_days_ as (\r\nselect distinct\r\n--    avg(date_diff_days) as mean_days\r\
+      \n   percentile_cont(date_diff_days,0.5) over() as median_days\r\nfrom final\r\
+      \n--group by date_diff_days\r\n)\r\nselect \r\n --   (select mean_days from\
+      \ mean_days_) as mean_days\r\n    (select median_days from median_days_) as\
+      \ median_days\n```\n\n#### Metadata\n\nMetabase Id: __301__\n\nCreated On: __2023-06-15T15:31:45.918594Z__"
+    type: analysis
+    url: https://napo.metabaseapp.com/card/301
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: Number_of_cancelled_bookings_1
+    description: '### Visualization: Scalar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __303__
+
+
+      Created On: __2023-06-15T15:31:45.918594Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/303
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_academy_bookings')
+  - name: Total_Classes_in_period_1
+    description: '### Visualization: Scalar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __313__
+
+
+      Created On: __2023-06-15T15:31:45.918594Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/313
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_academy_bookings')
+  - name: Unique_users_that_attended_bookings_1
+    description: '### Visualization: Scalar
+
+
+      Number of unique users that attended bookings
+
+
+      #### Metadata
+
+
+      Metabase Id: __309__
+
+
+      Created On: __2023-06-15T15:31:45.918594Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/309
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_academy_bookings')
+  - name: Unique_users_that_booked_sessions_1
+    description: '### Visualization: Scalar
+
+
+      Unique users that booked sessions irrelevant of attendance
+
+
+      #### Metadata
+
+
+      Metabase Id: __310__
+
+
+      Created On: __2023-06-15T15:31:45.918594Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/310
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_academy_bookings')
+  - name: Unique_users_that_cancelled_bookings_1
+    description: '### Visualization: Scalar
+
+
+      Number of unique users with cancelled bookings
+
+
+      #### Metadata
+
+
+      Metabase Id: __306__
+
+
+      Created On: __2023-06-15T15:31:45.918594Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/306
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_academy_bookings')
+  - name: User_attendance_by_class_name_1
+    description: '### Visualization: Row
+
+
+      User attendance by class name (distinct user count)
+
+
+      #### Metadata
+
+
+      Metabase Id: __302__
+
+
+      Created On: __2023-06-15T15:31:45.918594Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/302
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_academy_bookings')
+  - name: User_attendance_ratio_by_class_1
+    description: '### Visualization: Row
+
+
+      User attendance ratio by class
+
+
+      #### Metadata
+
+
+      Metabase Id: __299__
+
+
+      Created On: __2023-06-15T15:31:45.918594Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/299
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_academy_bookings')
+  - name: Breed_Mapping_Discrepancies_(2023-04-24)
+    description: '### Dashboard Cards: 8
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __70__
+
+
+      Created On: __2023-04-26T08:35:56.250607Z__'
+    type: dashboard
+    url: https://napo.metabaseapp.com/dashboard/70
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Confused_Breed_Map_Discrepancies
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __125__
+
+
+      Created On: __2023-04-26T10:48:07.581149Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/125
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Confused_Breed_Map_Discrepancies_(Count_by_Month)
+    description: '### Visualization: Bar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __132__
+
+
+      Created On: __2023-04-26T11:25:41.159303Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/132
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Ctm_Breed_Map_Discrepancies
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __129__
+
+
+      Created On: __2023-04-26T10:57:03.589713Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/129
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Ctm_Breed_Map_Discrepancies_(Count_by_Month)
+    description: '### Visualization: Bar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __131__
+
+
+      Created On: __2023-04-26T11:23:22.658817Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/131
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Gocompare_Breed_Map_Discrepancies
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __126__
+
+
+      Created On: __2023-04-26T10:48:19.15887Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/126
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Gocompare_Breed_Map_Discrepancies_(Count_by_Month)
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __134__
+
+
+      Created On: __2023-04-26T11:34:25.260215Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/134
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Msm_Breed_Map_Discrepancies
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __130__
+
+
+      Created On: __2023-04-26T11:15:22.734872Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/130
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Msm_Breed_Map_Discrepancies_(Count_by_Month)
+    description: '### Visualization: Bar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __133__
+
+
+      Created On: __2023-04-26T11:29:57.530964Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/133
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: CSR_-_Policy_Detail_with_PII
+    description: '### Dashboard Cards: 1
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __6__
+
+
+      Created On: __2022-08-17T01:07:34.927051Z__'
+    type: dashboard
+    url: https://napo.metabaseapp.com/dashboard/6
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: Dim_Policy_Detail_with_PII
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __46__
+
+
+      Created On: __2022-08-17T08:26:41.214965Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/46
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: Assert_Claim_Reserve_Is_0_When_Closed_1
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __135__
+
+
+      Created On: __2023-04-26T16:23:26.260776Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/135
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Assert_Claim_Yoa_Matches_Policy_Yoa
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __153__
+
+
+      Created On: __2023-05-10T16:46:10.425864Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/153
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Assert_Cumulative_Premium_Position_Gt_0
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __314__
+
+
+      Created On: __2023-06-15T16:27:31.165078Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/314
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Assert_Customer_Dob_Is_Gt_18
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __145__
+
+
+      Created On: __2023-04-26T16:38:12.698443Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/145
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Assert_Declined_Claim_Has_Reason
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __137__
+
+
+      Created On: __2023-04-26T16:24:13.402168Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/137
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Assert_Expected_Transaction_Ordering
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __315__
+
+
+      Created On: __2023-06-15T16:29:31.631896Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/315
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Assert_Gross_Written_Premium_Is_Positive
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __144__
+
+
+      Created On: __2023-04-26T16:37:52.7931Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/144
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Assert_Historical_Snapshot_Completeness
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __138__
+
+
+      Created On: __2023-04-26T16:24:37.797153Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/138
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Assert_Incident_Date_Is_After_Cover_Date
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __139__
+
+
+      Created On: __2023-04-26T16:24:52.918259Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/139
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Assert_Master_Claim_ID_Is_Claim_ID
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __141__
+
+
+      Created On: __2023-04-26T16:25:53.812247Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/141
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Assert_Master_Claim_ID_Is_Claim_ID_1
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __321__
+
+
+      Created On: __2023-06-15T16:36:44.418537Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/321
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Assert_Master_Claim_ID_Is_Not_Null
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __142__
+
+
+      Created On: __2023-04-26T16:36:51.840193Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/142
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Assert_No_Duplicate_Rows
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __316__
+
+
+      Created On: __2023-06-15T16:30:24.11751Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/316
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Assert_One_New_Policy_Transaction_Per_Policy
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __317__
+
+
+      Created On: __2023-06-15T16:31:04.914871Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/317
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Assert_Policy_Snapshot_Parity
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __318__
+
+
+      Created On: __2023-06-15T16:32:08.134111Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/318
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Assert_Renewal_Has_Original_Policy_ID
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __319__
+
+
+      Created On: __2023-06-15T16:32:38.733527Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/319
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Assert_Reserves_Is_Within_Cover_Limits_1
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __143__
+
+
+      Created On: __2023-04-26T16:37:07.671813Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/143
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Assert_Transaction_Has_Original_Policy
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __320__
+
+
+      Created On: __2023-06-15T16:33:14.27432Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/320
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Claims_Snapshot_Validation
+    description: '### Dashboard Cards: 8
+
+
+      Data validation test cases for claims underwriter table
+
+
+      #### Metadata
+
+
+      Metabase Id: __71__
+
+
+      Created On: __2023-04-26T16:20:57.133027Z__'
+    type: dashboard
+    url: https://napo.metabaseapp.com/dashboard/71
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Policy_Snapshot_Validation
+    description: '### Dashboard Cards: 2
+
+
+      Data validation test cases for policy underwriter table
+
+
+      #### Metadata
+
+
+      Metabase Id: __72__
+
+
+      Created On: __2023-04-26T16:40:53.592757Z__'
+    type: dashboard
+    url: https://napo.metabaseapp.com/dashboard/72
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Policy_Transaction_Validation
+    description: '### Dashboard Cards: 7
+
+
+      Data validation test cases for policy transaction table
+
+
+      #### Metadata
+
+
+      Metabase Id: __101__
+
+
+      Created On: __2023-06-15T16:28:41.012037Z__'
+    type: dashboard
+    url: https://napo.metabaseapp.com/dashboard/101
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Assert_Claim_Reserve_Is_0_When_Closed_1_2
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __107__
+
+
+      Created On: __2023-04-25T13:46:52.566688Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/107
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Assert_Claim_Yoa_Matches_Policy_Yoa_1
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __108__
+
+
+      Created On: __2023-04-25T13:47:46.746678Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/108
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Assert_Customer_Dob_Is_Gt_18_1
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __109__
+
+
+      Created On: __2023-04-25T16:12:22.339102Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/109
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Assert_Declined_Claim_Has_Reason_1
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __110__
+
+
+      Created On: __2023-04-25T16:13:30.949069Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/110
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Assert_Gross_Written_Premium_Is_Positive_1
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __111__
+
+
+      Created On: __2023-04-25T16:14:12.874542Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/111
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Assert_Historical_Snapshot_Completeness_1
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __112__
+
+
+      Created On: __2023-04-25T16:14:39.260907Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/112
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Assert_Incident_Date_Is_After_Cover_Dates
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __151__
+
+
+      Created On: __2023-05-03T16:45:48.488637Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/151
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Assert_Master_Claim_ID_Is_Claim_ID_1_2
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __114__
+
+
+      Created On: __2023-04-25T16:17:08.436642Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/114
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Assert_Master_Claim_ID_Is_Not_Null_1
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __115__
+
+
+      Created On: __2023-04-25T16:18:04.299999Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/115
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Assert_Reserves_Is_Within_Cover_Limit
+    description: '### Visualization: Table
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __104__
+
+
+      Created On: __2023-04-25T13:42:08.600124Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/104
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Claims_Snapshot_Validation_1
+    description: '### Dashboard Cards: 8
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __67__
+
+
+      Created On: __2023-04-25T13:32:31.993301Z__'
+    type: dashboard
+    url: https://napo.metabaseapp.com/dashboard/67
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Policy_Snapshot_Validation_1
+    description: '### Dashboard Cards: 2
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __68__
+
+
+      Created On: __2023-04-25T16:10:38.353492Z__'
+    type: dashboard
+    url: https://napo.metabaseapp.com/dashboard/68
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Active_customers
+    description: '### Visualization: Scalar
+
+
+      Unique count of customers that have an active policy
+
+
+      #### Metadata
+
+
+      Metabase Id: __30__
+
+
+      Created On: __2022-05-30T15:03:05.763981Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/30
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: Active_policies
+    description: '### Visualization: Scalar
+
+
+      - The policy has an annual payment or subscription (regardless of its state).
+
+      - The cancelled date is NOT set on the policy.
+
+      - The policy is NOT expired.
+
+
+      #### Metadata
+
+
+      Metabase Id: __37__
+
+
+      Created On: __2022-06-24T16:42:55.915579Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/37
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: Annual_premium_sum_for_active_policies
+    description: '### Visualization: Scalar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __40__
+
+
+      Created On: __2022-06-25T10:44:33.626736Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/40
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: Average_monthly__premium_for_policies_sold
+    description: '### Visualization: Scalar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __26__
+
+
+      Created On: __2022-05-25T08:14:31.940749Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/26
+    maturity: medium
+    owner:
+      name: Growthrunner Data
+      email: data@growthrunner.com
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: Cancellations_per_months
+    description: '### Visualization: Line
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __48__
+
+
+      Created On: __2022-11-01T12:08:06.591429Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/48
+    maturity: medium
+    owner:
+      name: Ludovic Lacay
+      email: ludo@napo.pet
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: Cancelled_policies
+    description: '### Visualization: Scalar
+
+
+      - The cancelled date is set on the Policy.
+
+      - There was an annual payment or subscription (regardless of state).
+
+
+      #### Metadata
+
+
+      Metabase Id: __38__
+
+
+      Created On: __2022-06-24T16:52:31.914585Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/38
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: Monthly_premium_sum_for_active_policies
+    description: '### Visualization: Scalar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __39__
+
+
+      Created On: __2022-06-25T10:43:35.62979Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/39
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: Policies_sold_breakdown_by_annual_premium
+    description: '### Visualization: Bar
+
+
+      Bins with under 10 policies are hidden from this visualisation
+
+
+      #### Metadata
+
+
+      Metabase Id: __21__
+
+
+      Created On: __2022-05-25T07:55:06.161683Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/21
+    maturity: medium
+    owner:
+      name: Growthrunner Data
+      email: data@growthrunner.com
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: Policies_sold_breakdown_by_dog_breed
+    description: '### Visualization: Row
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __24__
+
+
+      Created On: __2022-05-25T08:06:28.000372Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/24
+    maturity: medium
+    owner:
+      name: Growthrunner Data
+      email: data@growthrunner.com
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: Policies_sold_breakdown_by_pet_age_in_months
+    description: '### Visualization: Bar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __23__
+
+
+      Created On: __2022-05-25T08:02:41.465147Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/23
+    maturity: medium
+    owner:
+      name: Growthrunner Data
+      email: data@growthrunner.com
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: Policies_sold_breakdown_by_pet_type
+    description: '### Visualization: Pie
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __22__
+
+
+      Created On: __2022-05-25T08:00:28.938043Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/22
+    maturity: medium
+    owner:
+      name: Growthrunner Data
+      email: data@growthrunner.com
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: Policies_sold_breakdown_by_policy_type
+    description: '### Visualization: Pie
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __20__
+
+
+      Created On: __2022-05-25T07:51:57.25319Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/20
+    maturity: medium
+    owner:
+      name: Growthrunner Data
+      email: data@growthrunner.com
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: Policies_sold_per_channel
+    description: '### Visualization: Row
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __25__
+
+
+      Created On: __2022-05-25T08:10:18.675833Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/25
+    maturity: medium
+    owner:
+      name: Growthrunner Data
+      email: data@growthrunner.com
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: Policy_attribution_by_month
+    description: '### Visualization: Table
+
+
+      Rolled up policy attribution by month
+
+
+      #### Metadata
+
+
+      Metabase Id: __42__
+
+
+      Created On: __2022-07-15T17:50:08.752168Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/42
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('fct_policy_attribution')
+  - name: Sold_policies
+    description: '### Visualization: Scalar
+
+
+      The policy has an annual payment or subscription (regardless of its state).
+
+
+      #### Metadata
+
+
+      Metabase Id: __36__
+
+
+      Created On: __2022-06-24T16:27:14.740457Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/36
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: Sold_policies_by_week
+    description: '### Visualization: Line
+
+
+      Sold policies by week
+
+
+      #### Metadata
+
+
+      Metabase Id: __44__
+
+
+      Created On: __2022-08-01T09:17:19.052753Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/44
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: Sold_policies_by_week_(direct)
+    description: '### Visualization: Line
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __45__
+
+
+      Created On: __2022-08-01T09:18:10.561946Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/45
+    maturity: medium
+    owner:
+      name: Nitesh Sharoff
+      email: nitesh@growthrunner.com
+    depends_on:
+      - ref('dim_policy_detail')
+  - name: Ctm_Sales_Report_Daily
+    description: '### Visualization: Bar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __147__
+
+
+      Created On: __2023-04-26T16:49:25.13054Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/147
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Gocompare_Sales_Report_Daily
+    description: '### Visualization: Bar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __150__
+
+
+      Created On: __2023-04-26T17:05:28.333862Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/150
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: Msm_Sales_Report_Daily
+    description: '### Visualization: Bar
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __148__
+
+
+      Created On: __2023-04-26T16:49:50.189682Z__'
+    type: analysis
+    url: https://napo.metabaseapp.com/card/148
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
+  - name: PCW_Reports
+    description: '### Dashboard Cards: 3
+
+
+      No description provided in Metabase
+
+
+      #### Metadata
+
+
+      Metabase Id: __73__
+
+
+      Created On: __2023-04-26T16:52:13.596776Z__'
+    type: dashboard
+    url: https://napo.metabaseapp.com/dashboard/73
+    maturity: medium
+    owner:
+      name: Jeremiah Mai
+      email: jeremiah.mai@napo.pet
+    depends_on: []
