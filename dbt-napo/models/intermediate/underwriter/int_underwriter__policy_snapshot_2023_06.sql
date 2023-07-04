@@ -38,7 +38,7 @@ LEFT JOIN (
     SUM(IF(claim_cover_type = 'vet_fee_cover' AND claim_cover_sub_type = 'Accident', claim_paid_amount, 0)) AS policy_vet_fee_accident_paid_amount,
     SUM(IF(claim_cover_type = 'vet_fee_cover' AND claim_cover_sub_type = 'Illness', claim_paid_amount, 0)) AS policy_vet_fee_illness_paid_amount
   FROM
-    {{ ref("int_underwriter__claim_snapshot_2023_05") }}
+    {{ ref("int_underwriter__claim_snapshot_2023_06") }}
   GROUP BY
     policy_id
 ) AS policy_claim ON
