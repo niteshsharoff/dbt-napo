@@ -30,7 +30,7 @@ SELECT
   COALESCE(policy_incurred_amount, 0) AS policy_incurred_amount,
   COALESCE(policy_vet_fee_accident_paid_amount, 0) AS policy_vet_fee_accident_paid_amount,
   COALESCE(policy_vet_fee_illness_paid_amount, 0) AS policy_vet_fee_illness_paid_amount,
-  COALESCE(n_master_claims, 0) AS n_master_claims
+  COALESCE(policy_n_master_claims, 0) AS policy_n_master_claims
 FROM
   {{ ref ("int_underwriter__policy_history") }} AS policy,
   snapshot_details
