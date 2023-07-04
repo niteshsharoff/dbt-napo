@@ -2,8 +2,6 @@ name: SQL Formatting Check
 
 on:
   pull_request:
-    branches:
-      - main
 
 jobs:
   check-formatting:
