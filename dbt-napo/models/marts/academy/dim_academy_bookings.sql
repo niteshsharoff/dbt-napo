@@ -34,7 +34,7 @@ final as (
         ,class_time
         ,class_weekday
         ,customer_uuid
-        ,customer_id
+--        ,customer_id
         ,session_uuid
         ,status
         ,run_date
