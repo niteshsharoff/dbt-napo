@@ -40,7 +40,7 @@ LEFT JOIN (
     COALESCE(SUM(claim_incurred_amount), 0) AS policy_incurred_amount,
     SUM(IF(claim_cover_type = 'vet_fee_cover' AND claim_cover_sub_type = 'Accident', claim_paid_amount, 0)) AS policy_vet_fee_accident_paid_amount,
     SUM(IF(claim_cover_type = 'vet_fee_cover' AND claim_cover_sub_type = 'Illness', claim_paid_amount, 0)) AS policy_vet_fee_illness_paid_amount,
-    COUNTIF(NOT claim_is_continuation) AS n_master_claims
+    COUNTIF(NOT claim_is_continuation) AS policy_n_master_claims
   FROM
     {{ ref("int_underwriter__claim_snapshot_2023_06") }}
   GROUP BY
