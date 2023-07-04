@@ -1,4 +1,4 @@
-{{ config(schema='reporting') }}
+{{ config(schema='marts') }}
 
 with policy_transactions as (
   select *

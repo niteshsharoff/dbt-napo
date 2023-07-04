@@ -192,14 +192,14 @@ with
         from policy_history_with_audit_dimension
         where row_effective_from = policy.cancelled_at
             and policy.reinstated_at is null
-            and date_diff(policy.cancel_date, policy.start_date, day) <= 14
+            and date_diff(policy.cancel_date, policy.start_date, day) < 14
     ),
     new_cancellations as (
         select 'Cancellation' as transaction_type, row_effective_from as transaction_at, *
         from policy_history_with_audit_dimension
         where row_effective_from = policy.cancelled_at 
             and policy.reinstated_at is null
-            and date_diff(policy.cancel_date, policy.start_date, day) > 14
+            and date_diff(policy.cancel_date, policy.start_date, day) >= 14
     ),
     renewals as (
         select 'Renewal' as transaction_type, row_effective_from as transaction_at, *
@@ -216,10 +216,18 @@ with
         from policy_history_with_audit_dimension
         where row_effective_from = policy.reinstated_at
     ),
+    reinstated_ntus as (
+        -- Handles Reinstated NTUs (i.e. ADV-MUR-0021)
+        select 'NTU' as transaction_type, row_effective_from as transaction_at, *
+        from policy_history_with_audit_dimension
+        where row_effective_from = policy.cancelled_at and policy.reinstated_at is not null
+            and date_diff(policy.cancel_date, policy.start_date, day) < 14
+    ),
     reinstated_cancellations as (
         select 'Cancellation' as transaction_type, row_effective_from as transaction_at, *
         from policy_history_with_audit_dimension
         where row_effective_from = policy.cancelled_at and policy.reinstated_at is not null
+            and date_diff(policy.cancel_date, policy.start_date, day) >= 14
     ),
     all_mtas as (
         select *
@@ -243,13 +251,20 @@ with
         from all_mtas
         where policy.cancelled_at is null or (policy.reinstated_at > policy.cancelled_at)
     ),
+    ntu_mtas as (
+        -- Handles MTA on NTU policies (i.e. ADV-CIR-0002)
+        select 'NTU' as transaction_type, row_effective_from as transaction_at, *
+        from all_mtas
+        where policy.cancelled_at is not null 
+            and ((policy.cancelled_at > policy.reinstated_at) or (policy.reinstated_at is null))
+            and date_diff(policy.cancel_date, policy.start_date, day) < 14
+    ),
     cancellation_mtas as (
         select 'Cancellation MTA' as transaction_type, row_effective_from as transaction_at, *
         from all_mtas
         where policy.cancelled_at is not null 
             and ((policy.cancelled_at > policy.reinstated_at) or (policy.reinstated_at is null))
-            -- exclude MTAs on NTU policies (i.e. ADV-CIR-0002), can result in inaccurate reporting
-            and date_diff(policy.cancel_date, policy.start_date, day) > 14
+            and date_diff(policy.cancel_date, policy.start_date, day) >= 14
     ),
     all_transactions as (
         select * from new_policies
@@ -258,7 +273,9 @@ with
         union all select * from sold_mtas
         union all select * from renewals
         union all select * from reinstatements
+        union all select * from reinstated_ntus
         union all select * from reinstated_cancellations
+        union all select * from ntu_mtas
         union all select * from cancellation_mtas
     ),
     final as (
