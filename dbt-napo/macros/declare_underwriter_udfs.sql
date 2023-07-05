@@ -156,21 +156,23 @@
         )
     ;
 
-    create or replace function  -- TODO: Include retail discounts
+    create or replace function
         {{ target.schema }}.calculate_gross_written_premium(
-            policy_annual_price float64, policy_start_date date, policy_cancel_date date
+            policy_premium_price float64,
+            policy_start_date date,
+            policy_cancel_date date
         )
     returns float64
     as
         (
             case
                 when policy_cancel_date is null
-                then policy_annual_price / 1.12
+                then policy_premium_price / 1.12
                 when date_diff(policy_cancel_date, policy_start_date, day) <= 14
                 then 0
                 else
                     (
-                        policy_annual_price / 1.12
+                        policy_premium_price / 1.12
                     ) * {{ target.schema }}.calculate_policy_exposure(
                         policy_start_date, policy_cancel_date
                     )
@@ -178,9 +180,9 @@
         )
     ;
 
-    create or replace function  -- TODO: Include retail discounts
+    create or replace function
         {{ target.schema }}.calculate_gross_earned_premium(
-            policy_annual_price float64,
+            policy_premium_price float64,
             policy_start_date date,
             policy_cancel_date date,
             snapshot_date date
@@ -192,7 +194,7 @@
                 when policy_cancel_date is null
                 then
                     (
-                        policy_annual_price / 1.12
+                        policy_premium_price / 1.12
                     ) * {{ target.schema }}.calculate_policy_exposure(
                         policy_start_date, snapshot_date
                     )
@@ -200,7 +202,7 @@
                 then 0
                 else
                     (
-                        policy_annual_price / 1.12
+                        policy_premium_price / 1.12
                     ) * {{ target.schema }}.calculate_policy_exposure(
                         policy_start_date, least(snapshot_date, policy_cancel_date)
                     )
