@@ -6,10 +6,12 @@ with
             extract(date from timestamp_millis(date_of_birth)) as date_of_birth,
             timestamp_millis(change_at) as change_at,
             timestamp_millis(effective_at) as effective_from,
-            lead(timestamp_millis(effective_at), 1, timestamp("2999-01-01 00:00:00+00")) over (
-                partition by customer_id order by effective_at
-            ) as effective_to,
-            max(version_id) over (partition by customer_id order by version_id desc) as latest_version
+            lead(
+                timestamp_millis(effective_at), 1, timestamp("2999-01-01 00:00:00+00")
+            ) over (partition by customer_id order by effective_at) as effective_to,
+            max(version_id) over (
+                partition by customer_id order by version_id desc
+            ) as latest_version
         from {{ source("raw", "customer") }}
     )
 select *

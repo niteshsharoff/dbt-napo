@@ -1,3 +1,1 @@
-select pk
-      ,fields.*
-from {{source('postgres','breed_mapping')}}
+select pk, fields.* from {{ source("postgres", "breed_mapping") }}
