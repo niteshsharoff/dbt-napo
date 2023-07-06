@@ -11,7 +11,7 @@ select
         policy_start_date, policy_end_date, extract(date from snapshot_at)
     ) as policy_development_month,
     {{ target.schema }}.calculate_gross_earned_premium(
-        policy_annual_retail_price,
+        policy_annual_premium_price,
         policy_start_date,
         policy_cancel_date,
         extract(date from snapshot_at)

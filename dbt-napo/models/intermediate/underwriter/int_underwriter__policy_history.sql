@@ -11,12 +11,10 @@ select
     policy.policy_id as policy_id,
     product.reference as product_reference,
     policy.annual_price as policy_annual_retail_price,
-    policy.annual_price as policy_annual_premium_price,
     {{ target.schema }}.calculate_premium_price(
         policy.annual_price, campaign.discount_percentage
-    ) as policy_annual_premium_price_inc_discount,
+    ) as policy_annual_premium_price,
     customer.date_of_birth as customer_date_of_birth,
-    policy.created_date as policy_created_date,
     policy.start_date as policy_start_date,
     policy.end_date as policy_end_date,
     policy.illness_cover_start_date as policy_illness_cover_start_date,
@@ -56,7 +54,11 @@ select
     end as policy_co_pay_percent,
     policy.payment_plan_type as policy_payment_plan_type,
     {{ target.schema }}.calculate_gross_written_premium(
-        policy.annual_price, policy.start_date, policy.cancel_date
+        {{ target.schema }}.calculate_premium_price(
+            policy.annual_price, campaign.discount_percentage
+        ),
+        policy.start_date,
+        policy.cancel_date
     ) as policy_gross_written_premium,
     extract(year from policy.start_date) as policy_start_date_year,
     renewal.old_policy_id as renewal_old_policy_id,
