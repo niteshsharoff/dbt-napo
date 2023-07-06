@@ -1,8 +1,5 @@
-SELECT
-    * EXCEPT(
-        behavioural_treatment_cover
-    ),
-    CAST(behavioural_treatment_cover AS FLOAT64) AS behavioural_treatment_cover
+select
+    * except (behavioural_treatment_cover),
+    cast(behavioural_treatment_cover as float64) as behavioural_treatment_cover
 
-FROM
-    {{source('raw','product')}}
+from {{ source("raw", "product") }}

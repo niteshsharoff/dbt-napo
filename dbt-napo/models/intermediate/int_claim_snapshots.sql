@@ -4,12 +4,18 @@ with
             id,
             cast(policy_id as int64) as policy_id,
             trim(master_claim_id) as master_claim_id,
-            extract(date from timestamp_millis(cast(date_received as int64))) as date_received,
-            extract(date from timestamp_millis(cast(onset_date as int64))) as onset_date,
+            extract(
+                date from timestamp_millis(cast(date_received as int64))
+            ) as date_received,
+            extract(
+                date from timestamp_millis(cast(onset_date as int64))
+            ) as onset_date,
             cover_type,
             cover_sub_type,
             cast(paid_amount as float64) as paid_amount,
-            extract(date from timestamp_millis(cast(first_invoice_date as int64))) as first_invoice_date,
+            extract(
+                date from timestamp_millis(cast(first_invoice_date as int64))
+            ) as first_invoice_date,
             decline_reason,
             cast(invoice_amount as float64) as invoice_amount,
             case
@@ -20,7 +26,11 @@ with
                 else status
             end as status,
             case
-                when is_continuation = 'Yes' then true when is_continuation = 'No' then false else null
+                when is_continuation = 'Yes'
+                then true
+                when is_continuation = 'No'
+                then false
+                else null
             end as is_continuation,
             condition,
             decision,
@@ -32,16 +42,19 @@ with
             previous_vet_two_email,
             json_extract_scalar(tag) as tag,
             source,
-            0 as recovery_amount, # TODO: Extract from ClickUp custom fields
+            0 as recovery_amount,  # TODO: Extract from ClickUp custom fields
             is_archived,
-            extract(date from timestamp_millis(cast(last_invoice_date as int64))) as last_invoice_date,
-            extract(date from timestamp_millis(cast(closed_date as int64))) as closed_date,
+            extract(
+                date from timestamp_millis(cast(last_invoice_date as int64))
+            ) as last_invoice_date,
+            extract(
+                date from timestamp_millis(cast(closed_date as int64))
+            ) as closed_date,
             vet_practice_name,
             snapshot_date,
         from raw.claims_snapshot as claim
         left join unnest(json_extract_array(tags)) tag
-        where not is_archived
-        and policy_id is not null
+        where not is_archived and policy_id is not null
     ),
     pivot_tag_to_id_grain as (
         select

@@ -3,32 +3,38 @@
 
 with
     policy as (
-        select * except(policy_id, cancel_reason, run_date)
-            , policy.policy_id
-            , policy.cancel_reason as cancel_reason_id
-            , cancel_mapping.cancel_reason
+        select
+            * except (policy_id, cancel_reason, run_date),
+            policy.policy_id,
+            policy.cancel_reason as cancel_reason_id,
+            cancel_mapping.cancel_reason
         from {{ ref("stg_raw__policy_ledger") }} policy
-        left join {{ ref("lookup_policy_cancel_reason") }} cancel_mapping 
+        left join
+            {{ ref("lookup_policy_cancel_reason") }} cancel_mapping
             on policy.cancel_reason = cancel_mapping.id
-        left join {{ ref("int_original_policy") }} original_policy
+        left join
+            {{ ref("int_original_policy") }} original_policy
             on policy.policy_id = original_policy.policy_id
     ),
     product as (select * from {{ source("raw", "product") }}),
     customer as (
-        select * except(run_date), customer.run_date
+        select * except (run_date), customer.run_date
         from {{ ref("stg_raw__customer_ledger") }} customer
         left join {{ source("raw", "user") }} user on customer.user_id = user.id
     ),
     pet as (
-        select * except(run_date, name, species, source)
-            , pet.run_date
-            , pet.name
-            , pet.species
-            , breed.name as breed_name
-            , breed.source as breed_source
+        select
+            * except (run_date, name, species, source),
+            pet.run_date,
+            pet.name,
+            pet.species,
+            breed.name as breed_name,
+            breed.source as breed_source
         from {{ ref("stg_raw__pet_ledger") }} pet
-        left join {{ source("raw", "breed") }} breed 
-            on pet.breed_id = breed.id and breed.run_date = parse_date('%Y-%m-%d', '{{yesterday}}')
+        left join
+            {{ source("raw", "breed") }} breed
+            on pet.breed_id = breed.id
+            and breed.run_date = parse_date('%Y-%m-%d', '{{yesterday}}')
     ),
     quote as (select * from {{ ref("int_policy_quote") }}),
     campaign as (select * from {{ ref("stg_raw__vouchercode") }}),
@@ -44,8 +50,12 @@ with
                 select
                     policy,
                     customer,
-                    greatest(customer.effective_from, policy.effective_from) as row_effective_from,
-                    least(customer.effective_to, policy.effective_to) as row_effective_to
+                    greatest(
+                        customer.effective_from, policy.effective_from
+                    ) as row_effective_from,
+                    least(
+                        customer.effective_to, policy.effective_to
+                    ) as row_effective_to
                 from policy
                 left join
                     customer
