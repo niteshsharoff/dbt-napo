@@ -2,8 +2,55 @@ version: 2
 
 models:
   - name: int_underwriter__policy_history
-    description: Historic full policy data for finance and pricing reporting
+    description: Underwriter policy history data represented by a type 2 slowly changing dimension
+    columns:
+    - name: customer_region
+      description: According to postcode_area_region DBT seed provided by pricing team
+    - name: policy_annual_retail_price
+      description: Price net of IPT and retail discounts
+    - name: policy_annual_premium_price
+      description: Price net of IPT and gross of retail discounts
+    - name: policy_gross_written_premium
+      description: Written premium gross of IPT and retail discounts 
+    - name: quote_pricing_model_version
+      description: |
+        According to pricing_model_versions DBT seed provided by pricing team. Prior to pricing
+        algorithm v7
   - name: int_underwriter__policy_snapshot
-    description: Snapshotted full policy data for finance and pricing reporting
+    description: |
+      Daily snapshot of underwriter policy data derived from int_underwriter__policy_history by
+      filtering on row effective dates
+    columns:
+    - name: policy_exposure
+      description: In years, from policy start date to snapshot date.
+    - name: policy_development_month
+      description: Number of months betwen policy start month and snapshot month
+    - name: policy_gross_earned_premium
+      description: |
+        Earned premium, gross of IPT and retail discounts, between policy start date and
+        snapshot date
+  - name: int_underwriter__claim_snapshots
+    description: Underwriter claim partial history data represented by daily snapshots.
+    columns:
+    - name: claim_cover_sub_type
+      description: For vet fee cover type, either Ilness or Accident
+    - name: claim_source
+      description: Either vet or customer
+    - name: product_cover_for_type
+      description: Product cover limit of claim policy for claim cover type
+    - name: policy_paid_amount_for_type
+      value: | 
+        Policy paid amount for claim cover type
+        Subtracted from product_cover_for_type to calulate remaining limit for claim type.
+    - name: claim_reserve_amount
+      description: |
+        For open claims, invoice amount adjusted for remaining cover, excess and copay.
+        For closed claims, 0.
+    - name: claim_incurred_amount
+      description: |
+        For open claims, reserve amount.
+        For closed claims, amount paid.
   - name: int_underwriter__claim_snapshot
-    description: Snapshotted full policy and claim data for finance and pricing reporting
+    description: |
+      Daily snapshot of underwriter claim data derived by int_underwriter__claim_snapshots by
+      filtering of row snapshot date
