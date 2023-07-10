@@ -1,4 +1,4 @@
-{{ config(pre_hook=["{{declare_underwriter_udfs()}}"]) }}
+{{ config(schema="marts", pre_hook=["{{declare_underwriter_udfs()}}"]) }}
 
 with
     add_cancel_date_to_reinstatements as (
