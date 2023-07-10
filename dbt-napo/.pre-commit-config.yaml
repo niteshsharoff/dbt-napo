@@ -1,0 +1,12 @@
+repos:
+  - repo: https://github.com/tconbeer/sqlfmt
+    rev: v0.18.3
+    hooks:
+      - id: sqlfmt
+        language_version: python
+        additional_dependencies: ['.[jinjafmt]']
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.3.0
+    hooks:
+      - id: trailing-whitespace

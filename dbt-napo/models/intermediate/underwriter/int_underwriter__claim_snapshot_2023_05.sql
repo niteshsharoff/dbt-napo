@@ -1,10 +1,5 @@
-{{ config(materialized='table') }}
+{{ config(materialized="table") }}
 
-SELECT
-  *
-FROM
-  {{ref('int_underwriter__claim_snapshots')}}
-WHERE
-  snapshot_date = DATE(2023, 6, 1)
-AND
-  claim_received_date < DATE(2023, 6, 1)
+select *
+from {{ ref("int_underwriter__claim_snapshots") }}
+where snapshot_date = date(2023, 6, 1) and claim_received_date < date(2023, 6, 1)

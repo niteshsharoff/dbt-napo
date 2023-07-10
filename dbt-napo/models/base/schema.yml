@@ -3,7 +3,7 @@ version: 2
 sources:
   - name: postgres
     schema: postgres
-    tables: 
+    tables:
       - name: breed
       - name: customer
       - name: pet
@@ -15,7 +15,7 @@ sources:
       - name: policy_payment
   - name: loss_ratio
     schema: loss_ratio
-    tables: 
+    tables:
       - name: all_book_summary
       - name: breed_age_summary
       - name: cohort_summary
@@ -35,14 +35,21 @@ sources:
       warn_after: {count: 49, period: hour}
       error_after: {count: 50, period: hour}
       filter: date_diff(cast(run_date as timestamp), current_timestamp(), day) < 2
-    tables: 
+    tables:
       - name: quoterequest
       - name: renewal
       - name: policy
+        description: '{{ doc("raw__policy") }}'
       - name: product
       - name: customer
+        description: '{{ doc("raw__customer") }}'
       - name: user
+        description: '{{ doc("raw__user") }}'
       - name: pet
+        description: '{{ doc("raw__pet") }}'
+        columns:
+          - name: age_months
+            description: This column is deprecated on Django, we should calculate pet age using the pet's date_of_birth column instead.
       - name: breed
       - name: subscription
       - name: vouchercode
@@ -54,8 +61,8 @@ sources:
         description: "Puppy Academy customer data"
   - name: firestore
     schema: firestore
-    description: "Puppy Academy Firebase/Firestore data" 
-    tables: 
+    description: "Puppy Academy Firebase/Firestore data"
+    tables:
       - name: users
       - name: bookings
       - name: email_reminders

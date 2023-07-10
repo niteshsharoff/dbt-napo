@@ -1,33 +1,37 @@
-SELECT
-  policy_id,
-  snapshot_date,
-  COALESCE(vet_fee_paid_amount, 0) AS vet_fee_paid_amount,
-  COALESCE(complementary_treatment_paid_amount, 0) AS complementary_treatment_paid_amount,
-  COALESCE(dental_paid_amount, 0) AS dental_paid_amount,
-  COALESCE(emergency_boarding_paid_amount, 0) AS emergency_boarding_paid_amount,
-  COALESCE(behavioural_treatment_paid_amount, 0) AS behavioural_treatment_paid_amount,
-  COALESCE(third_person_liability_paid_amount, 0) AS third_person_liability_paid_amount,
-  COALESCE(pet_death_paid_amount, 0) AS pet_death_paid_amount,
-  COALESCE(travel_paid_amount, 0) as travel_paid_amount,
-  COALESCE(missing_pet_paid_amount, 0) AS missing_pet_paid_amount
-FROM (
-  SELECT
+select
     policy_id,
     snapshot_date,
-    cover_type,
-    COALESCE(paid_amount, 0) AS paid_amount
-  FROM
-    {{ref("int_claim_snapshots")}}
-) PIVOT(
-  SUM(paid_amount) FOR cover_type IN (
-    "vet_fee_cover" AS vet_fee_paid_amount,
-    "complementary_treatment_cover" AS complementary_treatment_paid_amount,
-    "dental_cover" AS dental_paid_amount,
-    "emergency_boarding_cover" AS emergency_boarding_paid_amount,
-    "third_person_liability_cover" AS third_person_liability_paid_amount,
-    "pet_death_cover" AS pet_death_paid_amount,
-    "travel_cover" AS travel_paid_amount,
-    "missing_pet_cover" AS missing_pet_paid_amount,
-    "behavioural_treatment_cover" AS behavioural_treatment_paid_amount
-  )
-)
+    coalesce(vet_fee_paid_amount, 0) as vet_fee_paid_amount,
+    coalesce(
+        complementary_treatment_paid_amount, 0
+    ) as complementary_treatment_paid_amount,
+    coalesce(dental_paid_amount, 0) as dental_paid_amount,
+    coalesce(emergency_boarding_paid_amount, 0) as emergency_boarding_paid_amount,
+    coalesce(behavioural_treatment_paid_amount, 0) as behavioural_treatment_paid_amount,
+    coalesce(
+        third_person_liability_paid_amount, 0
+    ) as third_person_liability_paid_amount,
+    coalesce(pet_death_paid_amount, 0) as pet_death_paid_amount,
+    coalesce(travel_paid_amount, 0) as travel_paid_amount,
+    coalesce(missing_pet_paid_amount, 0) as missing_pet_paid_amount
+from
+    (
+        select
+            policy_id,
+            snapshot_date,
+            cover_type,
+            coalesce(paid_amount, 0) as paid_amount
+        from {{ ref("int_claim_snapshots") }}
+    ) pivot (
+        sum(paid_amount) for cover_type in (
+            "vet_fee_cover" as vet_fee_paid_amount,
+            "complementary_treatment_cover" as complementary_treatment_paid_amount,
+            "dental_cover" as dental_paid_amount,
+            "emergency_boarding_cover" as emergency_boarding_paid_amount,
+            "third_person_liability_cover" as third_person_liability_paid_amount,
+            "pet_death_cover" as pet_death_paid_amount,
+            "travel_cover" as travel_paid_amount,
+            "missing_pet_cover" as missing_pet_paid_amount,
+            "behavioural_treatment_cover" as behavioural_treatment_paid_amount
+        )
+    )

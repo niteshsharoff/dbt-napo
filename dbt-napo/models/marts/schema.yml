@@ -104,3 +104,13 @@ models:
 
       - name: breed_pk
         description: ""
+
+  - name: fct_active_policies
+    description: "A daily snapshot of the current active policies in the table"
+    columns:
+      - name: active_policies
+        description: "All active policies that have an annual payment associated to it, an active subscription associated to it and is not cancelled for all pet types"
+      - name: active_puppy_policies_dog_only
+        description: "All active dog only policies where the pet age in months is less than or equal to 5 months"
+      - name: active_adolescent_policies_dog_only
+        description: "All active dog only policies where the pet age in months is more than or equal to 6 months but less than or equal to 25 (pet_age >=6 and pet_age <= 24)"

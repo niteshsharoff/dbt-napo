@@ -1,7 +1,4 @@
-{{ config(materialized='table') }}
-SELECT
-    *
-FROM
-    {{ ref("int_quote") }}
-WHERE
-    quote_id IN (select distinct quote_id from {{ref("stg_raw__policy")}})
+{{ config(materialized="table") }}
+select *
+from {{ ref("int_quote") }}
+where quote_id in (select distinct quote_id from {{ ref("stg_raw__policy") }})
