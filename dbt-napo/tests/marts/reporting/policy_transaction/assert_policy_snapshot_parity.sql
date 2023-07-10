@@ -13,5 +13,6 @@ select policy_reference_number
 from {{ ref("int_underwriter__policy_snapshot") }}
 where
     policy_reference_number not in (
-        select distinct policy.reference_number from {{ ref("fct_policy_transaction") }}
+        select distinct policy.reference_number
+        from {{ ref("reporting_policy_transaction") }}
     )

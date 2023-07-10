@@ -1,20 +1,25 @@
 {% set MTA_FIELDS = [
+    ["policy", "policy_id"],
+    ["policy", "reference_number"],
+    ["policy", "quote_id"],
+    ["policy", "quote_source"],
+    ["policy", "original_quote_source"],
     ["policy", "annual_price"],
     ["policy", "payment_plan_type"],
-    ["policy", "accident_cover_start_date"],
-    ["policy", "illness_cover_start_date"],
     ["policy", "start_date"],
     ["policy", "end_date"],
+    ["policy", "policy_year"],
     ["policy", "cancel_date"],
+    ["policy", "cancel_reason"],
+    ["customer", "customer_id"],
     ["customer", "first_name"],
     ["customer", "last_name"],
-    ["customer", "email"],
     ["customer", "date_of_birth"],
     ["customer", "postal_code"],
+    ["pet", "pet_id"],
     ["pet", "name"],
     ["pet", "date_of_birth"],
     ["pet", "gender"],
-    ["pet", "size"],
     ["pet", "cost"],
     ["pet", "is_neutered"],
     ["pet", "is_microchipped"],
@@ -22,8 +27,8 @@
     ["pet", "species"],
     ["pet", "breed_category"],
     ["pet", "breed_name"],
-    ["pet", "breed_source"],
     ["pet", "has_pre_existing_conditions"],
+    ["product", "reference"],
 ] %}
 
 with
@@ -209,7 +214,7 @@ with
         where
             row_effective_from = policy.cancelled_at
             and policy.reinstated_at is null
-            and date_diff(policy.cancel_date, policy.start_date, day) <= 14
+            and date_diff(policy.cancel_date, policy.start_date, day) < 14
     ),
     new_cancellations as (
         select
@@ -218,7 +223,7 @@ with
         where
             row_effective_from = policy.cancelled_at
             and policy.reinstated_at is null
-            and date_diff(policy.cancel_date, policy.start_date, day) > 14
+            and date_diff(policy.cancel_date, policy.start_date, day) >= 14
     ),
     renewals as (
         select 'Renewal' as transaction_type, row_effective_from as transaction_at, *
@@ -237,6 +242,15 @@ with
         from policy_history_with_audit_dimension
         where row_effective_from = policy.reinstated_at
     ),
+    reinstated_ntus as (
+        -- Handles Reinstated NTUs (i.e. ADV-MUR-0021)
+        select 'NTU' as transaction_type, row_effective_from as transaction_at, *
+        from policy_history_with_audit_dimension
+        where
+            row_effective_from = policy.cancelled_at
+            and policy.reinstated_at is not null
+            and date_diff(policy.cancel_date, policy.start_date, day) < 14
+    ),
     reinstated_cancellations as (
         select
             'Cancellation' as transaction_type, row_effective_from as transaction_at, *
@@ -244,6 +258,7 @@ with
         where
             row_effective_from = policy.cancelled_at
             and policy.reinstated_at is not null
+            and date_diff(policy.cancel_date, policy.start_date, day) >= 14
     ),
     all_mtas as (
         select *
@@ -275,6 +290,18 @@ with
         where
             policy.cancelled_at is null or (policy.reinstated_at > policy.cancelled_at)
     ),
+    ntu_mtas as (
+        -- Handles MTA on NTU policies (i.e. ADV-CIR-0002)
+        select 'NTU' as transaction_type, row_effective_from as transaction_at, *
+        from all_mtas
+        where
+            policy.cancelled_at is not null
+            and (
+                (policy.cancelled_at > policy.reinstated_at)
+                or (policy.reinstated_at is null)
+            )
+            and date_diff(policy.cancel_date, policy.start_date, day) < 14
+    ),
     cancellation_mtas as (
         select
             'Cancellation MTA' as transaction_type,
@@ -287,6 +314,7 @@ with
                 (policy.cancelled_at > policy.reinstated_at)
                 or (policy.reinstated_at is null)
             )
+            and date_diff(policy.cancel_date, policy.start_date, day) >= 14
     ),
     all_transactions as (
         select *
@@ -308,7 +336,13 @@ with
         from reinstatements
         union all
         select *
+        from reinstated_ntus
+        union all
+        select *
         from reinstated_cancellations
+        union all
+        select *
+        from ntu_mtas
         union all
         select *
         from cancellation_mtas

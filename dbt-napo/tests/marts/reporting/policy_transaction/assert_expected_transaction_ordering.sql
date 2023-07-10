@@ -40,7 +40,7 @@ from
                         else 6
                     end
             ) as prev_transaction_type
-        from {{ ref("fct_policy_transaction") }}
+        from {{ ref("reporting_policy_transaction") }}
     )
 where
     (

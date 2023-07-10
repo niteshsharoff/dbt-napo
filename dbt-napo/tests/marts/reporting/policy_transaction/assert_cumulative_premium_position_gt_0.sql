@@ -11,6 +11,6 @@
 select
     policy.reference_number,
     sum(underwriter.premium_difference_ipt_inc) as cumulative_premium_position
-from {{ ref("fct_policy_transaction") }}
+from {{ ref("reporting_policy_transaction") }}
 group by policy.reference_number
 having cumulative_premium_position < 0.0

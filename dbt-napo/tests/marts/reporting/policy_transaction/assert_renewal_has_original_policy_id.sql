@@ -14,5 +14,5 @@ select
     policy.reference_number,
     policy.quote_source,
     policy.original_quote_source
-from {{ ref("fct_policy_transaction") }}
+from {{ ref("reporting_policy_transactions") }}
 where transaction_type = 'Renewal' and policy.original_quote_source is null
