@@ -1,7 +1,7 @@
 {{ config(schema="marts") }}
 
 with
-    policy_transactions as (select * from {{ ref("fct_policy_transaction") }}),
+    policy_transactions as (select * from {{ ref("reporting_policy_transaction") }}),
     cgice_transactions as (
         select
             transaction_type,
