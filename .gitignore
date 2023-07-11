@@ -139,3 +139,4 @@ plugins
 airflow-variables.json
 .kube
 *.ipynb
+.vscode

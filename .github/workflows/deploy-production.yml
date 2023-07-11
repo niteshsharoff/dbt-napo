@@ -79,7 +79,7 @@ jobs:
           gcloud container clusters get-credentials ${GKE_CLUSTER} \
             --region ${GKE_REGION} \
             --project ${PROJECT_ID}
-          
+
           HTTPS_PROXY=127.0.0.1:17889 kubectl get pods -n ${GKE_NAMESPACE}
         shell: bash
 
