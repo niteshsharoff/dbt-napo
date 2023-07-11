@@ -5,14 +5,14 @@ with report as (
 )
 , new_policies as (
   select *
-  from dbt.fct_policy_transaction, report
+  from dbt_marts.reporting_policy_transaction, report
   where policy.quote_source = pcw_name
     and transaction_type = 'New Policy'
     and (cast(policy.sold_at as date) >= start_date and cast(policy.sold_at as date) < end_date)
 )
 , cancellations as (
   select *
-  from dbt.fct_policy_transaction, report
+  from dbt_marts.reporting_policy_transaction, report
   where policy.quote_source = pcw_name
     and transaction_type = 'NTU'
     and (cast(policy.cancelled_at as date) >= start_date and cast(policy.cancelled_at as date) < end_date)
