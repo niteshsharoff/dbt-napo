@@ -1,12 +1,12 @@
-name: "Publish"
+name: "Build and Deploy Airflow Image"
 
 on:
   release:
     types: [published]
 
 env:
-  VPC_PROJECT_ID: ${{ secrets.SHARED_VPC_PROJECT_ID }}
-  PROJECT_ID: ${{ secrets.DATA_WAREHOUSE_PROJECT_ID }}
+  VPC_PROJECT_ID: ae32-vpc-host
+  PROJECT_ID: ae32-vpcservice-datawarehouse
   BASTION_ZONE: europe-west2-a
   GKE_REGION: europe-west2
   GKE_CLUSTER: production
@@ -15,13 +15,14 @@ env:
 
 jobs:
   build:
+    if: contains(github.ref, 'airflow')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
       - name: Google Login
         uses: google-github-actions/setup-gcloud@v0
         with:
-          project_id: ${{ secrets.DATA_WAREHOUSE_PROJECT_ID }}
+          project_id: ae32-vpcservice-datawarehouse
           service_account_email: ${{ secrets.DATAWAREHOUSE_SERVICE_ACCOUNT_EMAIL }}
           service_account_key: ${{ secrets.DATAWAREHOUSE_SERVICE_ACCOUNT_KEY }}
 
@@ -31,28 +32,40 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
+      - name: Extract version number
+        env:
+          BRANCH: ${{ github.ref_name }}
+        id: extract_version
+        run: echo "::set-output name=version_number::${BRANCH##*v}"
+
       - name: Build
+        working-directory: airflow
         run: make docker_build GIT_COMMIT=latest
         env:
           DOCKER_REPO: ${{ secrets.DATA_WAREHOUSE_DOCKER_REPO }}
-          DOCKER_TAG: ${{ github.ref_name }}
+          DOCKER_TAG: ${{ steps.extract_version.outputs.version_number }}
 
       - name: Test
+        working-directory: airflow
         run: make docker_test GIT_COMMIT=latest
         env:
           DOCKER_REPO: ${{ secrets.DATA_WAREHOUSE_DOCKER_REPO }}
-          DOCKER_TAG: ${{ github.ref_name }}
+          DOCKER_TAG: ${{ steps.extract_version.outputs.version_number }}
 
       - name: Push
+        working-directory: airflow
         run: make docker_release GIT_COMMIT=latest
         env:
           DOCKER_REPO: ${{ secrets.DATA_WAREHOUSE_DOCKER_REPO }}
-          DOCKER_TAG: ${{ github.ref_name }}
+          DOCKER_TAG: ${{ steps.extract_version.outputs.version_number }}
 
   deploy:
     runs-on: ubuntu-latest
     needs: build
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
       - name: Google Login
         uses: 'google-github-actions/auth@v0'
         with:
@@ -83,12 +96,16 @@ jobs:
           HTTPS_PROXY=127.0.0.1:17889 kubectl get pods -n ${GKE_NAMESPACE}
         shell: bash
 
-      - name: Checkout
-        uses: actions/checkout@v2
+      - name: Extract version number
+        env:
+          BRANCH: ${{ github.ref_name }}
+        id: extract_version
+        run: echo "::set-output name=version_number::${BRANCH##*v}"
 
       - name: Patch Deployment
+        working-directory: airflow
         run: HTTPS_PROXY=127.0.0.1:17889 make kubectl_patch
         shell: bash
         env:
           DOCKER_REPO: ${{ secrets.DATA_WAREHOUSE_DOCKER_REPO }}
-          DOCKER_TAG: ${{ github.ref_name }}
+          DOCKER_TAG: ${{ steps.extract_version.outputs.version_number }}

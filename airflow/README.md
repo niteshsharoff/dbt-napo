@@ -15,7 +15,7 @@ docker buildx build --platform linux/amd64 -f Dockerfile -t gcr.io/ae32-vpcservi
 
 ## Production
 
-To deploy a particular branch to the Airflow production cluster, create a Github 
+To deploy a particular branch to the Airflow production cluster, create a Github
 release with the appropriate Tag and Github Actions will deploy the changes to the production cluster.
 
 To gain access to self-managed Airflow GKE cluster
@@ -33,6 +33,14 @@ To access Airflow's Web UI on localhost:8080
 ```
 make web_forward
 ```
+
+---
+
+## Release
+
+To publish the changes on the main branch to the production cluster, create a publish a new release and create a new tag prefixed with `airflow-v` (i.e. airflow-v1.2.3). The docker image will be tagged using the version number.
+
+---
 
 ## FAQ
 
@@ -58,5 +66,5 @@ File "/usr/local/lib/python3.9/site-packages/airflow/models/connection.py", line
     raise AirflowNotFoundException(f"The conn_id `{conn_id}` isn't defined")
 airflow.exceptions.AirflowNotFoundException: The conn_id `google_cloud_default` isn't defined
 ```
-You will need to setup the corresponding connection in `Admin -> Connections`. 
+You will need to setup the corresponding connection in `Admin -> Connections`.
 For Google Cloud connections, you will need to provide a local path to a service account Keyfile.
