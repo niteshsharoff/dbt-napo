@@ -1,0 +1,72 @@
+[
+  {
+    "name": "quote_request_id",
+    "type": "STRING"
+  },
+  {
+    "name": "source",
+    "type": "STRING"
+  },
+  {
+    "name": "raw_request",
+    "type": "JSON"
+  },
+  {
+    "name": "raw_response",
+    "type": "JSON"
+  },
+  {
+    "name": "created_at",
+    "type": "INT64"
+  },
+  {
+    "name": "state",
+    "type": "STRING"
+  },
+  {
+    "name": "pricing_model_response",
+    "type": "JSON"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "discount_percent",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "discount_type",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "common_quote",
+    "type": "JSON"
+  },
+  {
+    "name": "pricing_model_request",
+    "type": "JSON"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "original_selected_product_reference",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "msm_sales_tracking_urn",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "price_elasticity_test",
+    "type": "BOOL"
+  },
+  {
+    "name": "pricing_service_request",
+    "type": "JSON"
+  },
+  {
+    "name": "pricing_service_response",
+    "type": "JSON"
+  }
+]

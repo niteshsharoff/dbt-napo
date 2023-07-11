@@ -1,0 +1,107 @@
+[
+  {
+    "mode": "NULLABLE",
+    "name": "version_id",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "created_date",
+    "type": "INT64"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "date_of_birth",
+    "type": "INT64"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "phone_number",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "street_address",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "address_locality",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "address_region",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "postal_code",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "mandate_id",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "user_id",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "mandate_inactive_event_id",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "firebase_user_id",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "uuid",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "referral_code",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "referred",
+    "type": "BOOLEAN"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "is_vet",
+    "type": "BOOLEAN"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "customer_id",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "change_at",
+    "type": "INT64"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "change_reason",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "change_user_id",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "effective_at",
+    "type": "INT64"
+  }
+]

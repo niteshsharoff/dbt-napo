@@ -1,0 +1,36 @@
+[
+  {
+    "name": "id",
+    "type": "STRING"
+  },
+  {
+    "name": "code",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "created_date",
+    "type": "INT64"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "expires_after",
+    "type": "INT64"
+  },
+  {
+    "name": "disabled",
+    "type": "BOOL"
+  },
+  {
+    "name": "lockin_period_days",
+    "type": "INTEGER"
+  },
+  {
+    "name": "reward",
+    "type": "INTEGER"
+  },
+  {
+    "name": "affiliate_channel",
+    "type": "STRING"
+  }
+]

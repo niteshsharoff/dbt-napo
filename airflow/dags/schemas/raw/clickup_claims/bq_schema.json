@@ -1,0 +1,172 @@
+[
+  {
+    "mode": "NULLABLE",
+    "name": "id",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "custom_id",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "name",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "text_content",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "description",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "status",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "orderindex",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "date_created",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "date_updated",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "date_closed",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "date_done",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "archived",
+    "type": "BOOLEAN"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "creator",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "assignees",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "watchers",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "checklists",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "tags",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "parent",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "priority",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "due_date",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "start_date",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "points",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "time_estimate",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "custom_fields",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "dependencies",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "linked_tasks",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "team_id",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "url",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "sharing",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "permission_level",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "list",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "project",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "folder",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "space",
+    "type": "STRING"
+  }
+]

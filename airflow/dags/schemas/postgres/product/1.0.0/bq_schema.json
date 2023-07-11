@@ -1,0 +1,117 @@
+[
+  {
+    "mode": "NULLABLE",
+    "name": "id",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "created_date",
+    "type": "INT64"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "reference",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "name",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "vet_fee_cover",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "complementary_treatment_cover",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "dental_cover",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "emergency_boarding_cover",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "third_person_liability_excess",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "third_person_liability_cover",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "pet_death_cover",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "travel_cover",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "missing_pet_cover",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "behavioural_treatment_cover",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "co_pay",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "excess",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "generic_wording_document",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "generic_city_ipi_document",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "generic_city_toba_document",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "line_id",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "generic_itc_ipi_document",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "generic_itc_toba_document",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "pricing_model_vet_fee_cover",
+    "type": "FLOAT"
+  }
+]

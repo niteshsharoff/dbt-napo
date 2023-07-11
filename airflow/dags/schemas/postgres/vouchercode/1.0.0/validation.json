@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "policy_vouchercode postgres table validation schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "code": {
+      "type": "string"
+    },
+    "discount_percentage": {
+      "type": "number"
+    },
+    "quote_id": {
+      "type": ["string", "null"]
+    },
+    "created_date": {
+      "type": "integer"
+    },
+    "redemption_id": {
+      "type": ["string", "null"]
+    },
+    "affiliate_channel": {
+      "type": ["string", "null"]
+    }
+  },
+  "additionalProperties": false
+}

@@ -1,0 +1,29 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "policy_subscription postgres table validation schema",
+  "type": "object",
+  "properties": {
+    "subscription_id": {
+      "type": "string"
+    },
+    "active": {
+      "type": "boolean"
+    },
+    "created_date": {
+      "type": ["integer", "null"]
+    },
+    "modified_date": {
+      "type": "integer"
+    },
+    "failed_payment_events": {
+      "type": "array"
+    },
+    "failed_payments": {
+      "type": "array"
+    },
+    "policy_id": {
+      "type": "integer"
+    }
+  },
+  "additionalProperties": false
+}

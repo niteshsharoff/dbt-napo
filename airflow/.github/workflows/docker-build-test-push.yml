@@ -1,0 +1,43 @@
+name: "Build"
+
+on:
+  push:
+    branches:
+      - '**'
+
+env:
+  VPC_PROJECT_ID: ${{ secrets.SHARED_VPC_PROJECT_ID }}
+  PROJECT_ID: ${{ secrets.DATA_WAREHOUSE_PROJECT_ID }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Google Login
+        uses: google-github-actions/setup-gcloud@v0
+        with:
+          project_id: ${{ secrets.DATA_WAREHOUSE_PROJECT_ID }}
+          service_account_email: ${{ secrets.DATAWAREHOUSE_SERVICE_ACCOUNT_EMAIL }}
+          service_account_key: ${{ secrets.DATAWAREHOUSE_SERVICE_ACCOUNT_KEY }}
+
+      - name: Login to GCP container registry
+        run: gcloud auth configure-docker --quiet
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Build
+        run: make docker_build
+        env:
+          DOCKER_REPO: ${{ secrets.DATA_WAREHOUSE_DOCKER_REPO }}
+
+      - name: Test
+        run: make docker_test
+        env:
+          DOCKER_REPO: ${{ secrets.DATA_WAREHOUSE_DOCKER_REPO }}
+
+      - name: Push
+        run: make docker_release
+        env:
+          DOCKER_REPO: ${{ secrets.DATA_WAREHOUSE_DOCKER_REPO }}

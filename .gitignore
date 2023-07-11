@@ -128,4 +128,14 @@ dmypy.json
 # Pyre type checker
 .pyre/
 
+# Airflow
 *.terraform*
+.venv
+logs
+plugins
+
+**/__pycache__/
+.idea
+airflow-variables.json
+.kube
+*.ipynb

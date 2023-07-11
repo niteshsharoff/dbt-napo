@@ -1,0 +1,59 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "policy_activatedreferral postgres table validation schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "string"
+    },
+    "referral_code": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "integer"
+    },
+    "used_at": {
+      "type": ["integer", "null"]
+    },
+    "referee_id": {
+      "type": ["integer", "null"]
+    },
+    "referral_policy_id": {
+      "type": ["integer", "null"]
+    },
+    "rewarded": {
+      "type": ["boolean", "null"]
+    },
+    "validate_at": {
+      "type": ["integer", "null"]
+    },
+    "referee_reward": {
+      "type": ["string", "null"]
+    },
+    "referrer_reward": {
+      "type": ["string", "null"]
+    },
+    "referee_reward_mailchimp_email_id": {
+      "type": ["string", "null"]
+    },
+    "referrer_reward_mailchimp_email_id": {
+      "type": ["string", "null"]
+    },
+    "reward_type": {
+      "type": "string"
+    },
+    "uuid": {
+      "type": "string"
+    },
+    "referee_wegift_order_id": {
+      "type": ["string", "null"]
+    },
+    "referrer_wegift_order_id": {
+      "type": ["string", "null"]
+    }
+  },
+  "additionalProperties": false
+}

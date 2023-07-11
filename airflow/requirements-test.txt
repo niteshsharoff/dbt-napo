@@ -1,0 +1,10 @@
+-r requirements.txt
+flake8
+pytest
+pytest-freezegun
+pytest-mock
+pytest-env
+types-freezegun
+types-python-dateutil
+types-requests
+pytest-timeout
