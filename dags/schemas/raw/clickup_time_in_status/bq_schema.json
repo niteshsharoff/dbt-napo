@@ -1,0 +1,22 @@
+[
+    {
+        "mode": "NULLABLE",
+        "name": "current_status",
+        "type": "STRING"
+    },
+    {
+        "mode": "NULLABLE",
+        "name": "status_history",
+        "type": "STRING"
+    },
+    {
+        "mode": "NULLABLE",
+        "name": "id",
+        "type": "STRING"
+    },
+    {
+        "mode": "NULLABLE",
+        "name": "custom_id",
+        "type": "STRING"
+    }
+]
