@@ -24,7 +24,9 @@ from dags.workflows.upload_to_google_drive import (
 
 JINJA_ENV = Environment(loader=FileSystemLoader("dags/"))
 PARTITION_INTEGRITY_CHECK = JINJA_ENV.get_template("sql/partition_integrity_check.sql")
-CUMULATIVE_BDX_REPORT_QUERY = JINJA_ENV.get_template("sql/cgice_premium_bdx_monthly.sql")
+CUMULATIVE_BDX_REPORT_QUERY = JINJA_ENV.get_template(
+    "sql/cgice_premium_bdx_monthly.sql"
+)
 
 OAUTH_TOKEN_FILE = Variable.get("OAUTH_CREDENTIALS")
 GCP_PROJECT_ID = Variable.get("GCP_PROJECT_ID")
@@ -35,8 +37,7 @@ BQ_DATASET = "reporting"
 # https://cloud.getdbt.com/deploy/67538/projects/106847/jobs/235012
 DBT_CLOUD_JOB_ID = 289269
 
-# Temporary folder, switch to 1541hzsET3OMSyc4JKlCdl3HmbK9wmXH3 once approved
-GOOGLE_DRIVE_FOLDER_ID = "1J14XpnVmAvMuOkRr8rXb12QX2po3Z2km"
+GOOGLE_DRIVE_FOLDER_ID = "1541hzsET3OMSyc4JKlCdl3HmbK9wmXH3"
 
 
 @task
@@ -141,7 +142,7 @@ def upload_report_to_gdrive(data_interval_end: pendulum.datetime = None):
 
 @dag(
     dag_id="cgice_premium_bdx",
-    start_date=pendulum.datetime(2021, 12, 1, tz="UTC"),
+    start_date=pendulum.datetime(2023, 7, 1, tz="UTC"),
     schedule_interval="0 4 */15 * *",  # 4am on every 15th day-of-month
     catchup=False,
     default_args={"retries": 0},
