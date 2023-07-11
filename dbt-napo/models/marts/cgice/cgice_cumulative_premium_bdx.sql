@@ -8,7 +8,11 @@ with
             transaction_at,
             policy.reference_number as policy_number,
             quote.quote_id as quote_id,
-            policy.original_quote_source,
+            case
+                when policy.original_quote_source is null
+                then policy.quote_source
+                else policy.original_quote_source
+            end as original_quote_source,
             policy.quote_source,
             format('%.2f', 0.0) as discount_amount,
             trim(customer.first_name)
