@@ -1,0 +1,82 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "quote_quoterequest postgres table validation schema",
+  "type": "object",
+  "properties": {
+    "quote_request_id": {
+      "type": "string",
+      "format": "uuid"
+    },
+    "source": {
+      "type": "string"
+    },
+    "raw_request": {
+      "type": "object"
+    },
+    "raw_response": {
+      "type": [
+        "array",
+        "object",
+        "string"
+      ]
+    },
+    "created_at": {
+      "type": "integer"
+    },
+    "state": {
+      "type": "string"
+    },
+    "pricing_model_response": {
+      "type": "object"
+    },
+    "discount_percent": {
+      "type": [
+        "null",
+        "number"
+      ]
+    },
+    "discount_type": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "common_quote": {
+      "type": [
+        "null",
+        "object"
+      ]
+    },
+    "pricing_model_request": {
+      "type": "object"
+    },
+    "original_selected_product_reference": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "msm_sales_tracking_urn": {
+      "type": [
+        "null",
+        "string"
+      ]
+    },
+    "price_elasticity_test": {
+      "type": "boolean"
+    },
+    "pricing_service_request": {
+      "type": [
+        "null",
+        "object"
+      ]
+    },
+    "pricing_service_response": {
+      "type": [
+        "null",
+        "object"
+      ]
+    }
+  },
+  "additionalProperties": false
+}

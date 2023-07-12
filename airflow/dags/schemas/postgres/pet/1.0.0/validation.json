@@ -1,0 +1,74 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "policy_pet postgres table validation schema",
+  "type": "object",
+  "properties": {
+    "version_id": {
+      "type": "integer"
+    },
+    "created_date": {
+      "type": "integer"
+    },
+    "name": {
+      "type": "string"
+    },
+    "age_months": {
+      "type": "integer"
+    },
+    "gender": {
+      "type": "string"
+    },
+    "size": {
+      "type": ["string", "null"]
+    },
+    "cost": {
+      "type": "number"
+    },
+    "is_neutered": {
+      "type": "boolean"
+    },
+    "is_microchipped": {
+      "type": "boolean"
+    },
+    "is_vaccinated": {
+      "type": "boolean"
+    },
+    "species": {
+      "type": "string"
+    },
+    "breed_category": {
+      "type": "string"
+    },
+    "has_pre_existing_conditions": {
+      "type": "boolean"
+    },
+    "breed_id": {
+      "type": ["integer", "null"]
+    },
+    "multipet_number": {
+      "type": ["integer", "null"]
+    },
+    "date_of_birth": {
+      "type": ["integer", "null"]
+    },
+    "pet_id": {
+      "type": "integer"
+    },
+    "change_at": {
+      "type": "integer"
+    },
+    "change_reason": {
+      "type": ["string", "null"]
+    },
+    "change_user_id": {
+      "type": ["integer", "null"]
+    },
+    "effective_at": {
+      "type": "integer"
+    },
+    "uuid": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

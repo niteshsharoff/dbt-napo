@@ -1,0 +1,37 @@
+[
+  {
+    "mode": "NULLABLE",
+    "name": "subscription_id",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "active",
+    "type": "BOOLEAN"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "created_date",
+    "type": "INT64"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "modified_date",
+    "type": "INT64"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "failed_payment_events",
+    "type": "JSON"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "failed_payments",
+    "type": "JSON"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "policy_id",
+    "type": "INTEGER"
+  }
+]

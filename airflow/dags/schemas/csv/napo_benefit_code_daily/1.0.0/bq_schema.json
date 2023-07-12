@@ -1,0 +1,46 @@
+[
+    {
+        "name": "policy_id",
+        "type": "STRING"
+    },
+    {
+        "name": "customer_id",
+        "type": "STRING"
+    },
+    {
+        "name": "reference_number",
+        "type": "STRING"
+    },
+    {
+        "name": "start_date",
+        "type": "STRING"
+    },
+    {
+        "name": "qualify_date",
+        "type": "STRING"
+    },
+    {
+        "name": "code",
+        "type": "STRING"
+    },
+    {
+        "name": "first_name",
+        "type": "STRING"
+    },
+    {
+        "name": "email",
+        "type": "STRING"
+    },
+    {
+        "name": "quote_id",
+        "type": "STRING"
+    },
+    {
+        "name": "annual_payment_id",
+        "type": "STRING"
+    },
+    {
+        "name": "subscription_id",
+        "type": "STRING"
+    }
+]

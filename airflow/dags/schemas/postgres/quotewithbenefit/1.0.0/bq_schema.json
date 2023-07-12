@@ -1,0 +1,19 @@
+[
+  {
+    "name": "id",
+    "type": "INT64"
+  },
+  {
+    "name": "quote_id",
+    "type": "STRING"
+  },
+  {
+    "name": "benefit_id",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "created_date",
+    "type": "INT64"
+  }
+]
