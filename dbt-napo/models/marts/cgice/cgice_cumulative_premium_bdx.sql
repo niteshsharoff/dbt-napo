@@ -43,7 +43,7 @@ with
             format('%.2f', pet.cost) as pet_cost,
             pet.is_microchipped as pet_chipped,
             pet.is_neutered as pet_neutered,
-            case when pet.multipet_number is null then false else true end as multipet,
+            case when pet.multipet_number is null then 'No' else 'Yes' end as multipet,
             cast(transaction_at as date) as transaction_date,
             case
                 when transaction_type = 'Cancellation'
