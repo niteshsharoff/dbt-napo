@@ -3,6 +3,7 @@ import io
 import logging
 from typing import Any
 
+from airflow import AirflowException
 from google.auth.transport.requests import Request
 from google.cloud import storage
 from google.oauth2.credentials import Credentials
@@ -79,7 +80,11 @@ def create_folder(client: Any, folder_name: str) -> str:
 
 
 def upload_bytes_to_folder(
-    client: Any, folder_id: str, file_name: str, blob: bytes
+    client: Any,
+    folder_id: str,
+    file_name: str,
+    blob: bytes,
+    mimetype: str = "application/vnd.google-apps.file",
 ) -> str:
     """
     Uploads a blob to Google Drive. Determines whether a file exists by file name.
@@ -89,6 +94,7 @@ def upload_bytes_to_folder(
     :param folder_id: ID of the folder the file will be uploaded to
     :param file_name: Name of the file to be uploaded
     :param blob: Bytes to be uploaded
+    :param mimetype: MIME type of file to be uploaded
     :returns: ID of the existing or newly created file
     """
     log = logging.getLogger(__name__)
@@ -107,11 +113,11 @@ def upload_bytes_to_folder(
         file_metadata = {
             "name": file_name,
             "parents": [folder_id],
-            "mimeType": "application/vnd.google-apps.file",
+            "mimeType": mimetype,
         }
         media = MediaIoBaseUpload(
             io.BytesIO(blob),
-            mimetype="application/vnd.google-apps.file",
+            mimetype=mimetype,
             resumable=True,
         )
         created_file = (
@@ -130,7 +136,7 @@ def upload_bytes_to_folder(
     file_id = file_list.get("files")[0].get("id")
     media = MediaIoBaseUpload(
         io.BytesIO(blob),
-        mimetype="application/vnd.google-apps.file",
+        mimetype=mimetype,
         resumable=True,
     )
     updated_file = (
@@ -175,8 +181,8 @@ def upload_to_google_drive(
             gdrive_file_name,
             blob.download_as_bytes(),
         )
-    except HttpError as error:
-        raise HttpError(f"An error occurred: {error}")
+    except HttpError:
+        raise AirflowException
 
 
 def file_exists_on_google_drive(
