@@ -366,7 +366,7 @@ def money_super_market():
         job_id=DBT_CLOUD_JOB_ID,
         check_interval=10,
         timeout=300,
-        trigger_rule="one_success"
+        trigger_rule="one_success",
     )
 
     is_first_day_of_week = weekly_branch()
