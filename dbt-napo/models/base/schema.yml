@@ -13,21 +13,6 @@ sources:
       - name: subscription
       - name: breed_mapping
       - name: policy_payment
-  - name: loss_ratio
-    schema: loss_ratio
-    tables:
-      - name: all_book_summary
-      - name: breed_age_summary
-      - name: cohort_summary
-      - name: multipet_summary
-      - name: product_summary
-      - name: species_age_summary
-      - name: customer_generation_summary
-      - name: popular_breed_summary
-      - name: pricing_model_summary
-      - name: region_summary
-      - name: species_gender_neutered_summary
-      - name: yearly_cohort_renewal_summary
   - name: raw
     schema: raw
     loaded_at_field: cast(run_date as timestamp)
