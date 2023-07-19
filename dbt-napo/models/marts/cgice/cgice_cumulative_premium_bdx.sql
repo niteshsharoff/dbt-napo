@@ -25,8 +25,28 @@ with
             pet.species as pet_species,
             pet.name as pet_name,
             case
-                when pet.breed_category = 'mixed'
+                when pet.breed_category = 'mixed' and pet.species = 'cat'
                 then 'mixed'
+                when
+                    pet.breed_category = 'mixed'
+                    and pet.species = 'dog'
+                    and pet.size is null
+                then 'mixed'
+                when
+                    pet.breed_category = 'mixed'
+                    and pet.species = 'dog'
+                    and pet.size = '20kg+'
+                then 'Large Mongrel (> 20Kg)'
+                when
+                    pet.breed_category = 'mixed'
+                    and pet.species = 'dog'
+                    and pet.size = '10-20kg'
+                then 'Medium Mongrel (10Kg to 20Kg)'
+                when
+                    pet.breed_category = 'mixed'
+                    and pet.species = 'dog'
+                    and pet.size = 'up to 10kg'
+                then 'Small Mongrel (< 10 Kg)'
                 when pet.breed_category = 'pedigree' and pet.breed_name is null
                 then 'unknown'
                 when pet.breed_category = 'pedigree' and pet.breed_name is not null
