@@ -54,6 +54,7 @@ with
                 policy.reference_number,
                 policy.quote_source,
                 policy.original_quote_source,
+                policy.quote_source_reference,
                 ifnull(policy.current_policy_year, 0) as policy_year,
                 policy.payment_plan_type,
                 policy.annual_payment_id,
