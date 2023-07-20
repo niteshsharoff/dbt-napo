@@ -1,4 +1,4 @@
-{{ config(schema="marts") }}
+{{ config(schema="marts", pre_hook=["{{declare_policy_udfs()}}"]) }}
 
 with
     policy_transactions as (select * from {{ ref("reporting_policy_transaction") }}),
@@ -24,18 +24,9 @@ with
             pet.pet_id as pet_id,
             pet.species as pet_species,
             pet.name as pet_name,
-            case
-                when pet.breed_category = 'mixed'
-                then 'mixed'
-                when pet.breed_category = 'pedigree' and pet.breed_name is null
-                then 'unknown'
-                when pet.breed_category = 'pedigree' and pet.breed_name is not null
-                then pet.breed_name
-                when pet.breed_category = 'cross' and pet.breed_name is null
-                then 'cross'
-                when pet.breed_category = 'cross' and pet.breed_name is not null
-                then pet.breed_name || ' + cross'
-            end as pet_breed,
+            {{ target.schema }}.get_breed_for_pet(
+                pet.species, pet.size, pet.breed_category, pet.breed_name
+            ) as pet_breed,
             dbt_jeremiahmai.calculate_age_in_months(
                 pet.date_of_birth, policy.start_date
             ) as pet_age,
