@@ -178,5 +178,10 @@
     "mode": "NULLABLE",
     "name": "premium_price_annual",
     "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "third_person_liability",
+    "type": "BOOLEAN"
   }
 ]
