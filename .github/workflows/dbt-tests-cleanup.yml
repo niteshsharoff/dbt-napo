@@ -1,0 +1,35 @@
+name: Remove pull request Big Query dataset
+
+on:
+  pull_request:
+    types:
+      - closed
+    paths:
+      - 'dbt-napo/**'
+
+jobs:
+  cleanup:
+    name: DBT cleanup
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Login to Google
+        uses: google-github-actions/auth@v1
+        with:
+          project_id: ae32-vpcservice-datawarehouse
+          service_account: ${{ secrets.AIRFLOW_SERVICE_ACCOUNT_EMAIL }}
+          credentials_json: ${{ secrets.AIRFLOW_SERVICE_ACCOUNT_JSON }}
+
+      - name: Configure Google Cloud SDK
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ae32-vpcservice-datawarehouse
+
+      - name: Remove BigQuery Dataset
+        run: |
+          bq rm -r -f ae32-vpcservice-datawarehouse:dbt_cloud_pr_${{ github.event.pull_request.number }}
+          bq rm -r -f ae32-vpcservice-datawarehouse:dbt_cloud_pr_${{ github.event.pull_request.number }}_marts
+          bq rm -r -f ae32-vpcservice-datawarehouse:dbt_cloud_pr_${{ github.event.pull_request.number }}_dbt_test__audit
