@@ -1,3 +1,4 @@
+{{ config(severity="warn") }}
 /*
   GIVEN
     a table of policy transactions

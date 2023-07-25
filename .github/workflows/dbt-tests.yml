@@ -21,7 +21,7 @@ jobs:
           dbt_cloud_account_id: ${{ secrets.DBT_CLOUD_ACCOUNT_ID }}
           dbt_cloud_job_id: ${{ secrets.DBT_CLOUD_JOB_ID }}
           interval: 5
-          failure_on_error: false
+          failure_on_error: true
           git_branch: ${{ github.head_ref }}
           schema_override: dbt_cloud_pr_${{ github.event.pull_request.number }}
           threads_override: 4

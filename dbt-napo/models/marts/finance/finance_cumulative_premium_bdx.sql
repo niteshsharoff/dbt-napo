@@ -9,12 +9,17 @@ with
             policy.reference_number as policy_number,
             quote.quote_id as quote_id,
             case
-                when policy.original_quote_source is null
+                when
+                    policy.original_quote_source is null
+                    and policy.quote_source != 'renewal'
                 then policy.quote_source
                 else policy.original_quote_source
             end as original_quote_source,
             policy.quote_source,
             format('%.2f', finance.discount_difference) as discount_amount,
+            -- discounts information requested by Finance
+            campaign.voucher_code as voucher_code,
+            campaign.discount_percentage as discount_percentage,
             trim(customer.first_name)
             || ' '
             || trim(customer.last_name) as customer_name,
