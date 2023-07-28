@@ -4,8 +4,8 @@ on:
   pull_request:
     paths:
       - 'airflow/**'
-    branches:
-      - '**'
+    branches-ignore:
+      - main
 
 env:
   VPC_PROJECT_ID: ${{ secrets.SHARED_VPC_PROJECT_ID }}
