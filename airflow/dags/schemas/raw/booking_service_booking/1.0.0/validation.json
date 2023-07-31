@@ -1,0 +1,50 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "booking_booking postgres table validation schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "uuid": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string"
+    },
+    "class_uuid": {
+      "type": "string"
+    },
+    "class_name": {
+      "type": "string"
+    },
+    "sms_reminder_id": {
+      "type": ["string", "null"]
+    },
+    "session_uuid": {
+      "type": "string"
+    },
+    "session_date": {
+      "type": "integer"
+    },
+    "customer_uuid": {
+      "type": "string"
+    },
+    "email_reminder_id": {
+      "type": ["string", "null"]
+    },
+    "created_at": {
+      "type": "integer"
+    },
+    "updated_at": {
+      "type": "integer"
+    },
+    "soft_delete": {
+      "type": "boolean"
+    },
+    "attended_duration": {
+      "type": ["integer", "null"]
+    }
+  },
+  "additionalProperties": false
+}
