@@ -68,6 +68,9 @@
     },
     "uuid": {
       "type": "string"
+    },
+    "notes": {
+      "type": ["string", "null"]
     }
   },
   "additionalProperties": false
