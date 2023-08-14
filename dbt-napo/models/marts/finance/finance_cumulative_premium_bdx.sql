@@ -16,7 +16,7 @@ with
                 else policy.original_quote_source
             end as original_quote_source,
             policy.quote_source,
-            format('%.2f', finance.discount_difference) as discount_amount,
+            finance.discount_difference as discount_amount,
             -- discounts information requested by Finance
             campaign.voucher_code as voucher_code,
             campaign.discount_percentage as discount_percentage,
@@ -110,6 +110,7 @@ with
         -- CGICE wants multiple MTA or Cancel transactions to be aggregated by day
         select
             * except (
+                discount_amount,
                 gross_premium_ipt_exc,
                 gross_premium_ipt_inc,
                 ipt,
@@ -117,6 +118,10 @@ with
                 net_rated_premium_due_to_underwriter,
                 total_due_to_underwriter
             ),
+            -- aggregate price change MTAs for discounts for Finance
+            sum(discount_amount) over (
+                partition by transaction_date, transaction_type, policy_number
+            ) as discount_amount,
             sum(gross_premium_ipt_exc) over (
                 partition by transaction_date, transaction_type, policy_number
             ) as gross_premium_ipt_exc,

@@ -17,7 +17,7 @@ with
             end as original_quote_source,
             policy.quote_source,
             -- CGICE is discount agnostic
-            format('%.2f', 0.0) as discount_amount,
+            0.0 as discount_amount,
             trim(customer.first_name)
             || ' '
             || trim(customer.last_name) as customer_name,
