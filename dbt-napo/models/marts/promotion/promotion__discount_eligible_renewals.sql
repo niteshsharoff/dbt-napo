@@ -1,3 +1,4 @@
+{{ config(schema="marts") }}
 with
     snapshot_details as (
         select parse_date('%Y-%m-%d', '{{run_started_at.date()}}') as snapshot_date
