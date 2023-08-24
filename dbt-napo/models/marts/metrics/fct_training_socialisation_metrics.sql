@@ -1,4 +1,4 @@
-{{ config(materialized="incremental", unique_key="date") }}
+{{ config(materialized="incremental", unique_key="date", schema="marts") }}
 
 with
     preliminary_metrics as (
