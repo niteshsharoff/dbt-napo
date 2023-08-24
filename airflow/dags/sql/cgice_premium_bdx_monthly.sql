@@ -47,7 +47,7 @@ select
     transaction_type as `Status`,
     original_quote_source as `Original Source`,
     quote_source as `Current Source`,
-    discount_amount as `Discount Campaign`,
+    format('%.2f', discount_amount) as `Discount Campaign`,
     customer_name as `Insured Name`,
     customer_dob as `Insured DOB`,
     customer_postal_code as `Postcode`,

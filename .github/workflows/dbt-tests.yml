@@ -1,0 +1,32 @@
+name: "Run DBT Tests"
+
+on:
+  pull_request:
+    paths:
+      - 'dbt-napo/**'
+
+jobs:
+  dbt-test:
+    name: DBT Test
+    runs-on: ubuntu-latest
+
+    steps:
+      - id: dbt_cloud_run
+        if: github.event.pull_request.draft == false
+        name: Run DBT tests
+        uses: fal-ai/dbt-cloud-action@main
+        with:
+          # See example: https://github.com/fal-ai/fal_bike_example/blob/main/.github/workflows/fal_dbt.yml
+          dbt_cloud_token: ${{ secrets.DBT_CLOUD_API_TOKEN }}
+          dbt_cloud_account_id: ${{ secrets.DBT_CLOUD_ACCOUNT_ID }}
+          dbt_cloud_job_id: ${{ secrets.DBT_CLOUD_JOB_ID }}
+          interval: 5
+          failure_on_error: true
+          git_branch: ${{ github.head_ref }}
+          schema_override: dbt_cloud_pr_${{ github.event.pull_request.number }}
+          threads_override: 4
+          generate_docs_override: false
+          steps_override: |
+            - dbt seed
+            - dbt run
+            - dbt test

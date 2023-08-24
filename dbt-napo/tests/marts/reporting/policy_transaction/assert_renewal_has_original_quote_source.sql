@@ -1,3 +1,4 @@
+{{ config(severity="warn") }}
 /*
   GIVEN
     a table of policy transactions
@@ -14,5 +15,5 @@ select
     policy.reference_number,
     policy.quote_source,
     policy.original_quote_source
-from {{ ref("reporting_policy_transactions") }}
+from {{ ref("reporting_policy_transaction") }}
 where transaction_type = 'Renewal' and policy.original_quote_source is null

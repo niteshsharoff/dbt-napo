@@ -370,7 +370,7 @@ def go_compare():
         sftp_weekly_report = sftp_task_wrapper(
             task_id="sftp_weekly_report",
             local_dir="gocompare/weekly",
-            remote_dir="Weekly",
+            remote_dir="incoming",
             gcs_uri="gs://{}/{}/{}/run_date={}/*".format(
                 GCS_BUCKET,
                 BQ_DATASET,
@@ -396,7 +396,7 @@ def go_compare():
         sftp_monthly_report = sftp_task_wrapper(
             task_id="sftp_monthly_report",
             local_dir="gocompare/monthly",
-            remote_dir="Monthly",
+            remote_dir="incoming",
             gcs_uri="gs://{}/{}/{}/run_date={}/*".format(
                 GCS_BUCKET,
                 BQ_DATASET,
