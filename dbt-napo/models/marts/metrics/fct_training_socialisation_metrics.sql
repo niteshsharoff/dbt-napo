@@ -66,7 +66,7 @@ with
             current_date() as date,
             cohort as newly_pa_eligible_cohort,
             countif(num_views > 0) as newly_pa_eligible_viewed_dashboard,
-            count(distinct customer_id) as newly_pa_dashboard
+            count(distinct customer_id) as newly_pa_eligible
         from pa_eligible_details
         group by 1, 2
         order by 2 desc
@@ -83,7 +83,7 @@ select
     pa_eligible,
     newly_pa_eligible_cohort,
     newly_pa_eligible_viewed_dashboard,
-    newly_pa_dashboard
+    newly_pa_eligible
 from preliminary_metrics a
 left join overall_pa_eligible_metrics b on a.date = b.date
 left join newly_pa_eligible_metrics c on a.date = c.date
