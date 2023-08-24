@@ -41,7 +41,7 @@ with
             / old_policy.annual_price as year_1_to_2_retail_price_ratio,
             array_length(old_policy_claims) > 0 as year_1_has_claims,
             n_active_policies as customer_n_active_policies
-        from `dbt_tim.int_renewal_snapshot`, snapshot_details
+        from {{ ref("int_renewal_snapshot") }}, snapshot_details
         left join
             customer_active_policy_count
             on customer.uuid = customer_active_policy_count.customer_uuid
