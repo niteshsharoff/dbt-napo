@@ -74,7 +74,7 @@ with
     )
 
 select
-    a.date,
+    a.date as date,
     week,
     weekday,
     active_puppy_policies_dog_only,
