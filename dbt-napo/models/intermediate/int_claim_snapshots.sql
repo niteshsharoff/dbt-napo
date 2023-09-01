@@ -84,7 +84,9 @@ with
                 dob_discrepancy,
                 previously_checked,
                 contacting_ph,
-                contacting_vet
+                contacting_vet,
+                aggressive_pet,
+                aggression
             ) as tags,
             source,
             is_archived,
@@ -102,7 +104,9 @@ with
                     'dob discrepancy' as dob_discrepancy,
                     'previously checked' as previously_checked,
                     'contacting ph' as contacting_ph,
-                    'contacting vet' as contacting_vet
+                    'contacting vet' as contacting_vet,
+                    'aggressive pet' as aggressive_pet,
+                    'aggression' as aggression
                 )
             )
     )
