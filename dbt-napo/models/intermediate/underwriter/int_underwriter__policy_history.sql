@@ -88,6 +88,7 @@ select
     pet.size as pet_size,
     pet.breed_category as pet_breed_category,
     quote.pricing_model_version as quote_pricing_model_version,
+    quote.pricing_algorithm_version as quote_pricing_algorithm_version,
     row_effective_from as effective_from,
     row_effective_to as effective_to
 from {{ ref("int_policy_history") }}
