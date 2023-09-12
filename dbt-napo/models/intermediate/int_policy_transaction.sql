@@ -40,7 +40,8 @@ with
                 quote.quote_id,
                 quote.pricing_model_version,
                 quote.msm_sales_tracking_urn,
-                timestamp_millis(quote.created_at) as created_at
+                timestamp_millis(quote.created_at) as created_at,
+                quote.source
             ) as quote,
             struct(
                 policy.policy_id,

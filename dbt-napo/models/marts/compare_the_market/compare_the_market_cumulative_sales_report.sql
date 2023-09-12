@@ -105,10 +105,7 @@ with
         from {{ ref("reporting_policy_transaction") }}
         left join quote_product on quote_product.quote_id = quote.quote_id
         where
-            (
-                policy.quote_source = "comparethemarket"
-                or quote_product.source = 'hassium-oxbow'
-            )
+            quote.source = 'hassium-oxbow'
             and transaction_type in ("New Policy", "Cancellation")
         order by transaction_at
     )
