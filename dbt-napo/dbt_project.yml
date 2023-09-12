@@ -35,6 +35,4 @@ models:
       +materialized: table
 
 tests:
-  +severity: warn
   +store_failures: true
-  

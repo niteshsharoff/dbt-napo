@@ -110,6 +110,9 @@
     },
     "premium_price_annual": {
       "type": ["number", "null"]
+    },
+    "third_person_liability": {
+      "type": "boolean"
     }
   },
   "additionalProperties": false

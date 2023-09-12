@@ -108,5 +108,10 @@
     "mode": "NULLABLE",
     "name": "uuid",
     "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "notes",
+    "type": "STRING"
   }
 ]

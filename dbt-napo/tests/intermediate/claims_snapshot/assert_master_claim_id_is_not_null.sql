@@ -1,3 +1,4 @@
+{{ config(severity="warn") }}
 /*
   GIVEN
     a snapshot of all claims

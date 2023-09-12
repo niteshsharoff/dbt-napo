@@ -1,8 +1,11 @@
 name: "Build and Deploy Airflow Image"
 
 on:
-  release:
-    types: [published]
+  push:
+    paths:
+      - 'airflow/**'
+    branches:
+      - main
 
 env:
   VPC_PROJECT_ID: ae32-vpc-host
@@ -15,7 +18,6 @@ env:
 
 jobs:
   build:
-    if: contains(github.ref, 'airflow')
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
@@ -32,32 +34,26 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: Extract version number
-        env:
-          BRANCH: ${{ github.ref_name }}
-        id: extract_version
-        run: echo "::set-output name=version_number::${BRANCH##*v}"
-
       - name: Build
         working-directory: airflow
-        run: make docker_build GIT_COMMIT=latest
+        run: make docker_build GIT_COMMIT=${{ github.sha }}
         env:
           DOCKER_REPO: ${{ secrets.DATA_WAREHOUSE_DOCKER_REPO }}
-          DOCKER_TAG: ${{ steps.extract_version.outputs.version_number }}
+          DOCKER_TAG: latest
 
       - name: Test
         working-directory: airflow
-        run: make docker_test GIT_COMMIT=latest
+        run: make docker_test GIT_COMMIT=${{ github.sha }}
         env:
           DOCKER_REPO: ${{ secrets.DATA_WAREHOUSE_DOCKER_REPO }}
-          DOCKER_TAG: ${{ steps.extract_version.outputs.version_number }}
+          DOCKER_TAG: latest
 
       - name: Push
         working-directory: airflow
-        run: make docker_release GIT_COMMIT=latest
+        run: make docker_release GIT_COMMIT=${{ github.sha }}
         env:
           DOCKER_REPO: ${{ secrets.DATA_WAREHOUSE_DOCKER_REPO }}
-          DOCKER_TAG: ${{ steps.extract_version.outputs.version_number }}
+          DOCKER_TAG: latest
 
   deploy:
     runs-on: ubuntu-latest
@@ -96,16 +92,10 @@ jobs:
           HTTPS_PROXY=127.0.0.1:17889 kubectl get pods -n ${GKE_NAMESPACE}
         shell: bash
 
-      - name: Extract version number
-        env:
-          BRANCH: ${{ github.ref_name }}
-        id: extract_version
-        run: echo "::set-output name=version_number::${BRANCH##*v}"
-
       - name: Patch Deployment
         working-directory: airflow
         run: HTTPS_PROXY=127.0.0.1:17889 make kubectl_patch
         shell: bash
         env:
           DOCKER_REPO: ${{ secrets.DATA_WAREHOUSE_DOCKER_REPO }}
-          DOCKER_TAG: ${{ steps.extract_version.outputs.version_number }}
+          DOCKER_TAG: ${{ github.sha }}

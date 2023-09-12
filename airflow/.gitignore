@@ -7,3 +7,4 @@ plugins
 airflow-variables.json
 .kube
 *.ipynb
+Pipfile.lock

@@ -100,6 +100,7 @@ def export_query_to_gcs(
     gcs_bucket: str,
     gcs_uri: str,
     encoding: str = "utf-8",
+    replace_column_underscores: bool = True
 ):
     """
     Write query results to a temp table in Big Query. The temp table is set to expire
@@ -112,7 +113,8 @@ def export_query_to_gcs(
     :param encoding: Uploaded csv file encoding
     """
     df = pd.read_gbq(query)
-    df = df.rename(columns=lambda x: x.replace("_", " "))  # update column names
+    if replace_column_underscores:
+        df = df.rename(columns=lambda x: x.replace("_", " "))  # update column names
 
     storage_client = storage.Client(project=project_name)
     bucket = storage_client.get_bucket(gcs_bucket)

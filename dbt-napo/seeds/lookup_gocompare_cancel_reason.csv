@@ -1,0 +1,10 @@
+id,cancel_reason
+1,customer_request
+2,Pet passed away
+3,No longer has pet
+4,Policy bought in error
+5,Declined claim
+6,No inbound phone line
+7,Financial reasons
+8,Found cheaper alternative
+9,Other

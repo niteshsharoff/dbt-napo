@@ -9,12 +9,15 @@ with
             policy.reference_number as policy_number,
             quote.quote_id as quote_id,
             case
-                when policy.original_quote_source is null
+                when
+                    policy.original_quote_source is null
+                    and policy.quote_source != 'renewal'
                 then policy.quote_source
                 else policy.original_quote_source
             end as original_quote_source,
             policy.quote_source,
-            format('%.2f', 0.0) as discount_amount,
+            -- CGICE is discount agnostic
+            0.0 as discount_amount,
             trim(customer.first_name)
             || ' '
             || trim(customer.last_name) as customer_name,
@@ -49,19 +52,19 @@ with
             policy.cancel_reason as cancellation_reason,
             'Direct Debit' as payment_method,
             policy.payment_plan_type as payment_period,
-            underwriter.premium_difference_ipt_inc
-            - underwriter.ipt_difference as gross_premium_ipt_exc,
-            underwriter.premium_difference_ipt_inc as gross_premium_ipt_inc,
+            finance.premium_difference_ipt_inc
+            - finance.ipt_difference as gross_premium_ipt_exc,
+            finance.premium_difference_ipt_inc as gross_premium_ipt_inc,
             12 as ipt_percent,
-            underwriter.ipt_difference as ipt,
+            finance.ipt_difference as ipt,
             "new annual" as commission_type,
             "35%" as commission_rate,
-            0.35 * underwriter.premium_difference_ipt_exc as annual_commission,
+            0.35 * finance.premium_difference_ipt_exc as annual_commission,
             0.65
-            * underwriter.premium_difference_ipt_exc
+            * finance.premium_difference_ipt_exc
             as net_rated_premium_due_to_underwriter,
-            0.65 * underwriter.premium_difference_ipt_exc
-            + underwriter.ipt_difference as total_due_to_underwriter,
+            0.65 * finance.premium_difference_ipt_exc
+            + finance.ipt_difference as total_due_to_underwriter,
             customer.customer_id as customer_id,
             policy.policy_id as policy_id
         from policy_transactions
