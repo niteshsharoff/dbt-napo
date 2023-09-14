@@ -42,7 +42,7 @@
             case
                 when claim_invoice_amount is null
                 then 1
-                when claim_status in ('declined', 'accepted', 'abeyance')
+                when claim_status in ('declined', 'accepted', 'abeyance', 'archive')
                 then 0
                 else
                     least(
