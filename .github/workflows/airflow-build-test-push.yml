@@ -3,7 +3,7 @@ name: "Build and Test Airflow Image"
 on:
   pull_request:
     paths:
-      - 'airflow/*'
+      - 'airflow/**'
     branches-ignore:
       - main
 
