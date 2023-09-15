@@ -143,7 +143,7 @@ def upload_report_to_gdrive(data_interval_end: pendulum.datetime = None):
 @dag(
     dag_id="cgice_premium_bdx",
     start_date=pendulum.datetime(2023, 7, 1, tz="UTC"),
-    schedule_interval="0 4 15 * *",  # 4am on every 15th day-of-month
+    schedule_interval="0 4 */15 * *",  # 4am on every 15th day-of-month
     catchup=False,
     default_args={"retries": 0},
     max_active_runs=1,
