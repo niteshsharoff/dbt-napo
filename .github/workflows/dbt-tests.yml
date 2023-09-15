@@ -12,6 +12,7 @@ jobs:
 
     steps:
       - id: dbt_cloud_run
+        if: github.event.pull_request.draft == false
         name: Run DBT tests
         uses: fal-ai/dbt-cloud-action@main
         with:
