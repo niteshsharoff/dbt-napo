@@ -3,7 +3,7 @@ name: "Build and Deploy Airflow Image"
 on:
   push:
     paths:
-      - 'airflow/**'
+      - 'airflow/*'
     branches:
       - main
 

@@ -3,7 +3,7 @@ name: "Run DBT Tests"
 on:
   pull_request:
     paths:
-      - 'dbt-napo/**'
+      - 'dbt-napo/*'
 
 jobs:
   dbt-test:
