@@ -140,3 +140,4 @@ airflow-variables.json
 .kube
 *.ipynb
 .vscode
+.DS_Store

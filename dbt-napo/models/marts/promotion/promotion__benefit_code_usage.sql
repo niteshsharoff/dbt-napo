@@ -1,3 +1,5 @@
+{{ config(schema="marts") }}
+
 with
     snapshot_details as (
         select
