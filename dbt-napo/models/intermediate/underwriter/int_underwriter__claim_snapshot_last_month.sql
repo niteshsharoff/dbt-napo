@@ -1,1 +1,1 @@
-select * from {{ ref("int_underwriter__claim_snapshot_2023_08") }}
+select * from {{ ref("int_underwriter__claim_snapshot_2023_09") }}
