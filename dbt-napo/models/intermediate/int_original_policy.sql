@@ -19,7 +19,7 @@ with recursive
             policy_year,
             max(policy_year) over (partition by new_policy_id) as max_policy_year
         from find_original_policy_id r
-        left join raw.policy p on p.policy_id = r.old_policy_id
+        left join {{ ref("stg_raw__policy") }} p on p.policy_id = r.old_policy_id
     )
 select distinct
     new_policy_id as policy_id,

@@ -21,6 +21,7 @@ jsonschema = "==4.16.0"
 numpy = "==1.21.6"
 importlib-metadata = "==4.13.0"
 pydantic = "==1.10.7"
+google-auth = "*"
 
 [dev-packages]
 black = "*"
