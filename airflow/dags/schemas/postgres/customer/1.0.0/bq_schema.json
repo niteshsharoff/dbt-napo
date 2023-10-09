@@ -103,5 +103,10 @@
     "mode": "NULLABLE",
     "name": "effective_at",
     "type": "INT64"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "is_pa_customer",
+    "type": "BOOLEAN"
   }
 ]
