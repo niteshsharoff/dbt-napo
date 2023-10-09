@@ -45,7 +45,7 @@ CLICKUP_JSON_FIELDS = [
     "folder",
     "space",
 ]
-CLICKUP_MAX_TASK_IDS_PER_REQUEST = 100
+CLICKUP_MAX_TASK_IDS_PER_REQUEST = 5
 
 
 def _get_tasks(page: int, list_id: str, archived: str = "false"):
@@ -66,6 +66,7 @@ def _get_tasks(page: int, list_id: str, archived: str = "false"):
     )
     data = response.json()
     return data.get("tasks")
+
 
 @task
 def get_snapshot(
@@ -117,23 +118,20 @@ def get_snapshot(
         index=False,
     )
 
+
 def _get_time_in_status_batch(task_ids: List[str]):
     headers = {
         "Content-Type": "application/json",
         "Authorization": CLICKUP_API_KEY,
     }
-    query = {
-        "task_ids": task_ids
-    }
+    query = {"task_ids": task_ids}
     response = requests.get(
         f"{CLICKUP_API_URL}/task/bulk_time_in_status/task_ids",
         headers=headers,
         params=query,
     )
-    return [{
-        **item,
-        "id": task_id
-    } for task_id, item in response.json().items()]
+    return [{**item, "id": task_id} for task_id, item in response.json().items()]
+
 
 @task
 def get_time_in_status(
@@ -156,7 +154,8 @@ def get_time_in_status(
     batch_size = CLICKUP_MAX_TASK_IDS_PER_REQUEST
     results = []
     for i in range(0, len(task_ids), batch_size):
-        task_ids_batch = task_ids[i:i+batch_size]
+        logging.info(f"handling batch {i} / {len(task_ids)}")
+        task_ids_batch = task_ids[i : i + batch_size]
         results += _get_time_in_status_batch(task_ids_batch)
 
     results_df = pd.DataFrame.from_records(results)
@@ -188,10 +187,11 @@ def create_clickup_bq_external_table(table_name: str, schema_name: str):
         partition_key="snapshot_date",
     )
 
+
 @dag(
     dag_id="clickup_claims_export",
     start_date=pendulum.datetime(2023, 3, 28, tz="UTC"),
-    schedule_interval="0 1 * * *",
+    schedule_interval="0 5 * * *",
     catchup=False,
     default_args={"retries": 0},
     max_active_runs=1,
@@ -215,6 +215,33 @@ def clickup_claims_export():
         task_id="create_clickup_claims_snapshot_table"
     )(table_name=clickup_claims_bq_table_name, schema_name="clickup_claims")
 
+    t7 = get_time_in_status.override(task_id="load_clickup_claims_time_in_status")(
+        input_gcs_folder=clickup_claims_bq_table_name,
+        output_gcs_folder="clickup_claims_time_in_status",
+    )
+    t8 = create_clickup_bq_external_table.override(
+        task_id="create_clickup_claims_time_in_status_table"
+    )(table_name="clickup_claims_time_in_status", schema_name="clickup_time_in_status")
+
+    no_op >> t1 >> t3
+    no_op >> t2 >> t3
+    t3 >> t7
+    t7 >> t8
+
+
+@dag(
+    dag_id="clickup_vet_claims_export",
+    start_date=pendulum.datetime(2023, 3, 28, tz="UTC"),
+    schedule_interval="0 6 * * *",
+    catchup=False,
+    default_args={"retries": 0},
+    max_active_runs=1,
+    max_active_tasks=8,
+    tags=["raw", "clickup"],
+)
+def clickup_vet_claims_export():
+    no_op = EmptyOperator(task_id="no_op")
+
     clickup_vet_claims_bq_table_name = f"clickup_vet_claims_snapshot"
     t4 = get_snapshot.override(task_id="load_vet_clickup_claims_snapshot")(
         list_id=CLICKUP_LIST_ID_VET_CLAIMS,
@@ -229,28 +256,22 @@ def clickup_claims_export():
         task_id="create_vet_clickup_claims_snapshot_table"
     )(table_name=clickup_vet_claims_bq_table_name, schema_name="clickup_claims")
 
-    t7 = get_time_in_status.override(
-        task_id="load_clickup_claims_time_in_status"
-    )(input_gcs_folder=clickup_claims_bq_table_name, output_gcs_folder="clickup_claims_time_in_status")
-    t8 = create_clickup_bq_external_table.override(
-        task_id="create_clickup_claims_time_in_status_table"
-    )(table_name="clickup_claims_time_in_status", schema_name="clickup_time_in_status")
-
-    t9 = get_time_in_status.override(
-        task_id="load_vet_clickup_claims_time_in_status"
-    )(input_gcs_folder=clickup_vet_claims_bq_table_name, output_gcs_folder="clickup_vet_claims_time_in_status")
+    t9 = get_time_in_status.override(task_id="load_vet_clickup_claims_time_in_status")(
+        input_gcs_folder=clickup_vet_claims_bq_table_name,
+        output_gcs_folder="clickup_vet_claims_time_in_status",
+    )
     t10 = create_clickup_bq_external_table.override(
         task_id="create_vet_clickup_claims_time_in_status_table"
-    )(table_name="clickup_vet_claims_time_in_status", schema_name="clickup_time_in_status")
+    )(
+        table_name="clickup_vet_claims_time_in_status",
+        schema_name="clickup_time_in_status",
+    )
 
-    no_op >> t1 >> t3
-    no_op >> t2 >> t3
     no_op >> t4 >> t6
     no_op >> t5 >> t6
-    t3 >> t7
-    t7 >> t8
     t6 >> t9
     t9 >> t10
 
 
 clickup_claims_export()
+clickup_vet_claims_export()
