@@ -65,6 +65,9 @@
     },
     "effective_at": {
       "type": "integer"
+    },
+    "is_pa_customer": {
+      "type": "boolean"
     }
   },
   "additionalProperties": false
