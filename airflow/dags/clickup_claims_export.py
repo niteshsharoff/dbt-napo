@@ -152,11 +152,15 @@ def get_time_in_status(
     task_ids = tasks_df["id"].tolist()
 
     batch_size = CLICKUP_MAX_TASK_IDS_PER_REQUEST
+
+    # Send 20 parallel requests to ClickUp each time
+    pool = Pool(20)
     results = []
-    for i in range(0, len(task_ids), batch_size):
-        logging.info(f"handling batch {i} / {len(task_ids)}")
-        task_ids_batch = task_ids[i : i + batch_size]
-        results += _get_time_in_status_batch(task_ids_batch)
+    for result in pool.map(
+        _get_time_in_status_batch,
+        [task_ids[i : i + batch_size] for i in range(0, len(task_ids), batch_size)],
+    ):
+        results.extend(result)
 
     results_df = pd.DataFrame.from_records(results)
     # merge task custom ID onto time in status results
