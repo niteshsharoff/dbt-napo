@@ -150,6 +150,9 @@ def check_runa_balance():
 
 @task(task_id="create_rewards")
 def create_rewards():
+    # Assume that any redemptions for quotes prior to 2023-05-01 that are unrewarded in
+    # our system were manually rewarded by COps. If this is not the case then COps can
+    # reward through the ReTool promotions app
     create_rewards_df = pd.read_gbq("""
         select
             quote_uuid,
@@ -157,6 +160,8 @@ def create_rewards():
             customer_is_in_arrears
         from
             dbt_marts.promotion__gift_card_promotion_redemptions
+        where
+            quote_start_date >= DATE(2023, 5, 1)
         order by
             quote_start_date
     """)
