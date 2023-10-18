@@ -1,3 +1,5 @@
+{{ config(pre_hook=["{{declare_quote_udfs()}}"]) }}
+
 with
     quote as (
         select
@@ -15,12 +17,15 @@ select
     quote.* except (quote_request_id),
     quote.quote_request_id as quote_id,
     pricing_model_version.pricing_model_version as pricing_model_version,
+    {{ target.schema }}.strip_patch_number(
+        coalesce(pricing_service_version, pricing_model_version.pricing_model_version)
+    ) as pricing_algorithm_version,
+    {{ target.schema }}.strip_patch_number(
+        coalesce(pricing_service_version, pricing_model_version.pricing_model_version)
+    ) as pricing_algorithm_version_without_patch,
     coalesce(
-        pricing_service_version,
-        regexp_extract(
-            pricing_model_version.pricing_model_version, "^([0-9]+(?:\\.[0-9]+)?)"
-        )
-    ) as pricing_algorithm_version
+        pricing_service_version, pricing_model_version.pricing_model_version
+    ) as pricing_algorithm_version_with_patch
 from quote
 left join
     {{ ref("pricing_model_version") }}
