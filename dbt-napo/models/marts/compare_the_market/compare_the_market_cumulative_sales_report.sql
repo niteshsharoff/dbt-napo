@@ -102,7 +102,7 @@ with
             end as cancellation_transaction_datetime,
             case
                 when transaction_type = "Cancellation"
-                then format_datetime("%d/%m/%Y %H:%M:%S", policy.cancel_date)
+                then format_datetime("%d/%m/%Y", policy.cancel_date)
             end as cancellation_date_effective_date,
             transaction_at
         from {{ ref("reporting_policy_transaction") }}
