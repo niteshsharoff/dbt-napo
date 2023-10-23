@@ -66,8 +66,10 @@ with
             customer.email as email,
             format_date("%d/%m/%Y", customer.date_of_birth) as date_of_birth,
             customer.postal_code as post_code,
-            coalesce(quote_product.annual_price, policy.annual_price) as quoted_cost,
-            policy.annual_price as sold_cost,
+            format(
+                "%.2f", coalesce(quote_product.annual_price, policy.annual_price)
+            ) as quoted_cost,
+            format("%.2f", policy.annual_price) as sold_cost,
             case
                 when policy.payment_plan_type = "annually"
                 then "Annual"
@@ -100,8 +102,9 @@ with
             end as cancellation_transaction_datetime,
             case
                 when transaction_type = "Cancellation"
-                then format_datetime("%d/%m/%Y %H:%M:%S", policy.cancel_date)
-            end as cancellation_date_effective_date
+                then format_datetime("%d/%m/%Y", policy.cancel_date)
+            end as cancellation_date_effective_date,
+            transaction_at
         from {{ ref("reporting_policy_transaction") }}
         left join quote_product on quote_product.quote_id = quote.quote_id
         where
@@ -109,5 +112,38 @@ with
             and transaction_type in ("New Policy", "Cancellation")
         order by transaction_at
     )
-select *
+select
+-- fmt: off
+    transaction_at,
+    partner_name as Partner_Name,
+    brand_name as Brand_Name,
+    brand_code as Brand_Code,
+    aggregator_name as Aggregator_Name,
+    product_code as Product_Code,
+    product_detail as Product_Detail,
+    partner_quote_reference as Partner_Quote_Reference,
+    ctm_clickthroughid as CTM_clickThroughID,
+    internal_quote_reference as Internal_Quote_Reference,
+    customer_reference_number as Customer_Reference_Number,
+    transaction_reference as Transaction_Reference,
+    transaction_datetime as Transaction_Datetime,
+    product_start_date as Product_Start_Date,
+    product_end_date as Product_End_Date,
+    first_name as First_Name,
+    surname as Surname,
+    email as Email,
+    date_of_birth as Date_Of_Birth,
+    post_code as Post_Code,
+    quoted_cost as Quoted_Cost,
+    sold_cost as Sold_Cost,
+    payment_type as Payment_Type,
+    customer_purchase_method as Customer_Purchase_Method,
+    pet_name as Pet_Name,
+    pet_type as Pet_Type,
+    pet_breed as Pet_Breed,
+    number_of_pets as Number_of_Pets,
+    transaction_type as Transaction_Type,
+    cancellation_transaction_datetime as Cancellation_Transaction_Datetime,
+    cancellation_date_effective_date as Cancellation_Date_Effective_Date
+-- fmt: on
 from report
