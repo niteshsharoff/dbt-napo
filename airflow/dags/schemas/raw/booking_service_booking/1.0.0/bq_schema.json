@@ -68,5 +68,10 @@
     "mode": "NULLABLE",
     "name": "attended_duration",
     "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "cancellation_reason",
+    "type": "STRING"
   }
 ]

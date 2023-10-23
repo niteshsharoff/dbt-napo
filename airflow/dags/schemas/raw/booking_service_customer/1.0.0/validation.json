@@ -20,6 +20,15 @@
     },
     "created_at": {
       "type": "integer"
+    },
+    "source": {
+      "type": "string"
+    },
+    "purchased_access": {
+      "type": "boolean"
+    },
+    "insurance_access": {
+      "type": "boolean"
     }
   },
   "additionalProperties": false
