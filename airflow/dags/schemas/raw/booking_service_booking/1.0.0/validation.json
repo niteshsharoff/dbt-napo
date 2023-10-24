@@ -44,6 +44,9 @@
     },
     "attended_duration": {
       "type": ["integer", "null"]
+    },
+    "cancellation_reason": {
+      "type": "string"
     }
   },
   "additionalProperties": false

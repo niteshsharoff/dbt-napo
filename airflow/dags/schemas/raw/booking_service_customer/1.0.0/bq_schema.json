@@ -28,5 +28,20 @@
     "mode": "NULLABLE",
     "name": "created_at",
     "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "source",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "purchased_access",
+    "type": "BOOLEAN"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "insurance_access",
+    "type": "BOOLEAN"
   }
 ]
