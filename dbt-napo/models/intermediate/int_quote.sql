@@ -20,9 +20,6 @@ select
     {{ target.schema }}.strip_patch_number(
         coalesce(pricing_service_version, pricing_model_version.pricing_model_version)
     ) as pricing_algorithm_version,
-    {{ target.schema }}.strip_patch_number(
-        coalesce(pricing_service_version, pricing_model_version.pricing_model_version)
-    ) as pricing_algorithm_version_without_patch,
     coalesce(
         pricing_service_version, pricing_model_version.pricing_model_version
     ) as pricing_algorithm_version_with_patch
