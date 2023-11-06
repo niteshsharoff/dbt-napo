@@ -300,7 +300,7 @@ def compare_the_market():
         task_id="sftp_monthly_report",
         local_dir="ctm/monthly",
         remote_dir="Monthly",
-        gcs_uri=f"gs://{GCS_BUCKET}/reporting/{MONTHLY_NAME}/run_date={run_date}/*",
+        gcs_uri=f"gs://{GCS_BUCKET}/tmp/{MONTHLY_NAME}/run_date={run_date}/*",
     )
     monthly_export = export_monthly_report()
     monthly_upload = upload_monthly_report()
