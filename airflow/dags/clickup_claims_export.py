@@ -6,13 +6,13 @@ from typing import List
 import pandas as pd
 import pendulum
 import requests
+from billiard.pool import Pool
+
 from airflow.decorators import task
-from airflow.exceptions import AirflowSkipException, AirflowFailException
+from airflow.exceptions import AirflowFailException, AirflowSkipException
 from airflow.models import Variable
 from airflow.models.dag import dag
 from airflow.operators.empty import EmptyOperator
-from billiard.pool import Pool
-
 from dags.workflows.create_bq_external_table import create_external_bq_table
 
 GCP_PROJECT_ID = Variable.get("GCP_PROJECT_ID")

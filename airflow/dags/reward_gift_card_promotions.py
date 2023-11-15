@@ -1,17 +1,16 @@
-from datetime import datetime, date
-from typing import Any
+import logging
 import urllib.parse as urlparse
+from datetime import date, datetime
+from typing import Any
 
 import pandas as pd
 import requests
-import logging
-
-from google.oauth2.id_token import fetch_id_token
 from google.auth.transport.requests import Request
+from google.oauth2.id_token import fetch_id_token
 
 from airflow import AirflowException
-from airflow.models.dag import dag
 from airflow.models import Variable
+from airflow.models.dag import dag
 from airflow.operators.empty import EmptyOperator
 from airflow.operators.python import task
 
@@ -57,7 +56,8 @@ def _paginate_url(url, headers={}):
 def create_redemptions():
     # Exclude MSENAPO22 from redemptions as it was run incorrectly and had
     # to be redeemed manually
-    create_redemptions_df = pd.read_gbq("""
+    create_redemptions_df = pd.read_gbq(
+        """
         select
             * except(quote_start_date),
             format_date("%Y-%m-%d", quote_start_date) as quote_start_date
@@ -67,11 +67,14 @@ def create_redemptions():
             promotion_code != 'MSENAPO22'
         order by
             quote_start_date
-    """)
+    """
+    )
     id_token = _get_promotion_service_id_token()
     for create_redemption in create_redemptions_df.to_dict("records"):
         promotion_code = create_redemption.pop("promotion_code")
-        create_redemption["customer_pet_names"] = create_redemption["customer_pet_names"].tolist()
+        create_redemption["customer_pet_names"] = create_redemption[
+            "customer_pet_names"
+        ].tolist()
         response = requests.post(
             f"{PROMOTION_SERVICE_BASE_URL}/promotions/{promotion_code}/redemption",
             json=create_redemption,
@@ -153,7 +156,8 @@ def create_rewards():
     # Assume that any redemptions for quotes prior to 2023-05-01 that are unrewarded in
     # our system were manually rewarded by COps. If this is not the case then COps can
     # reward through the ReTool promotions app
-    create_rewards_df = pd.read_gbq("""
+    create_rewards_df = pd.read_gbq(
+        """
         select
             quote_uuid,
             has_active_policies as redemption_has_active_policies,
@@ -164,7 +168,8 @@ def create_rewards():
             quote_start_date >= DATE(2023, 5, 1)
         order by
             quote_start_date
-    """)
+    """
+    )
     create_rewards_lookup = create_rewards_df.set_index("quote_uuid").to_dict("index")
 
     id_token = _get_promotion_service_id_token()
@@ -176,8 +181,12 @@ def create_rewards():
         if redemption["quote_uuid"] not in create_rewards_lookup:
             continue
         create_reward = create_rewards_lookup[redemption["quote_uuid"]]
-        create_reward["customer_is_in_arrears"] = bool(create_reward["customer_is_in_arrears"])
-        create_reward["redemption_has_active_policies"] = bool(create_reward["redemption_has_active_policies"])
+        create_reward["customer_is_in_arrears"] = bool(
+            create_reward["customer_is_in_arrears"]
+        )
+        create_reward["redemption_has_active_policies"] = bool(
+            create_reward["redemption_has_active_policies"]
+        )
         response = requests.post(
             f"{PROMOTION_SERVICE_BASE_URL}/redemptions/{redemption['uuid']}/reward",
             json=create_reward,

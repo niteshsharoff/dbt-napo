@@ -2,16 +2,16 @@ from datetime import datetime
 from enum import Enum, auto
 
 import pendulum
+from workflows.create_bq_external_table import create_external_bq_table
+from workflows.export_pg_tables_to_gcs import load_pg_table_to_gcs
+from workflows.move_gcs_object import move_gcs_blob
+from workflows.validate_json_schema import validate_json
+
 from airflow.datasets import Dataset
 from airflow.decorators import task, task_group
 from airflow.macros import ds_add
 from airflow.models import Variable
 from airflow.models.dag import dag
-
-from workflows.create_bq_external_table import create_external_bq_table
-from workflows.export_pg_tables_to_gcs import load_pg_table_to_gcs
-from workflows.move_gcs_object import move_gcs_blob
-from workflows.validate_json_schema import validate_json
 
 GCP_PROJECT_ID = Variable.get("GCP_PROJECT_ID")
 GCP_REGION = Variable.get("GCP_REGION")

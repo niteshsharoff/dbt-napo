@@ -3,7 +3,6 @@ import io
 import logging
 from typing import Any
 
-from airflow import AirflowException
 from google.auth.transport.requests import Request
 from google.cloud import storage
 from google.oauth2.credentials import Credentials
@@ -11,6 +10,8 @@ from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
 from googleapiclient.http import MediaIoBaseUpload
+
+from airflow import AirflowException
 
 OAUTH_SCOPES = [
     "https://www.googleapis.com/auth/drive.metadata",
