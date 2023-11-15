@@ -3,7 +3,7 @@ import logging
 from typing import Optional
 
 from google.cloud import storage
-from jsonschema import validate, exceptions
+from jsonschema import exceptions, validate
 
 
 def load_json_from_cloud_storage(

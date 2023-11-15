@@ -1,5 +1,8 @@
 import logging
 
+from google.cloud import bigquery
+from jinja2 import Environment, FileSystemLoader
+
 from airflow.datasets import Dataset
 from airflow.decorators import task
 from airflow.exceptions import AirflowFailException, AirflowSkipException
@@ -7,20 +10,16 @@ from airflow.models import Variable
 from airflow.models.dag import dag
 from airflow.operators.empty import EmptyOperator
 from airflow.providers.dbt.cloud.operators.dbt import DbtCloudRunJobOperator
-from airflow.providers.google.cloud.hooks.compute_ssh import ComputeEngineSSHHook
+from airflow.providers.google.cloud.hooks.compute_ssh import \
+    ComputeEngineSSHHook
 from airflow.providers.ssh.operators.ssh import SSHOperator
 from airflow.utils.task_group import TaskGroup
-from google.cloud import bigquery
-from jinja2 import Environment, FileSystemLoader
-
 from dags.workflows.common import gcs_csv_to_dataframe
 from dags.workflows.create_bq_view import create_bq_view
 from dags.workflows.export_bq_result_to_gcs import export_query_to_gcs
 from dags.workflows.reporting.msm.utils import *
-from dags.workflows.upload_to_google_drive import (
-    file_exists_on_google_drive,
-    upload_to_google_drive,
-)
+from dags.workflows.upload_to_google_drive import (file_exists_on_google_drive,
+                                                   upload_to_google_drive)
 
 JINJA_ENV = Environment(loader=FileSystemLoader("dags/"))
 SFTP_SCRIPT = JINJA_ENV.get_template("bash/sftp_upload.sh")

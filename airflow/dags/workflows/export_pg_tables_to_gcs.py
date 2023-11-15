@@ -1,12 +1,13 @@
 import logging
 from datetime import datetime
-from typing import Any, Optional, List, Tuple
+from typing import Any, List, Optional, Tuple
 
 import pandas as pd
 import psycopg2
-from airflow.exceptions import AirflowSkipException
 from google.cloud import storage
 from jinja2 import Environment, FileSystemLoader
+
+from airflow.exceptions import AirflowSkipException
 
 JINJA_ENV = Environment(loader=FileSystemLoader("dags/sql/"))
 UPLOAD_PATH = "{prefix}/run_date={run_date}/{file_name}"

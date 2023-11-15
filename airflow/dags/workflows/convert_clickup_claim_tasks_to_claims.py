@@ -1,5 +1,5 @@
 import json
-from typing import Any, Optional, List, Dict
+from typing import Any, Dict, List, Optional
 
 import pandas as pd
 from pydantic import BaseModel
@@ -140,7 +140,7 @@ def _extract_custom_fields(tasks: pd.DataFrame) -> pd.DataFrame:
             ),
             "vet_practice_name": extract_custom_field_value(
                 task_custom_fields_lookup.get("Your vet practice")
-            )
+            ),
         }
         claims += [claim]
 
@@ -188,6 +188,6 @@ def _merge_columns(claims: pd.DataFrame, tags: pd.DataFrame):
             "is_archived",
             "last_invoice_date",
             "closed_date",
-            "vet_practice_name"
+            "vet_practice_name",
         ]
     ]

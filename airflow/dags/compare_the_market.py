@@ -1,17 +1,16 @@
 import pendulum
+from jinja2 import Environment, FileSystemLoader
+from workflows.export_bq_result_to_gcs import export_query_to_gcs
+from workflows.upload_to_google_drive import (file_exists_on_google_drive,
+                                              upload_to_google_drive)
+
 from airflow.decorators import task
 from airflow.models import Variable
 from airflow.models.dag import dag
 from airflow.operators.empty import EmptyOperator
-from airflow.providers.google.cloud.hooks.compute_ssh import ComputeEngineSSHHook
+from airflow.providers.google.cloud.hooks.compute_ssh import \
+    ComputeEngineSSHHook
 from airflow.providers.ssh.operators.ssh import SSHOperator
-from jinja2 import Environment, FileSystemLoader
-
-from workflows.export_bq_result_to_gcs import export_query_to_gcs
-from workflows.upload_to_google_drive import (
-    upload_to_google_drive,
-    file_exists_on_google_drive,
-)
 
 JINJA_ENV = Environment(loader=FileSystemLoader("dags/bash/"))
 SFTP_SCRIPT = JINJA_ENV.get_template("sftp_upload.sh")
@@ -129,6 +128,7 @@ def is_first_of_month(data_interval_end: pendulum.datetime = None):
 
     return "no_op"
 
+
 @task(task_id="export_monthly_report")
 def export_monthly_report(data_interval_end: pendulum.datetime = None):
     """
@@ -164,9 +164,7 @@ def export_monthly_report(data_interval_end: pendulum.datetime = None):
         """,
         gcs_bucket=GCS_BUCKET,
         gcs_uri="tmp/{}/run_date={}/{}".format(
-            MONTHLY_NAME,
-            run_date.date(),
-            gcs_file_name
+            MONTHLY_NAME, run_date.date(), gcs_file_name
         ),
     )
 
@@ -180,7 +178,9 @@ def export_daily_report(data_interval_end: pendulum.datetime = None):
     """
     run_date = data_interval_end
     start_date = run_date.subtract(days=1)
-    start_date = pendulum.datetime(start_date.year, start_date.month, start_date.day, tz="UTC")
+    start_date = pendulum.datetime(
+        start_date.year, start_date.month, start_date.day, tz="UTC"
+    )
     end_date = pendulum.datetime(run_date.year, run_date.month, run_date.day, tz="UTC")
     # This is the filename format requested by CTM
     gcs_file_name = "100161_Pet_{start_date}_{end_date}_1_2.csv".format(
@@ -206,11 +206,10 @@ def export_daily_report(data_interval_end: pendulum.datetime = None):
         """,
         gcs_bucket=GCS_BUCKET,
         gcs_uri="tmp/{}/run_date={}/{}".format(
-            DAILY_NAME,
-            run_date.date(),
-            gcs_file_name
+            DAILY_NAME, run_date.date(), gcs_file_name
         ),
     )
+
 
 @task.branch(task_id="sftp_monthly_check")
 def monthly_report_exists(data_interval_end: pendulum.datetime = None):

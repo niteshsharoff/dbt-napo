@@ -2,8 +2,8 @@ import logging
 from typing import Optional
 
 from google.cloud import bigquery
-from google.cloud.bigquery import HivePartitioningOptions, CSVOptions
-from google.cloud.exceptions import NotFound, Conflict
+from google.cloud.bigquery import CSVOptions, HivePartitioningOptions
+from google.cloud.exceptions import Conflict, NotFound
 
 DATASET_ID = "{project}.{dataset}"
 

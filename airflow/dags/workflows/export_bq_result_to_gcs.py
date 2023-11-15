@@ -100,7 +100,7 @@ def export_query_to_gcs(
     gcs_bucket: str,
     gcs_uri: str,
     encoding: str = "utf-8",
-    replace_column_underscores: bool = True
+    replace_column_underscores: bool = True,
 ):
     """
     Write query results to a temp table in Big Query. The temp table is set to expire

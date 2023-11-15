@@ -1,26 +1,22 @@
 import logging
 
 import pendulum
+from google.cloud import bigquery
+from jinja2 import Environment, FileSystemLoader
+
 from airflow.exceptions import AirflowFailException, AirflowSkipException
 from airflow.models import Variable
 from airflow.models.dag import dag
 from airflow.operators.python import task
 from airflow.providers.dbt.cloud.operators.dbt import DbtCloudRunJobOperator
 from airflow.utils.task_group import TaskGroup
-from google.cloud import bigquery
-from jinja2 import Environment, FileSystemLoader
-
 from dags.workflows.common import gcs_csv_to_dataframe
 from dags.workflows.create_bq_view import create_bq_view
 from dags.workflows.export_bq_result_to_gcs import export_query_to_gcs
-from dags.workflows.reporting.cgice.utils import (
-    get_monthly_reporting_period,
-    get_monthly_report_name,
-)
-from dags.workflows.upload_to_google_drive import (
-    file_exists_on_google_drive,
-    upload_to_google_drive,
-)
+from dags.workflows.reporting.cgice.utils import (get_monthly_report_name,
+                                                  get_monthly_reporting_period)
+from dags.workflows.upload_to_google_drive import (file_exists_on_google_drive,
+                                                   upload_to_google_drive)
 
 JINJA_ENV = Environment(loader=FileSystemLoader("dags/"))
 PARTITION_INTEGRITY_CHECK = JINJA_ENV.get_template("sql/partition_integrity_check.sql")

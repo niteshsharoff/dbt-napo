@@ -1,10 +1,10 @@
 import logging
 from datetime import datetime
 
-from airflow.exceptions import AirflowFailException
 from google.cloud import bigquery
 from jinja2 import Environment, FileSystemLoader
 
+from airflow.exceptions import AirflowFailException
 
 JINJA_ENV = Environment(loader=FileSystemLoader("dags/sql/"))
 
@@ -23,7 +23,7 @@ def create_pcw_sales_view(
     table = bigquery.Table(dataset_ref.table(view_name))
     table.view_query = """
         select * except(run_date)
-        from `{project_name}.{dataset_name}.{table_name}` 
+        from `{project_name}.{dataset_name}.{table_name}`
         where run_date > date('{start_date}', 'UTC')
         and run_date <= date('{end_date}', 'UTC')
     """.format(

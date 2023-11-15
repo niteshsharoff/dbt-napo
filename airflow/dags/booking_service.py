@@ -1,11 +1,11 @@
 from datetime import datetime
 
 import pendulum
-from airflow.models import Variable
-from airflow.macros import ds_add
-from airflow.decorators import task
-from airflow.models.dag import dag
 
+from airflow.decorators import task
+from airflow.macros import ds_add
+from airflow.models import Variable
+from airflow.models.dag import dag
 from dags.workflows.create_bq_external_table import create_external_bq_table
 from dags.workflows.export_pg_tables_to_gcs import load_pg_table_to_gcs
 from dags.workflows.move_gcs_object import move_gcs_blob

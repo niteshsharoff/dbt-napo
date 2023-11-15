@@ -1,17 +1,14 @@
 import pandas as pd
 import pendulum
+
 from airflow.models import Variable
 from airflow.models.dag import dag
 from airflow.operators.python import task
-from airflow.providers.google.cloud.sensors.gcs import (
-    GCSObjectExistenceSensor,
-)
-
+from airflow.providers.google.cloud.sensors.gcs import GCSObjectExistenceSensor
 from dags.clickup_claims_export import GCS_RAW_FOLDER
 from dags.workflows.common import gcs_csv_to_dataframe
-from dags.workflows.convert_clickup_claim_tasks_to_claims import (
-    convert_clickup_claim_tasks_to_claims,
-)
+from dags.workflows.convert_clickup_claim_tasks_to_claims import \
+    convert_clickup_claim_tasks_to_claims
 from dags.workflows.create_bq_external_table import create_external_bq_table
 
 GCP_PROJECT_ID = Variable.get("GCP_PROJECT_ID")
