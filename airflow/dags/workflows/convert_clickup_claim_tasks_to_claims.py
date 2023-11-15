@@ -141,6 +141,15 @@ def _extract_custom_fields(tasks: pd.DataFrame) -> pd.DataFrame:
             "vet_practice_name": extract_custom_field_value(
                 task_custom_fields_lookup.get("Your vet practice")
             ),
+            "condition_venom_code": extract_custom_field_value(
+                task_custom_fields_lookup.get("Venom Code")
+            ),
+            "excess": extract_custom_field_value(
+                task_custom_fields_lookup.get("excess")
+            ),
+            "claim_uuid": extract_custom_field_value(
+                task_custom_fields_lookup.get("napo_claim_uuid")
+            ),
         }
         claims += [claim]
 
@@ -189,5 +198,8 @@ def _merge_columns(claims: pd.DataFrame, tags: pd.DataFrame):
             "last_invoice_date",
             "closed_date",
             "vet_practice_name",
+            "condition_venom_code",
+            "excess",
+            "claim_uuid",
         ]
     ]
