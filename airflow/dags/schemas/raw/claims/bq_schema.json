@@ -134,5 +134,20 @@
     "mode":"NULLABLE",
     "name":"vet_practice_name",
     "type":"STRING"
+   },
+   {
+      "mode":"NULLABLE",
+      "name":"condition_venom_code",
+      "type":"STRING"
+   },
+   {
+      "mode":"NULLABLE",
+      "name":"excess",
+      "type":"STRING"
+   },
+   {
+      "mode":"NULLABLE",
+      "name":"claim_uuid",
+      "type":"STRING"
    }
 ]
