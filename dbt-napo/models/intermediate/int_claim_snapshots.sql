@@ -64,7 +64,7 @@ with
             ) as closed_date,
             vet_practice_name,
             snapshot_date,
-        from raw_claims_snapshot as claim
+        from raw_claim_snapshot as claim
         left join unnest(json_extract_array(tags)) tag
         where not is_archived and policy_id is not null
     ),
