@@ -71,6 +71,12 @@
     },
     "notes": {
       "type": ["string", "null"]
+    },
+    "customer_id": {
+      "type": ["integer", "null"]
+    },
+    "is_pa_pet": {
+      "type": "boolean"
     }
   },
   "additionalProperties": false
