@@ -1,4 +1,16 @@
 with
+    raw_claim_snapshot as (
+        select
+            * except (snapshot_date),
+            '' as condition_venom_code,
+            '' as excess,
+            '' as claim_uuid,
+            snapshot_date
+        from raw.claims_snapshot_v1 v1
+        union all
+        select *
+        from raw.claims_snapshot_v2 v2
+    ),
     claim_snapshot as (
         select
             id,
@@ -52,7 +64,7 @@ with
             ) as closed_date,
             vet_practice_name,
             snapshot_date,
-        from raw.claims_snapshot as claim
+        from raw_claims_snapshot as claim
         left join unnest(json_extract_array(tags)) tag
         where not is_archived and policy_id is not null
     ),
