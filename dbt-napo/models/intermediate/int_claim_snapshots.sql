@@ -14,6 +14,7 @@ with
     claim_snapshot as (
         select
             id,
+            claim_uuid,
             cast(policy_id as int64) as policy_id,
             trim(master_claim_id) as master_claim_id,
             extract(
@@ -45,6 +46,7 @@ with
                 else null
             end as is_continuation,
             condition,
+            condition_venom_code,
             decision,
             reassessment_requested,
             emails_to_vets_or_customer,
@@ -98,7 +100,8 @@ with
                 contacting_ph,
                 contacting_vet,
                 aggressive_pet,
-                aggression
+                aggression,
+                fast_track
             ) as tags,
             source,
             is_archived,
@@ -118,7 +121,8 @@ with
                     'contacting ph' as contacting_ph,
                     'contacting vet' as contacting_vet,
                     'aggressive pet' as aggressive_pet,
-                    'aggression' as aggression
+                    'aggression' as aggression,
+                    'fast track' as fast_track
                 )
             )
     )
