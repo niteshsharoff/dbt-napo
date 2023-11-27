@@ -1,0 +1,8 @@
+version: 2
+
+sources:
+  - name: src_airbyte
+    schema: src_airbyte
+    tables:
+      - name: facebook_ads_insights
+        description: Meta advertising activity summary
