@@ -6,3 +6,5 @@ sources:
     tables:
       - name: facebook_ads_insights
         description: Meta advertising activity summary
+      - name: bing_account_performance_report_daily
+        description: Bing advertising activity summary
