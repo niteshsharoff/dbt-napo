@@ -1,0 +1,190 @@
+version: 2
+
+models:
+  - name: dim_pet
+    description: "A type 2 SCD table tracking any changes made to a `pet` model in policy-service."
+    columns:
+      - name: pet_id
+        description: "Policy-service's internal database identifier."
+      - name: pet_uuid
+        description: "Pet unique identifier."
+      - name: name
+        description: ""
+      - name: date_of_birth
+        description: "ISO 8601 format."
+      - name: gender
+        description: "`male` or `female`."
+      - name: size
+        description: ""
+      - name: cost_pounds
+        description: "Pet cost in pounds."
+      - name: is_neutered
+        description: ""
+      - name: is_microchipped
+        description: ""
+      - name: is_vaccinated
+        description: ""
+      - name: species
+        description: ""
+      - name: breed_category
+        description: ""
+      - name: breed_name
+        description: "Sourced from policy-service's `breed` table."
+      - name: breed_source
+        description: "Sourced from policy-service's `breed` table."
+      - name: has_pre_existing_conditions
+        description: ""
+      - name: change_reason
+        description: "Optional note on why a new version of a row is created."
+      - name: effective_from
+        description: "The timestamp a version of the row is effective from."
+      - name: effective_to
+        description: "The timestamp a version of the row is effective until. If it's the latest row, it will be valid until `2999-01-01 00:00:00 UTC`."
+
+  - name: dim_customer
+    description: "A type 2 SCD table tracking any changes made to a `customer` model in policy-service."
+    columns:
+      - name: customer_id
+        description: "Policy-service internal database identifier."
+      - name: customer_uuid
+        description: "Customer unique identifier."
+      - name: first_name
+        description: "Sourced from policy-service's `user` table."
+      - name: last_name
+        description: "Sourced from policy-service's `user` table."
+      - name: email
+        description: ""
+      - name: street_address
+        description: ""
+      - name: address_locality
+        description: ""
+      - name: address_region
+        description: ""
+      - name: postal_code
+        description: ""
+      - name: date_of_birth
+        description: "ISO 8601 format."
+      - name: change_reason
+        description: "Optional note on why a new version of a row is created."
+      - name: effective_from
+        description: "The timestamp a version of the row is effective from."
+      - name: effective_to
+        description: "The timestamp a version of the row is effective until. If it's the latest row, it will be valid until `2999-01-01 00:00:00 UTC`."
+
+  - name: dim_policy
+    description: "Policies sourced from the `policy` table in policy-service. Product information sourced from the `product` table in policy-service."
+    columns:
+      - name: policy_id
+        description: "Policy-service internal database identifier."
+      - name: policy_uuid
+        description: "Policy unique identifier."
+      - name: quote_uuid
+        description: "Quote unique identifier."
+      - name: customer_uuid
+        description: "Customer unique identifier."
+      - name: pet_uuid
+        description: "Pet unique identifier."
+      - name: reference_number
+        description: ""
+      - name: quote_source_reference
+        description: "Used in GoCompapre sales report."
+      - name: payment_plan_type
+        description: "`monthly` or `annually`."
+      - name: retail_price
+        description: "Annual retail price (post discounts)."
+      - name: notes
+        description: ""
+      - name: accident_cover_start_date
+        description: ""
+      - name: start_date
+        description: "Policy start date."
+      - name: end_date
+        description: "Policy end date."
+      - name: cancel_date
+        description: "Policy cancel date."
+      - name: cancel_detail
+        description: ""
+      - name: cancel_reason
+        description: ""
+      - name: created_at
+        description: "Internal timestamp at which a policy object is created in policy-service."
+      - name: sold_at
+        description: "The timestamp at which an annual payment is collected or a GoCardless subscription is setup."
+      - name: cancelled_at
+        description: "The timestamp at which our systems cancelled a policy, not the same as `cancel_date`."
+      - name: reinstated_at
+        description: "The most recent timestamp at which our systems reinstated a policy."
+      - name: change_reason
+        description: "Optional note on why a new version of a row is created."
+      - name: product_reference
+        description: "Product reference, i.e. `essential4K`, `advanced`, `serenity` etc."
+      - name: product_name
+        description: "Product display name."
+      - name: vet_fee_cover
+        description: ""
+      - name: complementary_treatment_cover
+        description: ""
+      - name: dental_cover
+        description: ""
+      - name: emergency_boarding_cover
+        description: ""
+      - name: third_person_liability_excess
+        description: ""
+      - name: third_person_liability_cover
+        description: ""
+      - name: pet_death_cover
+        description: ""
+      - name: travel_cover
+        description: ""
+      - name: missing_pet_cover
+        description: ""
+      - name: behavioural_treatment_cover
+        description: ""
+      - name: co_pay
+        description: ""
+      - name: excess
+        description: ""
+      - name: effective_from
+        description: "The timestamp a version of the row is effective from."
+      - name: effective_to
+        description: "The timestamp a version of the row is effective until. If it's the latest row, it will be valid until `2999-01-01 00:00:00 UTC`."
+
+  - name: dim_quote
+    description: "Quotes sourced from the `quoterequest` table in quote-service. A quote should only be associated to either a voucher code or a napo benefit code."
+    columns:
+      - name: quote_uuid
+        description: "Quote request unique identifier."
+      - name: source_policy_id
+        description: "`The source policy id for renewal quotes, sourced from the renewal table in policy-service."
+      - name: quote_source
+        description: "Quote source - i.e. `moneysupermarket`, `renewal`, `comparethemarket`."
+      - name: msm_sales_tracking_urn
+        description: "MSM sales reporting specific."
+      - name: discount_type
+        description: "Discount type taken from common quote."
+      - name: voucher_code
+        description: "Populated only if the promotion applied to the quote is a voucher code."
+      - name: discount_percentage
+        description: "The discount percentage that will be applied to the purchased policy."
+      - name: benefit_code
+        description: "Populated only if the promotion applied to the quote is a napo benefit code."
+      - name: reward_amount_pounds
+        description: "The voucher amount we reward customers in pounds."
+      - name: raw_request
+        description: "Request as we receive it from PCW/direct, so schema will differ across requests."
+      - name: raw_response
+        description: ""
+      - name: common_quote
+        description: "Standardized schema for requests from PCW/direct."
+      - name: pricing_service_request
+        description: "Requests to the Pricing Service, i.e. standardized requests from PCWs/direct + enriched with additional data."
+      - name: pricing_service_response
+        description: ""
+      - name: pricing_model_version
+        description: ""
+      - name: pricing_algorithm_version
+        description: "Semantic version with patch version stripped out."
+      - name: pricing_algorithm_version_with_patch
+        description: "Semantic version."
+      - name: quote_at
+        description: "Derived from `created_at`."
