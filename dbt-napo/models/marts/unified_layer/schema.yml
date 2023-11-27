@@ -106,7 +106,7 @@ models:
         description: ""
       - name: cancel_reason
         description: ""
-      - name: created_at
+      - name: created_date
         description: "Internal timestamp at which a policy object is created in policy-service."
       - name: sold_at
         description: "The timestamp at which an annual payment is collected or a GoCardless subscription is setup."
