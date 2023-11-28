@@ -52,6 +52,7 @@ renamed as (
         lowqualitysophisticatedclicks
 
     from source
+    where accountnumber = 'F149C4W5'
 
 )
 
