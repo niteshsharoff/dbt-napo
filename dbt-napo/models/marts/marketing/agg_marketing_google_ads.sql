@@ -4,9 +4,9 @@
         partition_by={
             'field':'date',
             'data_type':'date',
-            'granuality':'day'
+            'granularity':'day'
         },
-        cluster_by = ['weekday','month','week'],
+        cluster_by = ['weekday','month','week']
     )
 }}
 
@@ -19,7 +19,6 @@ SELECT
   ,sum(metrics_clicks) as clicks 
   ,sum(metrics_conversions) as conversions
   ,safe_divide(sum(metrics_clicks),sum(metrics_impressions)) as ctr
-  ,sum(metrics_cost_micros)/1000000 as cost_gbp
+  ,sum(metrics_cost_micros)/1000000 as cost
 FROM {{ ref('stg_src_google_ads__ads_AdGroupStats_4788955894') }}
 group by 1,2,3,4
-order by 1 desc

@@ -26,7 +26,6 @@ select
       ,sum(cast((select json_extract_scalar(c,'$.value') from unnest(json_extract_array(conversion_values,'$')) c where json_extract_scalar(c,'$.action_type')='offsite_conversion.fb_pixel_custom.purchase_insurance') as numeric)) as purchase_insurance_value
 from {{ref('stg_src_airbyte__facebook_ads_insights')}}
 group by 1
-order by 1 desc
 )
 select * 
 from data

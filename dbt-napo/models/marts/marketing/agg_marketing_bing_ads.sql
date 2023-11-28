@@ -1,3 +1,13 @@
+{{
+    config(
+        materialized='table',
+        partition_by={
+            'field':'date',
+            'data_type':'date',
+            'granularity':'day'
+        }
+    )
+}}
 SELECT 
      timeperiod as date
     ,sum(impressions) as impressions
@@ -9,4 +19,3 @@ SELECT
 FROM {{ref('stg_src_airbyte__bing_account_performance_report_daily')}} 
 where accountnumber = 'F149C4W5'
 group by 1
-order by 1 desc
