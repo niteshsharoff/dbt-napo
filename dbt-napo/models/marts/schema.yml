@@ -114,3 +114,5 @@ models:
         description: "All active dog only policies where the pet age in months is less than or equal to 5 months"
       - name: active_adolescent_policies_dog_only
         description: "All active dog only policies where the pet age in months is more than or equal to 6 months but less than or equal to 25 (pet_age >=6 and pet_age <= 24)"
+  - name: agg_quote_requests
+    description: Aggregated daily Quote Requests by source (PCW or direct) excluding renewals
