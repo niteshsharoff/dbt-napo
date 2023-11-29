@@ -17,4 +17,3 @@ left join {{ ref('lookup_quote_pcw_mapping') }} b
 on a.source = b.quote_code_name
 where state = 'offered'
 group by 1,2
-order by 1 desc,2
