@@ -29,7 +29,7 @@ x-depends-on:
   depends_on:
     postgres:
       condition: service_healthy
-    airflow-init:
+    airflow-migrate:
       condition: service_completed_successfully
 
 services:
@@ -63,7 +63,7 @@ services:
     <<: *common
     <<: *depends-on
     container_name: airflow-webserver
-    restart: always
+    restart: on-failure
     command: webserver
     ports:
       - "8080:8080"
@@ -75,15 +75,15 @@ services:
     depends_on:
       - postgres
 
-  airflow-init:
+  airflow-migrate:
     <<: *common
-    container_name: airflow-init
+    container_name: airflow-migrate
     entrypoint: /bin/bash
     command:
       - -c
       - |
         mkdir -p /sources/logs /sources/dags /sources/plugins
         chown -R "${AIRFLOW_UID}:0" /sources/{logs,dags,plugins}
-        exec /entrypoint airflow db init
+        exec /entrypoint airflow db migrate
     depends_on:
       - postgres
