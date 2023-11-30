@@ -3,8 +3,9 @@
         partition_by={
             'field':'created_date',
             'data_type':'date',
-            'granularity':'day'
-        }
+            'granularity':'day'            
+        },
+        schema='marts'
     )
 }}
 

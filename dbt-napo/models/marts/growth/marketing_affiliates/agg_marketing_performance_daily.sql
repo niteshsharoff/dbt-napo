@@ -1,3 +1,5 @@
+{{config(schema='marts')}}
+
 with fb as (
     select *
     from {{ref('agg_marketing_facebook_ads')}}
