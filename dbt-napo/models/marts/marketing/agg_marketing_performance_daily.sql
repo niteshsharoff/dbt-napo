@@ -24,7 +24,7 @@ joined as (
         ,sum(b.impressions)+sum(c.impressions)+sum(d.impressions) as impressions
         ,sum(b.clicks)+sum(c.clicks)+sum(d.clicks) as clicks
         ,round(sum(b.conversions)+sum(c.conversions)+sum(d.conversions),3) as conversions
-        ,round(sum(b.cost)+sum(c.cost)+sum(d.cost),3) as cost_gbp
+        ,round(sum(b.cost_gbp)+sum(c.cost_gbp)+sum(d.cost_gbp),3) as cost_gbp
     from date_spine a
     left join fb b   on a.date = b.date
     left join bing c on a.date = c.date
