@@ -1,0 +1,11 @@
+version: 2
+
+models:
+  - name: agg_quote_requests
+    description: Aggregated daily Quote Requests by source (PCW or direct) excluding renewals where state is offered
+  - name: agg_marketing_performance_daily
+    description: "Aggregation of metrics for performance marketing: Bing, Facebook & Google Ads. This does not include Affiliates"
+  - name: agg_daily_referrals
+    description: Count of unique users by referral creation date
+  - name: agg_sold_policies_excl_renewals
+    description: Daily aggregation of policies sold split by source excluding renewals
