@@ -15,7 +15,7 @@ gads as (
 
 date_spine as (
 select dt as date
-from unnest(GENERATE_DATE_ARRAY('2023-10-01',date_sub(current_date(),interval 1 day))) dt
+from unnest(GENERATE_DATE_ARRAY('2023-01-01',date_sub(current_date(),interval 1 day))) dt
 ),
 
 joined as (
