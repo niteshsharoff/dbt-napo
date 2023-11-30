@@ -19,6 +19,6 @@ SELECT
   ,sum(metrics_clicks) as clicks 
   ,sum(metrics_conversions) as conversions
   ,safe_divide(sum(metrics_clicks),sum(metrics_impressions)) as ctr
-  ,sum(metrics_cost_micros)/1000000 as cost
+  ,sum(metrics_cost_micros)/1000000 as cost_gbp
 FROM {{ ref('stg_src_google_ads__ads_AdGroupStats_4788955894') }}
 group by 1,2,3,4

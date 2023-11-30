@@ -16,7 +16,7 @@ select
       ,sum(clicks) as clicks
       --TO DO --,sum(cast((select json_extract_scalar(c,'$.value') from unnest(json_extract_array(outbound_clicks,'$')) c where json_extract_scalar(c,'$.action_type')='outbound_click') as numeric)) as outbound_clicks
       ,sum(unique_clicks) as unique_clicks
-      ,sum(spend) as cost
+      ,sum(spend) as cost_gbp
       ,max(account_currency) as currency
       ,sum(cast((select json_extract_scalar(c,'$.value') from unnest(json_extract_array(conversions,'$')) c where json_extract_scalar(c,'$.action_type')='offsite_conversion.fb_pixel_custom.purchase_insurance') as numeric)) as conversions
       ,sum(cast((select json_extract_scalar(c,'$.value') from unnest(json_extract_array(conversion_values,'$')) c where json_extract_scalar(c,'$.action_type')='offsite_conversion.fb_pixel_custom.purchase_insurance') as numeric)) as conversion_value

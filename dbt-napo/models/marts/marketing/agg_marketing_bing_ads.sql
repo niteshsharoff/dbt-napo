@@ -12,7 +12,7 @@ SELECT
      timeperiod as date
     ,sum(impressions) as impressions
     ,sum(clicks) as clicks
-    ,sum(spend) as cost
+    ,sum(spend) as cost_gbp
     ,sum(conversions) as conversions
     ,max(currencycode) as currency
     ,sum(revenue) as conversion_value
