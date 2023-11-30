@@ -113,6 +113,9 @@
     },
     "third_person_liability": {
       "type": "boolean"
+    },
+    "policy_document_version": {
+      "type": "string"
     }
   },
   "additionalProperties": false

@@ -183,5 +183,10 @@
     "mode": "NULLABLE",
     "name": "third_person_liability",
     "type": "BOOLEAN"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "policy_document_version",
+    "type": "STRING"
   }
 ]
