@@ -10,3 +10,4 @@ sources:
         description: Bing advertising activity summary
       - name: conectia_daily_summary
         description: Daily affiliate activity summary (custom built connector)
+      - name: google_ads_account_performance_report
