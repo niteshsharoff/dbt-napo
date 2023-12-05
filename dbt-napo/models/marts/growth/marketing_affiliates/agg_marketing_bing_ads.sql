@@ -18,5 +18,5 @@ SELECT
     ,max(currencycode) as currency
     ,sum(revenue) as conversion_value
 FROM {{ref('stg_src_airbyte__bing_account_performance_report_daily')}} 
-where accountnumber = 'F149C4W5'
+where accountnumber = '{{var('bing_account_id')}}'
 group by 1

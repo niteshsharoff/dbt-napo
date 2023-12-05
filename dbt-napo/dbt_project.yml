@@ -29,6 +29,9 @@ clean-targets:         # directories to be removed by `dbt clean`
 # as tables. These settings can be overridden in the individual model files
 # using the `{{ config(...) }}` macro.
 
+vars:
+  bing_account_id: 'F149C4W5'
+
 models:
   dbt_napo:
     marts:
@@ -36,3 +39,5 @@ models:
 
 tests:
   +store_failures: true
+
+
