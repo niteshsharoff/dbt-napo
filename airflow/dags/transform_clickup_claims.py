@@ -7,14 +7,16 @@ from airflow.operators.python import task
 from airflow.providers.google.cloud.sensors.gcs import GCSObjectExistenceSensor
 from dags.clickup_claims_export import GCS_RAW_FOLDER
 from dags.workflows.common import gcs_csv_to_dataframe
-from dags.workflows.convert_clickup_claim_tasks_to_claims import \
-    convert_clickup_claim_tasks_to_claims
+from dags.workflows.convert_clickup_claim_tasks_to_claims import (
+    convert_clickup_claim_tasks_to_claims,
+)
 from dags.workflows.create_bq_external_table import create_external_bq_table
 
 GCP_PROJECT_ID = Variable.get("GCP_PROJECT_ID")
 GCP_REGION = Variable.get("GCP_REGION")
 GCS_BUCKET = Variable.get("GCS_BUCKET")
 GCS_DATA_VERSION = "1.0.0"
+GCS_SNAPSHOT_VERSION = "v1.1.0"
 
 
 @task(trigger_rule="none_failed")
@@ -55,7 +57,7 @@ def transform_clickup_claims_to_claims(
 
     # Load claims
     claims_df.to_csv(
-        f"{GCS_RAW_FOLDER}/claims_snapshot/snapshot_date={run_date}/claims.csv",
+        f"{GCS_RAW_FOLDER}/claims_snapshot/{GCS_SNAPSHOT_VERSION}/snapshot_date={run_date}/claims.csv",
         index=False,
     )
 
@@ -68,8 +70,8 @@ def create_claims_snapshot_table():
         dataset_name="raw",
         table_name="claims_snapshot_v2",
         schema_path=f"dags/schemas/raw/claims/bq_schema.json",
-        source_uri=f"{GCS_RAW_FOLDER}/claims_snapshot/v1.1.0/*",
-        partition_uri=f"{GCS_RAW_FOLDER}/claims_snapshot/v1.1.0",
+        source_uri=f"{GCS_RAW_FOLDER}/claims_snapshot/{GCS_SNAPSHOT_VERSION}/*",
+        partition_uri=f"{GCS_RAW_FOLDER}/claims_snapshot/{GCS_SNAPSHOT_VERSION}",
         source_format="CSV",
         skip_leading_rows=1,
         partition_key="snapshot_date",
