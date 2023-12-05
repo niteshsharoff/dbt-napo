@@ -6,20 +6,22 @@
             'data_type':'date',
             'granularity':'day'
         },
-        cluster_by = ['weekday','month','week'],
+        cluster_by = ['napo_campaign_type'],
         schema='marts'
     )
 }}
 
 SELECT 
    segments_date as date
-  ,segments_day_of_week as weekday
-  ,segments_month as month
-  ,segments_week as week
+    ,case 
+        when lower(campaign_name) like '%leadgen%' then 'leadgen'
+        when lower(campaign_name) not like any ('%leadgen%','%standalone%') then 'growth'
+        else 'other'
+    end as napo_campaign_type
   ,sum(metrics_impressions) as impressions
   ,sum(metrics_clicks) as clicks 
   ,sum(metrics_conversions) as conversions
   ,safe_divide(sum(metrics_clicks),sum(metrics_impressions)) as ctr
   ,sum(metrics_cost_micros)/1000000 as cost_gbp
-FROM {{ ref('stg_src_airbyte__google_ads_account_performance_report') }}
-group by 1,2,3,4
+FROM {{ ref('stg_src_airbyte__google_ads_campaign') }}
+group by 1,2
