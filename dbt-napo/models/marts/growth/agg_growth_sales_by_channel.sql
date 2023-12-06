@@ -1,7 +1,7 @@
 --Notes for Kaveh:
 --> Added 'direct','direct' for unknown data like quote requests
 --> Total sales I'm pulling from policy_details, did you want that or did you want sales as per ad platforms?
---> Not all paid is going into the paid_marketing and lead_generation buckets. We have some spend un-accounted for.
+--> SOLVED: Not all paid is going into the paid_marketing and lead_generation buckets. We have some spend un-accounted for. Added pa_standalone bucket for all 'other'.
 --> It looks like all we're pulling from marketing is the spent, did we need anything else?
 WITH date_spine AS (
     SELECT DATE
@@ -183,4 +183,5 @@ core__sales as (
 
 select * 
 from core__sales
-order by date desc
+where date < current_date()
+order by 1 desc,2,3
