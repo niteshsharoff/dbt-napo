@@ -21,5 +21,5 @@ select
       ,sum(AllConversions) as conversions
       ,sum(Revenue) as conv_value
       ,sum(Spend) as cost_gbp
-from {{ref('stg_src_airbyte__bing_ad_group_performance_report_daily')}}
+from {{ref('stg_src_airbyte__bing_campaign_performance_report_daily')}}
 group by 1,2

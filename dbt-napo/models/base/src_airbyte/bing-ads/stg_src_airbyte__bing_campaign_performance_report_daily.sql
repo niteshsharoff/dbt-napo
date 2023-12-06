@@ -2,7 +2,7 @@ with
 
 source as (
 
-    select * from {{ source('src_airbyte', 'bing_ad_group_performance_report_daily') }}
+    select * from {{ source('src_airbyte', 'bing_campaign_performance_report_daily') }}
 
 ),
 
@@ -20,25 +20,22 @@ renamed as (
         network,
         revenue,
         deviceos,
-        language,
         accountid,
-        adgroupid,
         allrevenue,
         averagecpc,
         averagecpm,
+        budgetname,
         campaignid,
         devicetype,
         phonecalls,
         timeperiod,
         topvsother,
         accountname,
-        adgroupname,
-        adgrouptype,
         adrelevance,
         conversions,
-        expectedctr,
         impressions,
         bidmatchtype,
+        budgetstatus,
         campaignname,
         campaigntype,
         currencycode,
@@ -46,10 +43,13 @@ renamed as (
         costperassist,
         addistribution,
         allconversions,
+        campaignlabels,
+        campaignstatus,
         conversionrate,
-        finalurlsuffix,
         averageposition,
+        returnonadspend,
         customparameters,
+        lowqualityclicks,
         phoneimpressions,
         revenueperassist,
         allconversionrate,
@@ -62,13 +62,19 @@ renamed as (
         historicaladrelevance,
         historicalexpectedctr,
         landingpageexperience,
+        lowqualityconversions,
+        lowqualityimpressions,
         historicalqualityscore,
         viewthroughconversions,
         allrevenueperconversion,
+        budgetassociationstatus,
+        lowqualityclickspercent,
+        lowqualityconversionrate,
+        lowqualitysophisticatedclicks,
         historicallandingpageexperience
 
     from source
-        where accountname = '{{var('bing_account_name')}}'
+    where accountname = '{{var('bing_account_name')}}'
 
 )
 
