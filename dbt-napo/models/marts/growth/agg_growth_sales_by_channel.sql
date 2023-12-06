@@ -68,7 +68,7 @@ int_marketing_by_campaign as (
   ,case 
     when napo_campaign_type='leadgen' then 'lead_generation'
     when napo_campaign_type='growth' then 'paid_marketing'
-    else 'other'
+    else 'pa_standalone'
    end as channel
   ,'facebook' as subchannel
   ,sum(cost_gbp) as total_spend
@@ -80,7 +80,7 @@ int_marketing_by_campaign as (
       ,case 
       when napo_campaign_type='growth' then 'paid_marketing'
       when napo_campaign_type='leadgen' then 'lead_generation'
-      else 'other'
+      else 'pa_standalone'
       end as channel
       ,case
       when is_youtube_campaign is true then 'youtube'
