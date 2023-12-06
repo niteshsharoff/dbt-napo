@@ -122,7 +122,11 @@ with
                     'contacting vet' as contacting_vet,
                     'aggressive pet' as aggressive_pet,
                     'aggression' as aggression,
-                    'fast track' as fast_track
+                    'fast track' as fast_track,
+                    'automated',
+                    'continuation',
+                    'accident',
+                    'illness'
                 )
             )
     )
