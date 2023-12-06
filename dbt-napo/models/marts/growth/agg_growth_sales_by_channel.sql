@@ -2,6 +2,7 @@
 --> Added 'direct','direct' for unknown data like quote requests
 --> Total sales I'm pulling from policy_details, did you want that or did you want sales as per ad platforms?
 --> Not all paid is going into the paid_marketing and lead_generation buckets. We have some spend un-accounted for.
+--> It looks like all we're pulling from marketing is the spent, did we need anything else?
 WITH date_spine AS (
     SELECT DATE
     FROM UNNEST(GENERATE_DATE_ARRAY('2023-01-01', CURRENT_DATE())) AS DATE
@@ -32,7 +33,10 @@ channel_subchannels AS (
         ('partnership', 'perkbox'),
         ('partnership', 'vodafone'),
         ('partnership', 'gohenry'),
-        ('training_product', 'training_product')
+        ('training_product', 'training_product'),
+        ('pa_standalone','google'),
+        ('pa_standalone','facebook'),
+        ('pa_standalone','bing')
     ])
 ),
 
