@@ -63,6 +63,7 @@ core__quote_response_volume as (
 ),
 
 int_marketing_by_campaign as (
+  --Facebook Ads
   select 
   date
   ,case 
@@ -75,6 +76,7 @@ int_marketing_by_campaign as (
   from {{ref('agg_marketing_facebook_ads_by_campaign_type')}}
   group by 1,2,3
   union all 
+  --Google Ads
   select 
       date
       ,case 
@@ -88,6 +90,19 @@ int_marketing_by_campaign as (
       end as sub_channel
       ,sum(cost_gbp) as total_spend
   from {{ref('agg_marketing_google_ads_by_campaign_type')}}
+  group by 1,2,3
+  union all
+  --Bing Ads
+  select 
+    date
+    ,case 
+      when napo_campaign_type='growth' then 'paid_marketing'
+      when napo_campaign_type='leadgen' then 'lead_generation'
+      else 'pa_standalone'
+    end as channel
+    ,'bing' as subchannel
+    ,sum(cost_gbp) as total_spend
+  from {{ref('agg_marketing_bing_ads_by_campaign_type')}} 
   group by 1,2,3
 ),
 

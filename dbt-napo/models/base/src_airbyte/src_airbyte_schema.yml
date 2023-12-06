@@ -12,3 +12,4 @@ sources:
         description: Daily affiliate activity summary (custom built connector)
       - name: google_ads_account_performance_report
       - name: google_ads_campaign
+      - name: bing_ad_group_performance_report_daily
