@@ -40,10 +40,6 @@ sources:
       - name: vouchercode
       - name: napobenefitcode
       - name: quotewithbenefit
-      - name: booking_service_booking
-        description: "Puppy Academy booking data"
-      - name: booking_service_customer
-        description: "Puppy Academy customer data"
   - name: firestore
     schema: firestore
     description: "Puppy Academy Firebase/Firestore data"
