@@ -28,54 +28,159 @@ with
             ) as effective_to
         from {{ ref("stg_raw__claim_bdx") }}
     ),
-    compute_row_hash as (
+    has_row_changed as (
         select
             *,
-            farm_fingerprint(
-                concat(
-                    policy_number,
-                    coalesce(claim_reference, ''),
-                    coalesce(master_claim_reference, ''),
-                    coalesce(status, ''),
-                    coalesce(cast(date_received as string), ''),
-                    coalesce(cast(onset_date as string), ''),
-                    coalesce(cast(first_invoice_date as string), ''),
-                    coalesce(cast(last_invoice_date as string), ''),
-                    coalesce(cast(closed_date as string), ''),
-                    coalesce(cast(is_continuation as string), ''),
-                    coalesce(cover_type, ''),
-                    coalesce(claim_sub_type, ''),
-                    coalesce(condition, ''),
-                    coalesce(decline_reason, ''),
-                    invoice_amount,
-                    paid_amount,
-                    reserve,
-                    incurred_amount,
-                    recovery_amount
-                )
-            ) as row_hash
+            case
+                when
+                    policy_number != lag(policy_number) over (
+                        partition by claim_reference order by effective_from
+                    )
+                then 1
+                when
+                    coalesce(claim_reference, '') != coalesce(
+                        lag(claim_reference) over (
+                            partition by claim_reference order by effective_from
+                        ),
+                        ''
+                    )
+                then 1
+                when
+                    coalesce(master_claim_reference, '') != coalesce(
+                        lag(master_claim_reference) over (
+                            partition by claim_reference order by effective_from
+                        ),
+                        ''
+                    )
+                then 1
+                when
+                    coalesce(status, '') != coalesce(
+                        lag(status) over (
+                            partition by claim_reference order by effective_from
+                        ),
+                        ''
+                    )
+                then 1
+                when
+                    coalesce(cast(date_received as string), '') != coalesce(
+                        lag(cast(date_received as string)) over (
+                            partition by claim_reference order by effective_from
+                        ),
+                        ''
+                    )
+                then 1
+                when
+                    coalesce(cast(onset_date as string), '') != coalesce(
+                        lag(cast(onset_date as string)) over (
+                            partition by claim_reference order by effective_from
+                        ),
+                        ''
+                    )
+                then 1
+                when
+                    coalesce(cast(first_invoice_date as string), '') != coalesce(
+                        lag(cast(first_invoice_date as string)) over (
+                            partition by claim_reference order by effective_from
+                        ),
+                        ''
+                    )
+                then 1
+                when
+                    coalesce(cast(last_invoice_date as string), '') != coalesce(
+                        lag(cast(last_invoice_date as string)) over (
+                            partition by claim_reference order by effective_from
+                        ),
+                        ''
+                    )
+                then 1
+                when
+                    coalesce(cast(closed_date as string), '') != coalesce(
+                        lag(cast(closed_date as string)) over (
+                            partition by claim_reference order by effective_from
+                        ),
+                        ''
+                    )
+                then 1
+                when
+                    coalesce(cast(is_continuation as string), '') != coalesce(
+                        lag(cast(is_continuation as string)) over (
+                            partition by claim_reference order by effective_from
+                        ),
+                        ''
+                    )
+                then 1
+                when
+                    coalesce(cover_type, '') != coalesce(
+                        lag(cover_type) over (
+                            partition by claim_reference order by effective_from
+                        ),
+                        ''
+                    )
+                then 1
+                when
+                    coalesce(claim_sub_type, '') != coalesce(
+                        lag(claim_sub_type) over (
+                            partition by claim_reference order by effective_from
+                        ),
+                        ''
+                    )
+                then 1
+                when
+                    coalesce(condition, '') != coalesce(
+                        lag(condition) over (
+                            partition by claim_reference order by effective_from
+                        ),
+                        ''
+                    )
+                then 1
+                when
+                    coalesce(decline_reason, '') != coalesce(
+                        lag(decline_reason) over (
+                            partition by claim_reference order by effective_from
+                        ),
+                        ''
+                    )
+                then 1
+                when
+                    invoice_amount != lag(invoice_amount) over (
+                        partition by claim_reference order by effective_from
+                    )
+                then 1
+                when
+                    paid_amount != lag(paid_amount) over (
+                        partition by claim_reference order by effective_from
+                    )
+                then 1
+                when
+                    reserve != lag(reserve) over (
+                        partition by claim_reference order by effective_from
+                    )
+                then 1
+                when
+                    incurred_amount != lag(incurred_amount) over (
+                        partition by claim_reference order by effective_from
+                    )
+                then 1
+                when
+                    recovery_amount != lag(recovery_amount) over (
+                        partition by claim_reference order by effective_from
+                    )
+                then 1
+                else 0
+            end as row_changed
         from bdx_claim_history
-    ),
-    tag_changes as (
-        select
-            *,
-            -- identify rows that have changed
-            coalesce(
-                row_hash <> lag(row_hash) over (
-                    partition by claim_reference order by effective_from
-                ),
-                true
-            ) as has_changed
-        from compute_row_hash
     ),
     assign_grp_id as (
         select
             *,
             -- assign changes to buckets
-            sum(cast(has_changed as integer)) over (
-                partition by claim_reference order by effective_from
+            coalesce(
+                sum(row_changed) over (
+                    partition by claim_reference order by effective_from
+                ),
+                0
             ) as grp_id
-        from tag_changes
+        from has_row_changed
     ),
     final as (
         select
@@ -88,7 +193,7 @@ with
             first_invoice_date,
             last_invoice_date,
             closed_date,
-            is_continuation,  -- 10
+            is_continuation,
             cover_type,
             claim_sub_type,
             condition,
@@ -98,11 +203,30 @@ with
             reserve,
             incurred_amount,
             recovery_amount,
-            min(effective_from) as effective_from,  -- 20
+            min(effective_from) as effective_from,
             max(effective_to) as effective_to
         from assign_grp_id
         group by
-            1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, grp_id
+            policy_number,
+            claim_reference,
+            master_claim_reference,
+            status,
+            date_received,
+            onset_date,
+            first_invoice_date,
+            last_invoice_date,
+            closed_date,
+            is_continuation,
+            cover_type,
+            claim_sub_type,
+            condition,
+            decline_reason,
+            invoice_amount,
+            paid_amount,
+            reserve,
+            incurred_amount,
+            recovery_amount,
+            grp_id
         order by claim_reference, effective_from
     )
 select *
