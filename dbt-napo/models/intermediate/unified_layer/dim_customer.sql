@@ -19,46 +19,105 @@ with
         from {{ ref("stg_raw__customer_ledger") }} customer
         left join {{ source("raw", "user") }} user on customer.user_id = user.id
     ),
-    compute_row_hash as (
+    has_row_changed as (
         select
             *,
-            farm_fingerprint(
-                concat(
-                    customer_id,
-                    customer_uuid,
-                    coalesce(first_name, ''),
-                    coalesce(last_name, ''),
-                    coalesce(email, ''),
-                    coalesce(street_address, ''),
-                    coalesce(address_locality, ''),
-                    coalesce(address_region, ''),
-                    coalesce(postal_code, ''),
-                    cast(date_of_birth as string),
-                    coalesce(change_reason, '')
-                )
-            ) as row_hash
+            -- coalesce nullable fields
+            case
+                when
+                    customer_id != lag(customer_id) over (
+                        partition by customer_uuid order by effective_from
+                    )
+                then 1
+                when
+                    customer_uuid != lag(customer_uuid) over (
+                        partition by customer_uuid order by effective_from
+                    )
+                then 1
+                when
+                    coalesce(first_name, '') != coalesce(
+                        lag(first_name) over (
+                            partition by customer_uuid order by effective_from
+                        ),
+                        ''
+                    )
+                then 1
+                when
+                    coalesce(last_name, '') != coalesce(
+                        lag(last_name) over (
+                            partition by customer_uuid order by effective_from
+                        ),
+                        ''
+                    )
+                then 1
+                when
+                    coalesce(email, '') != coalesce(
+                        lag(email) over (
+                            partition by customer_uuid order by effective_from
+                        ),
+                        ''
+                    )
+                then 1
+                when
+                    coalesce(street_address, '') != coalesce(
+                        lag(street_address) over (
+                            partition by customer_uuid order by effective_from
+                        ),
+                        ''
+                    )
+                then 1
+                when
+                    coalesce(address_locality, '') != coalesce(
+                        lag(address_locality) over (
+                            partition by customer_uuid order by effective_from
+                        ),
+                        ''
+                    )
+                then 1
+                when
+                    coalesce(address_region, '') != coalesce(
+                        lag(address_region) over (
+                            partition by customer_uuid order by effective_from
+                        ),
+                        ''
+                    )
+                then 1
+                when
+                    coalesce(postal_code, '') != coalesce(
+                        lag(postal_code) over (
+                            partition by customer_uuid order by effective_from
+                        ),
+                        ''
+                    )
+                then 1
+                when
+                    date_of_birth != lag(date_of_birth) over (
+                        partition by customer_uuid order by effective_from
+                    )
+                then 1
+                when
+                    coalesce(change_reason, '') != coalesce(
+                        lag(change_reason) over (
+                            partition by customer_uuid order by effective_from
+                        ),
+                        ''
+                    )
+                then 1
+                else 0
+            end as row_changed
         from customer_scd
-    ),
-    tag_changes as (
-        select
-            *,
-            -- identify rows that have changed
-            coalesce(
-                row_hash <> lag(row_hash) over (
-                    partition by customer_uuid order by effective_from
-                ),
-                true
-            ) as has_changed
-        from compute_row_hash
     ),
     assign_grp_id as (
         select
             *,
             -- assign changes to buckets
-            sum(cast(has_changed as integer)) over (
-                partition by customer_uuid order by effective_from
+            coalesce(
+                sum(row_changed) over (
+                    partition by customer_uuid order by effective_from
+                ),
+                0
             ) as grp_id
-        from tag_changes
+        from has_row_changed
     ),
     final as (
         select
@@ -76,7 +135,19 @@ with
             min(effective_from) as effective_from,
             max(effective_to) as effective_to
         from assign_grp_id
-        group by 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, grp_id
+        group by
+            customer_id,
+            customer_uuid,
+            first_name,
+            last_name,
+            email,
+            street_address,
+            address_locality,
+            address_region,
+            postal_code,
+            date_of_birth,
+            change_reason,
+            grp_id
         order by customer_uuid, effective_from
     )
 select *
