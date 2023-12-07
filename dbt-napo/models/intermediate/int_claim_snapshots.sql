@@ -84,6 +84,13 @@ with
                 previously_checked,
                 contacting_ph,
                 contacting_vet,
+                aggressive_pet,
+                aggression,
+                fast_track,
+                automated,
+                continuation,
+                accident,
+                illness,
                 -- re-ordering metadata columns
                 source,
                 is_archived,
@@ -101,7 +108,11 @@ with
                 contacting_vet,
                 aggressive_pet,
                 aggression,
-                fast_track
+                fast_track,
+                automated,
+                continuation,
+                accident,
+                illness
             ) as tags,
             source,
             is_archived,
