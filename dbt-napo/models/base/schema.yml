@@ -40,15 +40,12 @@ sources:
       - name: vouchercode
       - name: napobenefitcode
       - name: quotewithbenefit
-<<<<<<< HEAD
       - name: booking_service_booking
         description: "Puppy Academy booking data"
       - name: booking_service_customer
         description: "Puppy Academy customer data"
       - name: activatedreferral
         description: Referral creation and activation log
-=======
->>>>>>> c08541eb9a9a53fb3788d327dcc437a633702b6a
   - name: firestore
     schema: firestore
     description: "Puppy Academy Firebase/Firestore data"
