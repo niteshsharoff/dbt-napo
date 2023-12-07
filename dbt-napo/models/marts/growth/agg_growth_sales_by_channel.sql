@@ -179,9 +179,41 @@ core__sales as (
   on a.date = b.created_date
   and a.channel = b.channel
   and a.subchannel = b.subchannel
+),
+int_ga4 as (
+    select 
+        event_date as date
+        ,napo_channel
+        ,napo_subchannel
+        ,count(distinct user_id) as users 
+        ,count(distinct if(event_name='view_quote',user_id, null)) as quote_views
+        ,count(distinct if(event_name='generate_lead',user_id, null)) as leads
+    from {{ref('fct_ga4')}}
+    group by 1,2,3
+),
+core__ga4 as (
+    select a.*
+          ,b.users as landing_page_volume
+          ,b.quote_views as quote_landing_volume
+          ,b.leads as lead_capture_volume
+    from core__sales a
+    left join int_ga4 b
+    on a.date = b.date
+    and a.channel = b.napo_channel
+    and a.subchannel = b.napo_subchannel
 )
-
-select * 
-from core__sales
+select 
+        date
+        ,channel
+        ,subchannel
+        ,total_spend
+        ,referral_code_shares
+        ,landing_page_volume
+        ,quote_response_volume
+        ,lead_capture_volume
+        ,quote_landing_volume
+        ,sales_volume
+--        ,average_policy_price
+from core__ga4
 where date < current_date()
 order by 1 desc,2,3

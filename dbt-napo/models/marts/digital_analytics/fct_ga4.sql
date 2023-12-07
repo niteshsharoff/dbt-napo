@@ -71,7 +71,8 @@ select * except(campaign)
       ,row_number() over(partition by user_id, ga_session_id order by event_timestamp asc) as event_no
       ,first_value(campaign ignore nulls) over(partition by user_id,ga_session_id order by event_timestamp asc) as campaign
 from base_ga4
-)
+),
+joined as (
 select 
      a.event_no
     ,a.event_date
@@ -82,6 +83,7 @@ select
     ,a.event_name
     ,a.hostname
     ,a.page_path
+    ,d.napo_page_category
     ,a.query_params_raw
     ,a.landing_page_path
     ,a.analytics_storage
@@ -109,4 +111,58 @@ left join {{ref("lookup_quote_pcw_mapping")}} b
 on a.pcw_raw = b.quote_code_name
 left join {{ref('lookup_ga4_source_categories')}} c
 on a.traffic_source.source = c.source
+left join {{ref('lookup_ga4_growth_page_category')}} d
+on a.landing_page_path = d.page_path and a.hostname = d.domain
 --order by user_id, event_timestamp asc
+)
+select 
+     event_no
+    ,event_date
+    ,event_timestamp
+    ,user_id
+    ,ga_session_id
+    ,ga_session_number
+    ,event_name
+    ,hostname
+    ,page_path
+    ,napo_page_category
+    ,case
+        when is_pcw then 'pcw'
+        when napo_page_category = 'brand_ambassador' then 'lead_generation'
+        when landing_page_path in (select page_path from {{ref('lookup_ga4_growth_page_category')}} where napo_page_category='lead_generation') and coalesce(is_gads,is_facebook) then 'lead_generation'
+        when coalesce(is_tiktok,is_bing,is_gads,is_facebook) then 'paid_marketing'
+        when lower(default_channel_grouping) in ('organic search','direct',null) then 'direct'
+        else 'direct'
+    end as napo_channel
+    ,case
+        when landing_page_path like '/blog%' then 'blog'
+        when is_facebook then 'facebook'
+        when is_tiktok then 'tiktok'
+        when is_bing then 'bing'
+        when is_gads then 'google'
+        when pcw_name is not null and is_pcw then lower(pcw_name)
+        when napo_page_category is not null then napo_page_category
+        else 'other'
+    end as napo_subchannel
+    ,default_channel_grouping
+    ,query_params_raw
+    ,landing_page_path
+    ,analytics_storage
+    ,quote_id
+    ,policy_ids
+    ,transaction_id
+    ,transaction_type
+    ,currency
+    ,policy_price_monthly
+    ,policy_price_annual
+    ,is_tiktok
+    ,is_facebook
+    ,is_gads
+    ,is_bing
+    ,is_pcw
+    ,page_referrer
+    ,pcw_name
+    ,traffic_source
+    ,collected_traffic_source
+    ,campaign
+from joined
