@@ -71,6 +71,18 @@
     },
     "pricing_model_vet_fee_cover": {
       "type": ["number", "null"]
+    },
+    "current_policy_document_version": {
+      "type": ["string", "null"]
+    },
+    "generic_city_ipi_document_v2": {
+      "type": ["string", "null"]
+    },
+    "generic_city_toba_document_v2": {
+      "type": ["string", "null"]
+    },
+    "generic_wording_document_v2": {
+      "type": ["string", "null"]
     }
   },
   "additionalProperties": false
