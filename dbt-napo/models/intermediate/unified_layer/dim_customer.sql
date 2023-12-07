@@ -1,4 +1,4 @@
-{{ config(schema="marts", materialized="table") }}
+{{ config(materialized="table") }}
 
 with
     customer_scd as (

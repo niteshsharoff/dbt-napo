@@ -1,4 +1,4 @@
-{{ config(schema="marts", materialized="table") }}
+{{ config(materialized="table") }}
 
 {% set today = modules.datetime.datetime.now() %}
 {% set yesterday = (today - modules.datetime.timedelta(1)).date() %}

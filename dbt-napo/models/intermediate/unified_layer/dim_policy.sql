@@ -1,6 +1,5 @@
 {{
     config(
-        schema="marts",
         materialized="table",
         pre_hook=["{{declare_underwriter_udfs()}}"],
     )

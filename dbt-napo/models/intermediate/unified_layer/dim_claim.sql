@@ -1,4 +1,4 @@
-{{ config(schema="marts", materialized="table") }}
+{{ config(materialized="table") }}
 
 with
     bdx_claim_history as (

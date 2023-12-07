@@ -1,4 +1,4 @@
-{{ config(schema="marts", materialized="table") }}
+{{ config(materialized="table") }}
 
 with
     -- Bad data model, voucher_code_id embedded in policy & quote_id embedded in quote
