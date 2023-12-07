@@ -113,5 +113,25 @@
     "mode": "NULLABLE",
     "name": "pricing_model_vet_fee_cover",
     "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "current_policy_document_version",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "generic_city_ipi_document_v2",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "generic_city_toba_document_v2",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "generic_wording_document_v2",
+    "type": "STRING"
   }
 ]
