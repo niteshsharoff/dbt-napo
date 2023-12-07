@@ -2,7 +2,7 @@
 --> Added 'direct','direct' for unknown data like quote requests
 --> Total sales I'm pulling from policy_details, did you want that or did you want sales as per ad platforms?
 --> SOLVED: Not all paid is going into the paid_marketing and lead_generation buckets. We have some spend un-accounted for. Added pa_standalone bucket for all 'other'.
---> It looks like all we're pulling from marketing is the spent, did we need anything else?
+--> SOLVED: It looks like all we're pulling from marketing is the spent, did we need anything else? Added platform reported conversions
 WITH date_spine AS (
     SELECT DATE
     FROM UNNEST(GENERATE_DATE_ARRAY('2023-01-01', CURRENT_DATE())) AS DATE
@@ -24,6 +24,7 @@ channel_subchannels AS (
         ('lead_generation', 'brand_ambassador'),
         ('lead_generation', 'facebook'),
         ('lead_generation', 'google'),
+        ('lead_generation', 'bing'),
         ('direct', 'organic'),
         ('direct', 'blog'),
         ('direct','direct'),
@@ -73,6 +74,8 @@ int_marketing_by_campaign as (
    end as channel
   ,'facebook' as subchannel
   ,sum(cost_gbp) as total_spend
+  ,sum(conversions) as conversions
+  ,sum(clicks) as clicks
   from {{ref('agg_marketing_facebook_ads_by_campaign_type')}}
   group by 1,2,3
   union all 
@@ -89,6 +92,8 @@ int_marketing_by_campaign as (
       else 'google'
       end as sub_channel
       ,sum(cost_gbp) as total_spend
+      ,sum(conversions) as conversions
+      ,sum(clicks) as clicks
   from {{ref('agg_marketing_google_ads_by_campaign_type')}}
   group by 1,2,3
   union all
@@ -102,6 +107,8 @@ int_marketing_by_campaign as (
     end as channel
     ,'bing' as subchannel
     ,sum(cost_gbp) as total_spend
+    ,sum(conversions) as conversions
+    ,sum(clicks) as clicks
   from {{ref('agg_marketing_bing_ads_by_campaign_type')}} 
   group by 1,2,3
 ),
@@ -109,6 +116,8 @@ int_marketing_by_campaign as (
 core__paid_marketing as (
   select a.*
         ,b.total_spend
+        ,b.conversions
+        ,b.clicks
   from core__quote_response_volume a
   left join int_marketing_by_campaign b
   on a.date = b.date
@@ -117,20 +126,30 @@ core__paid_marketing as (
 ),
 
 int_affiliates as (
-select date
-      ,'paid_marketing' as channel
-      ,'affiliate' as subchannel
-      ,sum(cost_gbp) as total_spend
-from   {{ref('agg_affiliate_conectia')}}
-group by 1,2,3
+    select date
+        ,'paid_marketing' as channel
+        ,'affiliate' as subchannel
+        ,sum(cost_gbp) as total_spend
+        ,sum(conversions) as conversions
+        ,sum(clicks) as clicks
+    from   {{ref('agg_affiliate_conectia')}}
+    group by 1,2,3
 ),
 
 core__affiliate as (
-  select a.* except(total_spend)
+  select a.* except(total_spend,conversions,clicks)
         ,case
           when a.channel = 'paid_marketing' and a.subchannel = 'affiliate' then b.total_spend
           else a.total_spend
          end as total_spend
+         ,case
+          when a.channel = 'paid_marketing' and a.subchannel = 'affiliate' then b.clicks
+          else a.clicks
+         end as clicks
+         ,case 
+            when a.channel = 'paid_marketing' and a.subchannel = 'affiliate' then b.conversions
+            else a.conversions
+          end as conversions
   from core__paid_marketing a
   left join int_affiliates b
   on a.date = b.date
@@ -154,6 +173,7 @@ core__referrals as (
   and a.channel = b.channel
   and a.subchannel = b.subchannel
 ),
+
 int_sales_volume as (
   SELECT 
     created_date
@@ -166,9 +186,10 @@ int_sales_volume as (
     ,sum(total_sold_policies) as sales_volume
     ,avg(avg_monthly_price) as avg_monthly_price
     ,avg(avg_annual_price) as avg_annual_price
-FROM {{ref('agg_sold_policies_excl_renewals')}}
-group by 1,2,3
+  FROM {{ref('agg_sold_policies_excl_renewals')}}
+  group by 1,2,3
 ),
+
 core__sales as (
   select a.*
         ,b.sales_volume
@@ -180,22 +201,25 @@ core__sales as (
   and a.channel = b.channel
   and a.subchannel = b.subchannel
 ),
+
 int_ga4 as (
     select 
         event_date as date
         ,napo_channel
         ,napo_subchannel
         ,count(distinct user_id) as users 
-        ,count(distinct if(event_name='view_quote',user_id, null)) as quote_views
-        ,count(distinct if(event_name='generate_lead',user_id, null)) as leads
+        ,countif(event_name='page_view') as total_pageviews
+        ,countif(event_name='view_quote') as total_quote_views
+        ,countif(event_name='generate_lead') as total_leads
     from {{ref('fct_ga4')}}
     group by 1,2,3
 ),
+
 core__ga4 as (
     select a.*
-          ,b.users as landing_page_volume
-          ,b.quote_views as quote_landing_volume
-          ,b.leads as lead_capture_volume
+          ,b.total_pageviews as landing_page_volume
+          ,b.total_quote_views as quote_landing_volume
+          ,b.total_leads as lead_capture_volume
     from core__sales a
     left join int_ga4 b
     on a.date = b.date
@@ -207,6 +231,8 @@ select
         ,channel
         ,subchannel
         ,total_spend
+        ,clicks as platform_reported_clicks
+        ,conversions as platform_reported_conversions
         ,referral_code_shares
         ,landing_page_volume
         ,quote_response_volume
