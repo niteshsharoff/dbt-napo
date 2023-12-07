@@ -60,6 +60,8 @@ select
             then '2023-10-01'
             when source_name = 'October 2023 Claims to send v3 Denys fixed dates.csv'
             then '2023-11-01'
+            when source_name = 'November 2023 Claims Bdx - to send v3 v2.csv'
+            then '2023-12-01'
         -- add rows here when importing new BDXs --
         end as date
     ) as bdx_nominal_date,
