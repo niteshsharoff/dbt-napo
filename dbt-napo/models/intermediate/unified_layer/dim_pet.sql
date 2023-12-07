@@ -38,52 +38,122 @@ with
             and breed.run_date = parse_date('%Y-%m-%d', '{{yesterday}}')
         order by pet_uuid, effective_from
     ),
-    compute_row_hash as (
+    has_row_changed as (
         select
             *,
-            farm_fingerprint(
-                concat(
-                    pet_id,
-                    pet_uuid,
-                    name,
-                    coalesce(cast(date_of_birth as string), ''),
-                    gender,
-                    coalesce(size, ''),
-                    cost_pounds,
-                    is_neutered,
-                    is_microchipped,
-                    is_vaccinated,
-                    species,
-                    breed_category,
-                    coalesce(breed_name, ''),
-                    coalesce(breed_source, ''),
-                    coalesce(change_reason, ''),
-                    breed_source,
-                    has_pre_existing_conditions,
-                    change_reason
-                )
-            ) as row_hash
+            -- coalesce nullable fields
+            case
+                when
+                    pet_id
+                    != lag(pet_id) over (partition by pet_uuid order by effective_from)
+                then 1
+                when
+                    pet_uuid != lag(pet_uuid) over (
+                        partition by pet_uuid order by effective_from
+                    )
+                then 1
+                when
+                    coalesce(name, '') != coalesce(
+                        lag(name) over (partition by pet_uuid order by effective_from),
+                        ''
+                    )
+                then 1
+                when
+                    coalesce(cast(date_of_birth as string), '') != coalesce(
+                        lag(cast(date_of_birth as string)) over (
+                            partition by pet_uuid order by effective_from
+                        ),
+                        ''
+                    )
+                then 1
+                when
+                    gender
+                    != lag(gender) over (partition by pet_uuid order by effective_from)
+                then 1
+                when
+                    coalesce(size, '') != coalesce(
+                        lag(size) over (partition by pet_uuid order by effective_from),
+                        ''
+                    )
+                then 1
+                when
+                    cost_pounds != lag(cost_pounds) over (
+                        partition by pet_uuid order by effective_from
+                    )
+                then 1
+                when
+                    is_neutered != lag(is_neutered) over (
+                        partition by pet_uuid order by effective_from
+                    )
+                then 1
+                when
+                    is_microchipped != lag(is_microchipped) over (
+                        partition by pet_uuid order by effective_from
+                    )
+                then 1
+                when
+                    is_vaccinated != lag(is_vaccinated) over (
+                        partition by pet_uuid order by effective_from
+                    )
+                then 1
+                when
+                    coalesce(species, '') != coalesce(
+                        lag(species) over (
+                            partition by pet_uuid order by effective_from
+                        ),
+                        ''
+                    )
+                then 1
+                when
+                    coalesce(breed_category, '') != coalesce(
+                        lag(breed_category) over (
+                            partition by pet_uuid order by effective_from
+                        ),
+                        ''
+                    )
+                then 1
+                when
+                    coalesce(breed_name, '') != coalesce(
+                        lag(breed_name) over (
+                            partition by pet_uuid order by effective_from
+                        ),
+                        ''
+                    )
+                then 1
+                when
+                    coalesce(breed_source, '') != coalesce(
+                        lag(breed_source) over (
+                            partition by pet_uuid order by effective_from
+                        ),
+                        ''
+                    )
+                then 1
+                when
+                    has_pre_existing_conditions
+                    != lag(has_pre_existing_conditions) over (
+                        partition by pet_uuid order by effective_from
+                    )
+                then 1
+                when
+                    coalesce(change_reason, '') != coalesce(
+                        lag(change_reason) over (
+                            partition by pet_uuid order by effective_from
+                        ),
+                        ''
+                    )
+                then 1
+                else 0
+            end as row_changed
         from pet_scd
-    ),
-    tag_changes as (
-        select
-            *,
-            -- identify rows that have changed
-            coalesce(
-                row_hash
-                <> lag(row_hash) over (partition by pet_uuid order by effective_from),
-                true
-            ) as has_changed
-        from compute_row_hash
     ),
     assign_grp_id as (
         select
             *,
             -- assign changes to buckets
-            sum(cast(has_changed as integer)) over (
-                partition by pet_uuid order by effective_from
+            coalesce(
+                sum(row_changed) over (partition by pet_uuid order by effective_from), 0
             ) as grp_id
-        from tag_changes
+        from has_row_changed
     ),
     final as (
         select
@@ -96,7 +166,7 @@ with
             cost_pounds,
             is_neutered,
             is_microchipped,
-            is_vaccinated,  -- 10
+            is_vaccinated,
             species,
             breed_category,
             breed_name,
@@ -106,7 +176,24 @@ with
             min(effective_from) as effective_from,
             max(effective_to) as effective_to
         from assign_grp_id
-        group by 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, grp_id
+        group by
+            pet_id,
+            pet_uuid,
+            name,
+            date_of_birth,
+            gender,
+            size,
+            cost_pounds,
+            is_neutered,
+            is_microchipped,
+            is_vaccinated,
+            species,
+            breed_category,
+            breed_name,
+            breed_source,
+            has_pre_existing_conditions,
+            change_reason,
+            grp_id
         order by pet_uuid, effective_from
     )
 select *
