@@ -79,6 +79,10 @@ int_marketing_by_campaign as (
   ,sum(cost_gbp) as total_spend
   ,sum(conversions) as conversions
   ,sum(clicks) as clicks
+  ,sum(view_quote_conversions) as view_quote_conversions
+  ,sum(lead_actions) as lead_conversions
+  ,sum(purchase_insurance_conversions) as purchase_conversions
+  ,sum(purchase_insurance_value) as purchase_conv_value
   from {{ref('agg_marketing_facebook_ads_by_campaign_type')}}
   group by 1,2,3
   union all 
@@ -95,8 +99,12 @@ int_marketing_by_campaign as (
       else 'google'
       end as sub_channel
       ,sum(cost_gbp) as total_spend
-      ,sum(conversions) as conversions
+      ,sum(conversions_all) as conversions
       ,sum(clicks) as clicks
+      ,sum(view_quote_conversions) as view_quote_conversions
+      ,sum(lead_conversions) as lead_conversions
+      ,sum(purchase_conversions) as purchase_conversions
+      ,sum(all_conversions_value) as purchase_conv_value
   from {{ref('agg_marketing_google_ads_by_campaign_type')}}
   group by 1,2,3
   union all
@@ -110,8 +118,12 @@ int_marketing_by_campaign as (
     end as channel
     ,'bing' as subchannel
     ,sum(cost_gbp) as total_spend
-    ,sum(conversions) as conversions
+    ,sum(all_conversions) as conversions
     ,sum(clicks) as clicks
+    ,sum(view_quote_conversions) as view_quote_conversions
+    ,sum(lead_conversions) as lead_conversions
+    ,sum(purchase_conversions) as purchase_conversions
+    ,sum(purchase_conv_revenue) as purchase_conv_value
   from {{ref('agg_marketing_bing_ads_by_campaign_type')}} 
   group by 1,2,3
 ),
@@ -121,6 +133,10 @@ core__paid_marketing as (
         ,b.total_spend
         ,b.conversions
         ,b.clicks
+        ,b.view_quote_conversions
+        ,b.lead_conversions
+        ,b.purchase_conversions
+        ,b.purchase_conv_value
   from core__quote_response_volume a
   left join int_marketing_by_campaign b
   on a.date = b.date
@@ -239,6 +255,9 @@ select
         ,total_spend
         ,clicks as platform_reported_clicks
         ,conversions as platform_reported_conversions
+        ,view_quote_conversions as platform_reported_quote_conversions
+        ,purchase_conversions as platform_reported_purchase_conversions
+        ,lead_conversions as platform_reported_lead_conversions
         ,referral_code_shares
         ,landing_page_volume
         ,quote_response_volume

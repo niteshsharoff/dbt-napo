@@ -1,0 +1,42 @@
+with raw as (
+select
+    cast(TimePeriod as date) as TimePeriod
+    ,CampaignId
+    ,CampaignName
+    ,Goal
+   ,AllConversionsQualified
+   ,AllRevenue
+   ,row_number() over(partition by concat(TimePeriod,coalesce(Goal,'-'))) as row_no
+from {{ref('stg_src_airbyte__bing_goals_and_funnels_report_request')}}
+qualify row_no = 1
+)
+select 
+    TimePeriod as date
+      ,case
+        when lower(trim(CampaignName)) not like any ('%leadgen%','%standalone%') then 'growth'
+        when  lower(trim(CampaignName)) like '%leadgen%' then 'leadgen'
+        else 'other'
+      end as napo_campaign_type
+    ,sum(
+      case
+        when Goal='generate_lead' then cast(AllConversionsQualified as numeric)
+        else null
+      end) as lead_conversions_qualified
+    ,sum(
+      case
+        when Goal='view_quote' then cast(AllConversionsQualified as numeric)
+        else null
+      end) as quote_view_conversions_qualified
+    ,sum(
+      case
+        when Goal='purchase' then cast(AllConversionsQualified as numeric)
+        else null
+      end) as purchase_conversions_qualified
+    ,sum(
+      case
+        when Goal='purchase' then cast(AllRevenue as numeric)
+        else null
+      end) as purchase_conversion_revenue
+
+from raw
+group by 1,2
