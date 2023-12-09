@@ -5,6 +5,7 @@
         'granularity':'day',
         'data_type':'date'
     },
+    require_partition_filter=true,
     cluster_by=['event_name','user_id','ga_session_id','transaction_id'],
     pre_hook=["""
         DECLARE table_exists BOOLEAN DEFAULT (SELECT COUNT(*) > 0 FROM `{{ target.project }}.{{ target.dataset }}.INFORMATION_SCHEMA.TABLES` WHERE table_name = '{{ this.table }}' );
