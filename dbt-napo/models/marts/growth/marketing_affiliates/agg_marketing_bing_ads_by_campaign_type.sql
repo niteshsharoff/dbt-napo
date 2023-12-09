@@ -34,9 +34,12 @@ select a.date
       ,sum(a.all_conversions) as all_conversions
       ,sum(a.all_conv_value) as all_conv_value
       ,sum(a.cost_gbp) as cost_gbp
-      ,sum(b.quote_view_conversions_qualified) as view_quote_conversions
-      ,sum(b.lead_conversions_qualified) as lead_conversions
-      ,sum(b.purchase_conversions_qualified) as purchase_conversions
+      ,sum(b.view_quote_conversions) as view_quote_conversions
+      ,sum(b.view_quote_conversions_qualified) as view_quote_conversions_qualified
+      ,sum(b.lead_conversions) as lead_conversions
+      ,sum(b.lead_conversions_qualified) as lead_conversions_qualified
+      ,sum(b.purchase_conversions) as purchase_conversions
+      ,sum(b.purchase_conversions_qualified) as purchase_conversions_qualified
       ,sum(b.purchase_conversion_revenue) as purchase_conv_revenue
 from prep a
 left join {{ref('int_bing_goals_and_funnels_daily')}} b
