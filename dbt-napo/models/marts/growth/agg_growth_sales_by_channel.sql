@@ -27,7 +27,7 @@ channel_subchannels AS (
         ('lead_generation', 'bing'),
         ('direct', 'organic'),
         ('direct', 'blog'),
-        ('direct','direct'),
+     --   ('direct','direct'),
         ('direct', 'commercial_page'),
         ('referral', 'referral'),
         ('partnership', 'benfitshub'),
@@ -57,10 +57,13 @@ core__quote_response_volume as (
     left join {{ref('agg_quote_requests')}} b
     on a.date = b.created_date
     and case 
-    when b.quote_source !='direct' then a.channel='pcw'
-    else a.channel ='direct'
+        when b.quote_source !='direct' then a.channel='pcw'
+        else a.channel ='direct'
     end 
-    and a.subchannel = b.quote_source
+    and a.subchannel = case
+                        when b.quote_source = 'direct' then 'organic'
+                        else b.quote_source
+                       end
 ),
 
 int_marketing_by_campaign as (
@@ -182,7 +185,10 @@ int_sales_volume as (
       when quote_source = 'referral' then 'referral'
       else 'pcw'
     end as channel
-    ,trim(quote_source) as subchannel
+    ,case 
+        when trim(quote_source)='direct' then 'organic'
+        else trim(quote_source) 
+    end as subchannel
     ,sum(total_sold_policies) as sales_volume
     ,avg(avg_monthly_price) as avg_monthly_price
     ,avg(avg_annual_price) as avg_annual_price

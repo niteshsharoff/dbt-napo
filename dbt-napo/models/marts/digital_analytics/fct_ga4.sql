@@ -54,7 +54,7 @@ with base_ga4 as (
         {%if (target.dataset == 'dbt' or target.dataset =='dbt_marts')%}
             where _table_suffix >= '20230101'
         {%else%}
-            where _table_suffix >= format_date('%Y%m%d',date_sub(current_date(),interval 15 DAY)) 
+            where _table_suffix >= format_date('%Y%m%d',date_sub(current_date(),interval 50 DAY)) 
         {%endif%}
     {%-endif%}
     and user_pseudo_id is not null
@@ -143,7 +143,7 @@ select
         when is_gads then 'google'
         when pcw_name is not null and is_pcw then lower(pcw_name)
         when napo_page_category is not null then napo_page_category
-        else 'other'
+        else 'organic'
     end as napo_subchannel
     ,default_channel_grouping
     ,query_params_raw
