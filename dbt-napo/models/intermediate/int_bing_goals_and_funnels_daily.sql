@@ -7,17 +7,13 @@ select
    ,AllConversionsQualified
    ,AllConversions
    ,AllRevenue
-   ,row_number() over(partition by concat(TimePeriod,coalesce(Goal,'-'))) as row_no
+   ,row_number() over(partition by concat(TimePeriod,CampaignId,coalesce(Goal,'-'))) as row_no
 from {{ref('stg_src_airbyte__bing_goals_and_funnels_report_request')}}
 qualify row_no = 1
 )
 select 
     TimePeriod as date
-      ,case
-        when lower(trim(CampaignName)) not like any ('%leadgen%','%standalone%') then 'growth'
-        when  lower(trim(CampaignName)) like '%leadgen%' then 'leadgen'
-        else 'other'
-      end as napo_campaign_type
+    ,CampaignId
     ,sum(
       case
         when Goal='generate_lead' then cast(AllConversions as numeric)
