@@ -31,6 +31,9 @@ clean-targets:         # directories to be removed by `dbt clean`
 
 models:
   dbt_napo:
+    +persist_docs:
+        relation: true
+        columns: true
     marts:
       +materialized: table
 
