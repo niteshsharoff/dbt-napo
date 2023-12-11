@@ -81,4 +81,11 @@ select
 from joint_history j
 left join product on j.policy.product_id = product.id
 left join quote on j.policy.quote_id = quote.quote_id
-left join campaign on j.policy.voucher_code_id = campaign.voucher_id
+left join
+    campaign
+    on (
+        quote.quote_id = campaign.quote_id
+        or j.policy.voucher_code_id = campaign.voucher_id
+    )
+    and coalesce(quote.discount_type, '')
+    not in ('multipet', 'multipet_with_voucher_code')

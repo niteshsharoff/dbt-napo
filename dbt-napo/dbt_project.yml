@@ -35,6 +35,9 @@ vars:
 
 models:
   dbt_napo:
+    +persist_docs:
+        relation: true
+        columns: true
     marts:
       +materialized: table
 
