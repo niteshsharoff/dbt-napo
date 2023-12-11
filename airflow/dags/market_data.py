@@ -74,7 +74,7 @@ def create_external_table():
 
 @dag(
     dag_id="market_data",
-    start_date=pendulum.datetime(2023, 11, 22, tz="UTC"),
+    start_date=pendulum.datetime(2022, 12, 29, tz="UTC"),
     schedule_interval="0 1 * * *",
     max_active_runs=1,
     catchup=True,
