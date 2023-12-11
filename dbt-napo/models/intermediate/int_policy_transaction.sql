@@ -41,7 +41,8 @@ with
                 quote.pricing_model_version,
                 quote.msm_sales_tracking_urn,
                 timestamp_millis(quote.created_at) as created_at,
-                quote.source
+                quote.source,
+                quote.discount_type
             ) as quote,
             struct(
                 policy.policy_id,

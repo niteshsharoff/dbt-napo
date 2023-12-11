@@ -1,0 +1,20 @@
+version: 2
+
+models:
+  - name: gelr_policy_history
+    description: "Track changes to any dimension linked to a policy."
+    columns:
+      - name: "quote"
+        description: "See dim_quote"
+      - name: "policy"
+        description: "See dim_policy"
+      - name: "pet"
+        description: "See dim_pet"
+      - name: "customer"
+        description: "See dim_customer"
+      - name: "premium_price"
+        description: "Policy annual price pre discount."
+      - name: "original_policy_id"
+        description: "This is the policy_id of the first policy in a series of renewals."
+      - name: "policy_year"
+        description: "The current policy year."
