@@ -1,8 +1,4 @@
---Notes for Kaveh:
---> Added 'direct','direct' for unknown data like quote requests
---> Total sales I'm pulling from policy_details, did you want that or did you want sales as per ad platforms?
---> SOLVED: Not all paid is going into the paid_marketing and lead_generation buckets. We have some spend un-accounted for. Added pa_standalone bucket for all 'other'.
---> SOLVED: It looks like all we're pulling from marketing is the spent, did we need anything else? Added platform reported conversions
+
 WITH date_spine AS (
     SELECT DATE
     FROM UNNEST(GENERATE_DATE_ARRAY('2023-01-01', CURRENT_DATE())) AS DATE
@@ -131,7 +127,7 @@ int_marketing_by_campaign as (
 core__paid_marketing as (
   select a.*
         ,b.total_spend
-        ,b.conversions
+ --       ,b.conversions
         ,b.clicks
         ,b.view_quote_conversions
         ,b.lead_conversions
@@ -156,7 +152,7 @@ int_affiliates as (
 ),
 
 core__affiliate as (
-  select a.* except(total_spend,conversions,clicks)
+  select a.* except(total_spend,clicks,purchase_conversions)
         ,case
           when a.channel = 'paid_marketing' and a.subchannel = 'affiliate' then b.total_spend
           else a.total_spend
@@ -167,8 +163,8 @@ core__affiliate as (
          end as clicks
          ,case 
             when a.channel = 'paid_marketing' and a.subchannel = 'affiliate' then b.conversions
-            else a.conversions
-          end as conversions
+            else a.purchase_conversions
+          end as purchase_conversions
   from core__paid_marketing a
   left join int_affiliates b
   on a.date = b.date
@@ -213,8 +209,26 @@ int_sales_volume as (
 ),
 
 core__sales as (
-  select a.*
-        ,b.sales_volume
+
+/*
+    Logic for the sales volume:
+    direct/organic = actual direct sales - platform reported marketing purchases
+    This column has been modified and contains marketing purchases as well as an 
+*/
+
+select a.*
+        --,b.sales_volume
+        ,case 
+          when 
+            a.channel = 'direct' 
+              and a.subchannel = 'organic' 
+            then sum(sales_volume) over(partition by date,a.channel,a.subchannel)-round(sum(a.purchase_conversions) over(partition by date),0)
+          when 
+            a.channel = 'referral' 
+              or a.channel = 'pcw' 
+            then b.sales_volume
+          else a.purchase_conversions 
+        end as sales_volume_adjusted
         ,b.avg_monthly_price
         ,b.avg_annual_price
   from core__referrals a
@@ -233,15 +247,23 @@ int_ga4 as (
         ,countif(event_name='page_view') as total_pageviews
         ,countif(event_name='view_quote') as total_quote_views
         ,countif(event_name='generate_lead') as total_leads
+        ,count(distinct if(event_name='page_view',user_id,null)) as session_pageviews
+        ,count(distinct if(event_name='view_quote',user_id,null)) as session_quote_views
+        ,count(distinct if(event_name='generate_lead',user_id,null)) as session_leads
+
     from {{ref('fct_ga4')}}
     group by 1,2,3
 ),
 
 core__ga4 as (
     select a.*
-          ,b.total_pageviews as landing_page_volume
-          ,b.total_quote_views as quote_landing_volume
-          ,b.total_leads as lead_capture_volume
+          ,b.total_pageviews as landing_page_count
+          ,b.total_quote_views as quote_landing_count
+--          ,b.total_leads as lead_capture_count
+          ,b.session_pageviews as landing_page_sessions
+          ,b.session_quote_views as quote_landing_sessions
+--          ,b.session_leads as lead_capture_sessions
+
     from core__sales a
     left join int_ga4 b
     on a.date = b.date
@@ -254,16 +276,16 @@ select
         ,subchannel
         ,total_spend
         ,clicks as platform_reported_clicks
-        ,conversions as platform_reported_conversions
         ,view_quote_conversions as platform_reported_quote_conversions
         ,purchase_conversions as platform_reported_purchase_conversions
         ,lead_conversions as platform_reported_lead_conversions
         ,referral_code_shares
-        ,landing_page_volume
+        ,landing_page_count
+        ,landing_page_sessions
+        ,quote_landing_count
+        ,quote_landing_sessions
         ,quote_response_volume
-        ,lead_capture_volume
-        ,quote_landing_volume
-        ,sales_volume
+        ,sales_volume_adjusted
 --        ,average_policy_price
 from core__ga4
 where date < current_date()

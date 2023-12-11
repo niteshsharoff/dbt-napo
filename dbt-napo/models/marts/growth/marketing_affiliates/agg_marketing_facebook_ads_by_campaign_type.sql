@@ -8,6 +8,7 @@
     schema='marts'
 )}}
 
+-- In documentation, make it clear that only the purchase_insurance, Lead and view_quote are considered
 
 with data as (
 select

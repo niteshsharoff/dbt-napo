@@ -142,6 +142,7 @@ select
         when is_bing then 'bing'
         when is_gads then 'google'
         when pcw_name is not null and is_pcw then lower(pcw_name)
+        when napo_page_category = 'brand_ambassador' then 'brand_ambassador'
         when napo_page_category is not null then napo_page_category
         else 'organic'
     end as napo_subchannel
