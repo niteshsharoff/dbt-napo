@@ -1,6 +1,6 @@
 import json
 import logging
-from datetime import date
+from datetime import date, timedelta
 from typing import List
 
 import pandas as pd
@@ -133,7 +133,11 @@ def _get_time_in_status_batch(task_ids: List[str]):
     return [{**item, "id": task_id} for task_id, item in response.json().items()]
 
 
-@task
+@task(
+    task_id="get_time_in_status",
+    execution_timeout=timedelta(minutes=60),  # Kill this step if it exceeds 60 minutes
+    retries=2,
+)
 def get_time_in_status(
     input_gcs_folder: str,
     output_gcs_folder: str,
@@ -195,12 +199,15 @@ def create_clickup_bq_external_table(table_name: str, schema_name: str):
 @dag(
     dag_id="clickup_claims_export",
     start_date=pendulum.datetime(2023, 3, 28, tz="UTC"),
-    schedule_interval="0 5 * * *",
+    schedule_interval="0 6 * * *",
     catchup=False,
     default_args={"retries": 0},
     max_active_runs=1,
     max_active_tasks=8,
     tags=["raw", "clickup"],
+    dagrun_timeout=timedelta(
+        minutes=120
+    ),  # don't let this DAG hog resources indefinitely
 )
 def clickup_claims_export():
     no_op = EmptyOperator(task_id="no_op")
@@ -236,12 +243,15 @@ def clickup_claims_export():
 @dag(
     dag_id="clickup_vet_claims_export",
     start_date=pendulum.datetime(2023, 3, 28, tz="UTC"),
-    schedule_interval="0 6 * * *",
+    schedule_interval="0 5 * * *",
     catchup=False,
     default_args={"retries": 0},
     max_active_runs=1,
     max_active_tasks=8,
     tags=["raw", "clickup"],
+    dagrun_timeout=timedelta(
+        minutes=120
+    ),  # don't let this DAG hog resources indefinitely
 )
 def clickup_vet_claims_export():
     no_op = EmptyOperator(task_id="no_op")

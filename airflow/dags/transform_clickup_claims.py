@@ -81,7 +81,7 @@ def create_claims_snapshot_table():
 @dag(
     dag_id="clickup_claims_transform",
     start_date=pendulum.datetime(2023, 4, 24, tz="UTC"),
-    schedule_interval="0 7 * * *",
+    schedule_interval="0 8 * * *",
     catchup=True,
     default_args={"retries": 0},
     max_active_runs=1,
