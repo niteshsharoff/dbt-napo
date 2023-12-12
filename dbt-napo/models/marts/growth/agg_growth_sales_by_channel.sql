@@ -229,6 +229,7 @@ select a.*
             then b.sales_volume
           else a.purchase_conversions 
         end as sales_volume_adjusted
+        ,b.sales_volume
         ,b.avg_monthly_price
         ,b.avg_annual_price
   from core__referrals a
@@ -292,6 +293,7 @@ select
         ,quote_landing_sessions
         ,quote_landing_users
         ,quote_response_volume
+        ,sales_volume
         ,sales_volume_adjusted
 --        ,average_policy_price
 from core__ga4
