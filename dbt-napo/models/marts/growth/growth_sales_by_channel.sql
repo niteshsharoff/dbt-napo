@@ -1,3 +1,15 @@
+{{config(
+    materialized = 'table',
+    partition_by = {
+        'field':'date',
+        'granularity':'day',
+        'data_type':'date'
+    },
+    cluster_by=['channel','subchannel'],
+    schema='marts'
+
+)}}
+
 
 WITH date_spine AS (
     SELECT DATE
@@ -50,7 +62,7 @@ core__quote_response_volume as (
     a.*
     ,b.total_offered_quotes as quote_response_volume
     from core a
-    left join {{ref('agg_quote_requests')}} b
+    left join {{ref('int_quote_requests')}} b
     on a.date = b.created_date
     and case 
         when b.quote_source !='direct' then a.channel='pcw'
@@ -127,7 +139,6 @@ int_marketing_by_campaign as (
 core__paid_marketing as (
   select a.*
         ,b.total_spend
- --       ,b.conversions
         ,b.clicks
         ,b.view_quote_conversions
         ,b.lead_conversions
@@ -176,7 +187,7 @@ int_referral_code_shares as (
   select *
         ,'referral' as channel
         ,'referral' as subchannel 
-  from {{ref('agg_daily_referrals')}}
+  from {{ref('int_referral_code_shares')}}
 ),
 
 core__referrals as (
@@ -204,19 +215,18 @@ int_sales_volume as (
     ,sum(total_sold_policies) as sales_volume
     ,avg(avg_monthly_price) as avg_monthly_price
     ,avg(avg_annual_price) as avg_annual_price
-  FROM {{ref('agg_sold_policies_excl_renewals')}}
+  FROM {{ref('int_sold_policies_excl_renewals')}}
   group by 1,2,3
 ),
 
 core__sales as (
 
 /*
-    Logic for the sales volume:
+    Logic for the sales volume adjusted:
     direct/organic = actual direct sales - platform reported marketing purchases
 */
 
 select a.*
-        --,b.sales_volume
         ,case 
           when 
             a.channel = 'direct' 
@@ -260,14 +270,10 @@ int_ga4 as (
 
 core__ga4 as (
     select a.*
-          ,b.total_pageviews as landing_page_count
-          ,b.total_quote_views as quote_landing_count
---          ,b.total_leads as lead_capture_count
           ,b.session_pageviews as landing_page_sessions
           ,b.session_quote_views as quote_landing_sessions
           ,b.user_pageviews as landing_page_users
           ,b.user_quote_views as quote_landing_users
---          ,b.session_leads as lead_capture_sessions
 
     from core__sales a
     left join int_ga4 b
@@ -285,16 +291,13 @@ select
         ,purchase_conversions as platform_reported_purchase_conversions
         ,lead_conversions as platform_reported_lead_conversions
         ,referral_code_shares
-        ,landing_page_count
         ,landing_page_sessions
         ,landing_page_users
-        ,quote_landing_count
         ,quote_landing_sessions
         ,quote_landing_users
         ,quote_response_volume
-        ,sales_volume
+--        ,sales_volume
         ,sales_volume_adjusted
 --        ,average_policy_price
 from core__ga4
 where date < current_date()
-order by 1 desc,2,3

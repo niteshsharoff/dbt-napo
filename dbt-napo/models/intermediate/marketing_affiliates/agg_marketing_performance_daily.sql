@@ -1,5 +1,13 @@
-{{config(schema='marts')}}
-
+{{
+    config(
+        materialized='table',
+        partition_by={
+            'field':'date',
+            'data_type':'date',
+            'granularity':'day'
+        }
+    )
+}}
 with fb as (
     select *
     from {{ref('agg_marketing_facebook_ads')}}

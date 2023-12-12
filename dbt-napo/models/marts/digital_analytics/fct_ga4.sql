@@ -10,7 +10,8 @@
     pre_hook=["""
         DECLARE table_exists BOOLEAN DEFAULT (SELECT COUNT(*) > 0 FROM `{{ target.project }}.{{ target.dataset }}.INFORMATION_SCHEMA.TABLES` WHERE table_name = '{{ this.table }}' );
         IF table_exists THEN EXECUTE IMMEDIATE 'DELETE FROM {{ this }} WHERE event_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 3 DAY)'; END IF;"""
-    ]
+    ],
+    schema='marts'
 )}}
 
 with base_ga4 as (

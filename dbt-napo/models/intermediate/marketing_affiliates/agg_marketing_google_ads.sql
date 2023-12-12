@@ -6,8 +6,7 @@
             'data_type':'date',
             'granularity':'day'
         },
-        cluster_by = ['weekday','month','week'],
-        schema='marts'
+        cluster_by = ['weekday','month','week']
     )
 }}
 

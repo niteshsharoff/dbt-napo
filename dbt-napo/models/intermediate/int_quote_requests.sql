@@ -4,8 +4,7 @@
             'field':'created_date',
             'data_type':'date',
             'granularity':'day'            
-        },
-        schema='marts'
+        }
     )
 }}
 

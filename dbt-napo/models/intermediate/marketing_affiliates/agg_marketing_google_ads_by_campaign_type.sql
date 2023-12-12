@@ -6,8 +6,7 @@
             'data_type':'date',
             'granularity':'day'
         },
-        cluster_by = ['napo_campaign_type'],
-        schema='marts'
+        cluster_by = ['napo_campaign_type']
     )
 }}
 
