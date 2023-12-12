@@ -65,9 +65,9 @@ select * except(campaign)
       ,first_value(if(event_name='page_view',page_path,null) ignore nulls) over(partition by user_id, ga_session_id order by event_timestamp) as landing_page_path
       ,max(if(lower(query_params_raw) like '%ttclid%',true,null)) over(partition by user_id,ga_session_id)as is_tiktok
       ,max(if(lower(query_params_raw) like '%fbclid%',true,null)) over(partition by user_id,ga_session_id) as is_facebook
-      ,max(if(lower(query_params_raw) like any ('%gclid%','%wbraid%','gbraid'),true,null)) over(partition by user_id,ga_session_id) is_gads
+      ,max(if(lower(query_params_raw) like any ('%gclid%','%wbraid%','%gbraid%'),true,null)) over(partition by user_id,ga_session_id) is_gads
       ,max(if(lower(query_params_raw) like '%msclkid%',true,null)) over(partition by user_id,ga_session_id) as is_bing
-      ,max(if(lower(page_path) like '%inbound/%',true,null)) over(partition by user_id,ga_session_id) as is_pcw
+      ,max(if(lower(page_path) like '%inbound/%',true,null)) over(partition by user_id,ga_session_id) as is_pcw --TO DO: Should this be landing_page_path?
       ,max(REGEXP_EXTRACT(page_path, r'inbound/([^/]+).*')) over(partition by user_id,ga_session_id) AS pcw_raw
       ,row_number() over(partition by user_id, ga_session_id order by event_timestamp asc) as event_no
       ,first_value(campaign ignore nulls) over(partition by user_id,ga_session_id order by event_timestamp asc) as campaign
@@ -136,13 +136,13 @@ select
         else 'direct'
     end as napo_channel
     ,case
-        when landing_page_path like '/blog%' then 'blog'
-        when is_facebook then 'facebook'
-        when is_tiktok then 'tiktok'
-        when is_bing then 'bing'
-        when is_gads then 'google'
-        when pcw_name is not null and is_pcw then lower(pcw_name)
-        when napo_page_category = 'brand_ambassador' then 'brand_ambassador'
+        when landing_page_path like '/blog%' then 'blog'                    --if the landing page of the session is blog
+        when is_facebook then 'facebook'                                    --if the session is a facebook session (fbclid present in url)
+        when is_tiktok then 'tiktok'                                        --if the session is a tiktok session (ttclid present in url)
+        when is_bing then 'bing'                                            --if the session is a bing session (msclkid present in url)
+        when is_gads then 'google'                                          --if the session is a google session (gclid,wbraid or gbraid present in url)
+        when pcw_name is not null and is_pcw then lower(pcw_name)           
+        when napo_page_category = 'brand_ambassador' then 'brand_ambassador'--if the landing page of the session has a brand ambassador page
         when napo_page_category is not null then napo_page_category
         else 'organic'
     end as napo_subchannel
