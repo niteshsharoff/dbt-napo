@@ -132,6 +132,7 @@ select
         when napo_page_category = 'brand_ambassador' then 'lead_generation'
         when landing_page_path in (select page_path from {{ref('lookup_ga4_growth_page_category')}} where napo_page_category='lead_generation') and coalesce(is_gads,is_facebook) then 'lead_generation'
         when coalesce(is_tiktok,is_bing,is_gads,is_facebook) then 'paid_marketing'
+        when landing_page_path like '/join/%' then 'referral'
         when lower(default_channel_grouping) in ('organic search','direct',null) then 'direct'
         else 'direct'
     end as napo_channel
@@ -141,7 +142,8 @@ select
         when is_tiktok then 'tiktok'                                        --if the session is a tiktok session (ttclid present in url)
         when is_bing then 'bing'                                            --if the session is a bing session (msclkid present in url)
         when is_gads then 'google'                                          --if the session is a google session (gclid,wbraid or gbraid present in url)
-        when pcw_name is not null and is_pcw then lower(pcw_name)           
+        when pcw_name is not null and is_pcw then lower(pcw_name) 
+        when landing_page_path like '/join/%' then 'referral'          
         when napo_page_category = 'brand_ambassador' then 'brand_ambassador'--if the landing page of the session has a brand ambassador page
         when napo_page_category is not null then napo_page_category
         else 'organic'
