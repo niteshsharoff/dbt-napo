@@ -213,7 +213,6 @@ core__sales as (
 /*
     Logic for the sales volume:
     direct/organic = actual direct sales - platform reported marketing purchases
-    This column has been modified and contains marketing purchases as well as an 
 */
 
 select a.*
