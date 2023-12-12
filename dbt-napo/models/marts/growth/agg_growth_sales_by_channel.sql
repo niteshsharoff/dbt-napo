@@ -247,9 +247,12 @@ int_ga4 as (
         ,countif(event_name='page_view') as total_pageviews
         ,countif(event_name='view_quote') as total_quote_views
         ,countif(event_name='generate_lead') as total_leads
-        ,count(distinct if(event_name='page_view',user_id,null)) as session_pageviews
-        ,count(distinct if(event_name='view_quote',user_id,null)) as session_quote_views
-        ,count(distinct if(event_name='generate_lead',user_id,null)) as session_leads
+        ,count(distinct if(event_name='page_view',user_id,null)) as user_pageviews
+        ,count(distinct if(event_name='view_quote',user_id,null)) as user_quote_views
+        ,count(distinct if(event_name='generate_lead',user_id,null)) as user_leads
+        ,count(distinct if(event_name='page_view',concat(user_id,ga_session_id),null)) as session_pageviews
+        ,count(distinct if(event_name='view_quote',concat(user_id,ga_session_id),null)) as session_quote_views
+        ,count(distinct if(event_name='generate_lead',concat(user_id,ga_session_id),null)) as session_leads
 
     from {{ref('fct_ga4')}}
     group by 1,2,3
@@ -262,6 +265,8 @@ core__ga4 as (
 --          ,b.total_leads as lead_capture_count
           ,b.session_pageviews as landing_page_sessions
           ,b.session_quote_views as quote_landing_sessions
+          ,b.user_pageviews as landing_page_users
+          ,b.user_quote_views as quote_landing_users
 --          ,b.session_leads as lead_capture_sessions
 
     from core__sales a
@@ -282,8 +287,10 @@ select
         ,referral_code_shares
         ,landing_page_count
         ,landing_page_sessions
+        ,landing_page_users
         ,quote_landing_count
         ,quote_landing_sessions
+        ,quote_landing_users
         ,quote_response_volume
         ,sales_volume_adjusted
 --        ,average_policy_price
