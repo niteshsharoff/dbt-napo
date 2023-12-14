@@ -32,6 +32,7 @@ clean-targets:         # directories to be removed by `dbt clean`
 vars:
   bing_account_id: 'F149C4W5'
   bing_account_name: 'Napo'
+  partnership_utm_source: ['benfitshub','vodafone','gohenry','perkbox']
 
 models:
   dbt_napo:

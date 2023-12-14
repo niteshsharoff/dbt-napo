@@ -131,6 +131,12 @@ select
     ,case
         when is_pcw then 'pcw'
         when napo_page_category = 'brand_ambassador' then 'lead_generation'
+        when traffic_source.source like any (
+        {%- for source in var('partnership_utm_source') %}
+        '%{{ source }}%'
+        {%- if not loop.last -%},{% endif%}
+        {%- endfor%}
+        ) then 'partnership'        
         when landing_page_path in (select page_path from {{ref('lookup_ga4_growth_page_category')}} where napo_page_category='lead_generation') and coalesce(is_gads,is_facebook) then 'lead_generation'
         when coalesce(is_tiktok,is_bing,is_gads,is_facebook) then 'paid_marketing'
         when landing_page_path like '/join/%' then 'referral'
@@ -138,6 +144,9 @@ select
         else 'direct'
     end as napo_channel
     ,case
+        {%- for source in var('partnership_utm_source') %}
+            when traffic_source.source like '%{{ source }}%' then '{{source}}'
+        {%- endfor%}
         when landing_page_path like '/blog%' then 'blog'                    --if the landing page of the session is blog
         when is_facebook then 'facebook'                                    --if the session is a facebook session (fbclid present in url)
         when is_tiktok then 'tiktok'                                        --if the session is a tiktok session (ttclid present in url)
