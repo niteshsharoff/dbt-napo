@@ -19,6 +19,38 @@ def create_bq_dataset(
     return dataset
 
 
+def create_bq_table(
+    project_name: str,
+    region: str,
+    dataset_name: str,
+    table_name: str,
+    schema_path: str,
+) -> None:
+    log = logging.getLogger(__name__)
+    bq_client = bigquery.Client(project=project_name)
+    try:
+        dataset_ref = bq_client.get_dataset(dataset_name)
+        log.info("Dataset '{}' already exists".format(dataset_name))
+    except NotFound:
+        log.info("Creating dataset '{}'".format(dataset_name))
+        dataset_ref = create_bq_dataset(bq_client, dataset_name, region)
+
+    table_schema = bq_client.schema_from_json(schema_path)
+    table = bigquery.Table(dataset_ref.table(table_name), schema=table_schema)
+    table.time_partitioning = bigquery.TimePartitioning(
+        type_=bigquery.TimePartitioningType.DAY,
+        field="snapshot_date",
+    )
+
+    try:
+        log.info("Creating table '{}.{}'".format(dataset_name, table_name))
+        bq_client.create_table(table)
+    except Conflict:
+        log.warn(
+            "Table '{}.{}' already exists, skipping...".format(dataset_name, table_name)
+        )
+
+
 def create_external_bq_table(
     project_name: str,
     region: str,
