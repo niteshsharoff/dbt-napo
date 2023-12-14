@@ -16,6 +16,7 @@ SELECT
     ,case 
         when lower(campaign_name) like '%leadgen%' then 'leadgen'
         when lower(campaign_name) not like any ('%leadgen%','%standalone%') then 'growth'
+        when lower(campaign_name) like '%standalone%' then 'pa_standalone'
         else 'other'
     end as napo_campaign_type
     ,case
@@ -40,6 +41,7 @@ group by 1,2,3
         ,sum(cost_gbp) as cost_gbp
         ,sum(view_quote_conversions) as view_quote_conversions
         ,sum(lead_conversions) as lead_conversions
+        ,sum(academy_registration_conversions) as academy_registration_conversions
         ,sum(purchase_conversions) as purchase_conversions
         ,sum(all_conversions_value) as all_conversions_value
     from campaign a 

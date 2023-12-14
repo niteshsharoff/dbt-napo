@@ -74,13 +74,14 @@ core__quote_response_volume as (
                        end
 ),
 
-int_marketing_by_campaign as (
-  --Facebook Ads
+int_facebook as (
+      --Facebook Ads
   select 
   date
   ,case 
     when napo_campaign_type='leadgen' then 'lead_generation'
     when napo_campaign_type='growth' then 'paid_marketing'
+    when napo_campaign_type='pa_standalone' then 'pa_standalone'
     else 'pa_standalone'
    end as channel
   ,'facebook' as subchannel
@@ -89,17 +90,21 @@ int_marketing_by_campaign as (
   ,sum(clicks) as clicks
   ,sum(view_quote_conversions) as view_quote_conversions
   ,sum(lead_actions) as lead_conversions
+  ,sum(academy_registration_success_conversions) as academy_registration_conversions
   ,sum(purchase_insurance_conversions) as purchase_conversions
   ,sum(purchase_insurance_value) as purchase_conv_value
   from {{ref('agg_marketing_facebook_ads_by_campaign_type')}}
   group by 1,2,3
-  union all 
-  --Google Ads
+),
+
+int_google as (
+      --Google Ads
   select 
       date
       ,case 
       when napo_campaign_type='growth' then 'paid_marketing'
       when napo_campaign_type='leadgen' then 'lead_generation'
+      when napo_campaign_type='pa_standalone' then 'pa_standalone'
       else 'pa_standalone'
       end as channel
       ,case
@@ -111,17 +116,22 @@ int_marketing_by_campaign as (
       ,sum(clicks) as clicks
       ,sum(view_quote_conversions) as view_quote_conversions
       ,sum(lead_conversions) as lead_conversions
+      ,sum(academy_registration_conversions) as academy_registration_conversions
       ,sum(purchase_conversions) as purchase_conversions
       ,sum(all_conversions_value) as purchase_conv_value
   from {{ref('agg_marketing_google_ads_by_campaign_type')}}
   group by 1,2,3
-  union all
-  --Bing Ads
+
+),
+
+int_bing as (
+      --Bing Ads
   select 
     date
     ,case 
       when napo_campaign_type='growth' then 'paid_marketing'
       when napo_campaign_type='leadgen' then 'lead_generation'
+      when napo_campaign_type='pa_standalone' then 'pa_standalone'
       else 'pa_standalone'
     end as channel
     ,'bing' as subchannel
@@ -130,10 +140,21 @@ int_marketing_by_campaign as (
     ,sum(clicks) as clicks
     ,sum(view_quote_conversions) as view_quote_conversions
     ,sum(lead_conversions) as lead_conversions
+    ,null as academy_registration_conversions
     ,sum(purchase_conversions) as purchase_conversions
     ,sum(purchase_conv_revenue) as purchase_conv_value
   from {{ref('agg_marketing_bing_ads_by_campaign_type')}} 
   group by 1,2,3
+
+),
+
+
+int_marketing_by_campaign as (
+  select * from int_facebook
+  union all 
+  select * from int_google
+  union all
+  select * from int_bing
 ),
 
 core__paid_marketing as (
@@ -141,7 +162,7 @@ core__paid_marketing as (
         ,b.total_spend
         ,b.clicks
         ,b.view_quote_conversions
-        ,b.lead_conversions
+        ,b.lead_conversions+b.academy_registration_conversions as lead_conversions
         ,b.purchase_conversions
         ,b.purchase_conv_value
   from core__quote_response_volume a
