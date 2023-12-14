@@ -1,0 +1,617 @@
+[
+  {
+    "mode": "NULLABLE",
+    "name": "policy_status",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "premium_price_ipt_inc",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "earned_premium_ipt_inc",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "invoice_claims_amount",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "paid_claims_amount",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "incurred_claims_amount",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "original_policy_id",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "policy_year",
+    "type": "INTEGER"
+  },
+  {
+    "fields": [
+      {
+        "mode": "NULLABLE",
+        "name": "quote_uuid",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "quote_source",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "source_policy_id",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "msm_sales_tracking_urn",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "discount_type",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "voucher_code",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "discount_percentage",
+        "type": "NUMERIC"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "benefit_code",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "reward_amount_pounds",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "raw_request",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "raw_response",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "common_quote",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "pricing_service_request",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "pricing_service_response",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "pricing_model_version",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "pricing_algorithm_version",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "pricing_algorithm_version_with_patch",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "quote_at",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "mode": "NULLABLE",
+    "name": "quote",
+    "type": "RECORD"
+  },
+  {
+    "fields": [
+      {
+        "mode": "NULLABLE",
+        "name": "policy_id",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "policy_uuid",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "quote_uuid",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "customer_uuid",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "pet_uuid",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "reference_number",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "quote_source_reference",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "payment_plan_type",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "retail_price",
+        "type": "FLOAT"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "notes",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "accident_cover_start_date",
+        "type": "DATE"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "start_date",
+        "type": "DATE"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "end_date",
+        "type": "DATE"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "cancel_date",
+        "type": "DATE"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "cancel_detail",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "cancel_reason",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "created_date",
+        "type": "DATE"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "sold_at",
+        "type": "TIMESTAMP"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "cancelled_at",
+        "type": "TIMESTAMP"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "reinstated_at",
+        "type": "TIMESTAMP"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "change_reason",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "product_reference",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "product_name",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "vet_fee_cover",
+        "type": "FLOAT"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "complementary_treatment_cover",
+        "type": "FLOAT"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "dental_cover",
+        "type": "FLOAT"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "emergency_boarding_cover",
+        "type": "FLOAT"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "third_person_liability_excess",
+        "type": "FLOAT"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "third_person_liability_cover",
+        "type": "FLOAT"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "pet_death_cover",
+        "type": "FLOAT"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "travel_cover",
+        "type": "FLOAT"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "missing_pet_cover",
+        "type": "FLOAT"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "behavioural_treatment_cover",
+        "type": "FLOAT"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "co_pay",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "excess",
+        "type": "FLOAT"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "effective_from",
+        "type": "TIMESTAMP"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "effective_to",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "mode": "NULLABLE",
+    "name": "policy",
+    "type": "RECORD"
+  },
+  {
+    "fields": [
+      {
+        "mode": "NULLABLE",
+        "name": "pet_id",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "pet_uuid",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "name",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "date_of_birth",
+        "type": "DATE"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "gender",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "size",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "cost_pounds",
+        "type": "FLOAT"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "is_neutered",
+        "type": "BOOLEAN"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "is_microchipped",
+        "type": "BOOLEAN"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "is_vaccinated",
+        "type": "BOOLEAN"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "species",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "breed_category",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "breed_name",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "breed_source",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "has_pre_existing_conditions",
+        "type": "BOOLEAN"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "change_reason",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "effective_from",
+        "type": "TIMESTAMP"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "effective_to",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "mode": "NULLABLE",
+    "name": "pet",
+    "type": "RECORD"
+  },
+  {
+    "fields": [
+      {
+        "mode": "NULLABLE",
+        "name": "customer_id",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "customer_uuid",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "first_name",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "last_name",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "email",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "street_address",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "address_locality",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "address_region",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "postal_code",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "date_of_birth",
+        "type": "DATE"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "change_reason",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "effective_from",
+        "type": "TIMESTAMP"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "effective_to",
+        "type": "TIMESTAMP"
+      }
+    ],
+    "mode": "NULLABLE",
+    "name": "customer",
+    "type": "RECORD"
+  },
+  {
+    "fields": [
+      {
+        "mode": "NULLABLE",
+        "name": "policy_number",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "claim_reference",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "master_claim_reference",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "status",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "date_received",
+        "type": "DATE"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "onset_date",
+        "type": "DATE"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "first_invoice_date",
+        "type": "DATE"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "last_invoice_date",
+        "type": "DATE"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "closed_date",
+        "type": "DATE"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "is_continuation",
+        "type": "BOOLEAN"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "cover_type",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "claim_sub_type",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "condition",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "decline_reason",
+        "type": "STRING"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "invoice_amount",
+        "type": "FLOAT"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "paid_amount",
+        "type": "FLOAT"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "reserve",
+        "type": "FLOAT"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "incurred_amount",
+        "type": "FLOAT"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "recovery_amount",
+        "type": "FLOAT"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "effective_from",
+        "type": "DATE"
+      },
+      {
+        "mode": "NULLABLE",
+        "name": "effective_to",
+        "type": "DATE"
+      }
+    ],
+    "mode": "REPEATED",
+    "name": "claims",
+    "type": "RECORD"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "snapshot_date",
+    "type": "DATE"
+  }
+]

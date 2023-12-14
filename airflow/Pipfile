@@ -27,6 +27,7 @@ boto3 = "==1.33.2"
 [dev-packages]
 black = "*"
 flake8 = "*"
+pytest_mock = "*"
 
 [requires]
 python_version = "3.7"
