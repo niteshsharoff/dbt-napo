@@ -56,7 +56,7 @@ SELECT
  ,case
         when lower(trim(CampaignName)) not like any ('%leadgen%','%standalone%') then 'growth'
         when  lower(trim(CampaignName)) like '%leadgen%' then 'leadgen'
-        else 'pa_standalone'
+        else 'other'
      end as napo_campaign_type
  ,{{agg('impressions')}}
  ,{{agg('clicks')}}

@@ -81,7 +81,7 @@ int_facebook as (
     when napo_campaign_type='leadgen' then 'lead_generation'
     when napo_campaign_type='growth' then 'paid_marketing'
     when napo_campaign_type='pa_standalone' then 'pa_standalone'
-    else 'pa_standalone'
+    else 'other'
    end as channel
   ,'facebook' as subchannel
   ,sum(cost_gbp) as total_spend
@@ -104,7 +104,7 @@ int_google as (
       when napo_campaign_type='growth' then 'paid_marketing'
       when napo_campaign_type='leadgen' then 'lead_generation'
       when napo_campaign_type='pa_standalone' then 'pa_standalone'
-      else 'pa_standalone'
+      else 'other'
       end as channel
       ,case
       when is_youtube_campaign is true then 'youtube'
@@ -131,7 +131,7 @@ int_bing as (
       when napo_campaign_type='growth' then 'paid_marketing'
       when napo_campaign_type='leadgen' then 'lead_generation'
       when napo_campaign_type='pa_standalone' then 'pa_standalone'
-      else 'pa_standalone'
+      else 'other'
     end as channel
     ,'bing' as subchannel
     ,sum(cost_gbp) as total_spend
@@ -161,7 +161,8 @@ core__paid_marketing as (
         ,b.total_spend
         ,b.clicks
         ,b.view_quote_conversions
-        ,b.lead_conversions+b.academy_registration_conversions as lead_conversions
+        ,b.lead_conversions
+        ,b.academy_registration_conversions
         ,b.purchase_conversions
         ,b.purchase_conv_value
   from core__quote_response_volume a
@@ -309,15 +310,15 @@ select
         ,clicks as platform_reported_clicks
         ,view_quote_conversions as platform_reported_quote_conversions
         ,purchase_conversions as platform_reported_purchase_conversions
-        ,lead_conversions as platform_reported_lead_conversions
         ,referral_code_shares
         ,landing_page_sessions
         ,landing_page_users
         ,quote_landing_sessions
         ,quote_landing_users
         ,quote_response_volume
---        ,sales_volume
         ,sales_volume_adjusted
+        ,cast(ifnull(lead_conversions,0) as numeric)+cast(ifnull(academy_registration_conversions,0) as numeric) as platform_reported_lead_conversions
 --        ,average_policy_price
 from core__ga4
 where date < current_date()
+group by 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15
