@@ -176,7 +176,7 @@ int_affiliates as (
     select date
         ,'paid_marketing' as channel
         ,'affiliate' as subchannel
-        ,sum(cost_gbp) as total_spend
+        ,sum(cost_gbp)*(1+{{var('vat_percent')}}) as total_spend
         ,sum(conversions) as conversions
         ,sum(clicks) as clicks
     from   {{ref('agg_affiliate_conectia')}}
