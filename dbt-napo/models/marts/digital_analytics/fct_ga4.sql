@@ -146,9 +146,6 @@ select
     end as napo_channel
 
     ,case
-    --     {%- for source in var('partnership_utm_source') %}
-    --         when traffic_source.source like '%{{ source }}%' then '{{source}}'
-    --     {%- endfor%}
         when traffic_source.source like '%benefitshub%' then 'benefitshub'
         when traffic_source.source like '%perkbox%' then 'perkbox'
         when lower(query_params_raw) like '%voucher_code=gohenry10%' then 'gohenry'
