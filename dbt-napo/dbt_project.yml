@@ -33,8 +33,6 @@ vars:
   # Bing account information, used to filter Airbyte data should the user be added to multiple Bing accounts
   bing_account_id: 'F149C4W5'
   bing_account_name: 'Napo'
-  # If we beign working with a new partner, enter the utm_source identifier here and it'll show up in the growth_sales_by_channel table
-  partnership_utm_source: ['benfitshub','vodafone','gohenry','perkbox']
   #This is used to increase Conectia's (Affiliate) cost to ensure it matches their export. growth_sales_by_channel has the API's cost * 1+Vat (e.g. 1.2)
   vat_percent: '0.2'
   #The growth_sales_by_channel table will replace the last 30 days of data should marketing/affiliate conversions change with larger lookbacks

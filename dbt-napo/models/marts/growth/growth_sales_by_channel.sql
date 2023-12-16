@@ -45,9 +45,10 @@ channel_subchannels AS (
      --   ('direct','direct'),
         ('direct', 'commercial_page'),
         ('referral', 'referral'),
-        {%for partner in var('partnership_utm_source')-%}
-        ('partnership', '{{partner}}'),
-        {%endfor-%}
+        ('partnership', 'benefitshub'),
+        ('partnership','vodafone'),
+        ('partnership','gohenry'),
+        ('partnership','perkbox'),
      --   ('training_product', 'training_product'),
         ('pa_standalone','google'),
         ('pa_standalone','facebook'),

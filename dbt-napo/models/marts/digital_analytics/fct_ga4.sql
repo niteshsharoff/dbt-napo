@@ -120,7 +120,8 @@ on a.traffic_source.source = c.source
 left join {{ref('lookup_ga4_growth_page_category')}} d
 on a.landing_page_path = d.page_path and a.hostname = d.domain
 --order by user_id, event_timestamp asc
-)
+),
+napo_attribution as (
 select 
      event_no
     ,event_date
@@ -135,22 +136,23 @@ select
     ,case
         when is_pcw then 'pcw'
         when napo_page_category = 'brand_ambassador' then 'lead_generation'
-        when traffic_source.source like any (
-        {%- for source in var('partnership_utm_source') %}
-        '%{{ source }}%'
-        {%- if not loop.last -%},{% endif%}
-        {%- endfor%}
-        ) then 'partnership'        
+        when traffic_source.source like any ('%benefitshub%','%perkbox%') then 'partnership'
+        when lower(query_params_raw) like any ('%voucher_code=gohenry10%','%voucher_code=vodasummer23%') then 'partnership'        
         when landing_page_path in (select page_path from {{ref('lookup_ga4_growth_page_category')}} where napo_page_category='lead_generation') and coalesce(is_gads,is_facebook) then 'lead_generation'
         when coalesce(is_tiktok,is_bing,is_gads,is_facebook) then 'paid_marketing'
         when landing_page_path like '/join/%' then 'referral'
         when lower(default_channel_grouping) in ('organic search','direct',null) then 'direct'
         else 'direct'
     end as napo_channel
+
     ,case
-        {%- for source in var('partnership_utm_source') %}
-            when traffic_source.source like '%{{ source }}%' then '{{source}}'
-        {%- endfor%}
+    --     {%- for source in var('partnership_utm_source') %}
+    --         when traffic_source.source like '%{{ source }}%' then '{{source}}'
+    --     {%- endfor%}
+        when traffic_source.source like '%benefitshub%' then 'benefitshub'
+        when traffic_source.source like '%perkbox%' then 'perkbox'
+        when lower(query_params_raw) like '%voucher_code=gohenry10%' then 'gohenry'
+        when lower(query_params_raw) like '%voucher_code=vodasummer23%' then 'vodafone'
         when landing_page_path like '/blog%' then 'blog'                    --if the landing page of the session is blog
         when is_facebook then 'facebook'                                    --if the session is a facebook session (fbclid present in url)
         when is_tiktok then 'tiktok'                                        --if the session is a tiktok session (ttclid present in url)
@@ -184,3 +186,39 @@ select
     ,collected_traffic_source
     ,campaign
 from joined
+)
+select 
+     event_no
+    ,event_date
+    ,event_timestamp
+    ,user_id
+    ,ga_session_id
+    ,ga_session_number
+    ,event_name
+    ,hostname
+    ,page_path
+    ,napo_page_category
+    ,first_value(napo_channel) over(partition by user_id,ga_session_id order by event_no asc) as napo_channel
+    ,first_value(napo_subchannel) over(partition by user_id,ga_session_id order by event_no asc) as napo_subchannel 
+    ,default_channel_grouping
+    ,query_params_raw
+    ,landing_page_path
+    ,analytics_storage
+    ,quote_id
+    ,policy_ids
+    ,transaction_id
+    ,transaction_type
+    ,currency
+    ,policy_price_monthly
+    ,policy_price_annual
+    ,is_tiktok
+    ,is_facebook
+    ,is_gads
+    ,is_bing
+    ,is_pcw
+    ,page_referrer
+    ,pcw_name
+    ,traffic_source
+    ,collected_traffic_source
+    ,campaign
+from napo_attribution
