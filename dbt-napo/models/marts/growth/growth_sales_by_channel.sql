@@ -41,7 +41,7 @@ channel_subchannels AS (
         {%for partner in var('partnership_utm_source')-%}
         ('partnership', '{{partner}}'),
         {%endfor-%}
-        ('training_product', 'training_product'),
+     --   ('training_product', 'training_product'),
         ('pa_standalone','google'),
         ('pa_standalone','facebook'),
         ('pa_standalone','bing')
