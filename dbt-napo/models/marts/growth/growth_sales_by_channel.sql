@@ -11,6 +11,7 @@
         'data_type':'date'
     },
     partitions=partitions_to_replace,
+    incremental_strategy='insert_overwrite',
     cluster_by=['channel','subchannel'],
     schema='marts'
 
@@ -327,4 +328,10 @@ select
 --        ,average_policy_price
 from core__ga4
 where date < current_date()
+
+{% if is_incremental() %}
+        -- recalculate last 30 days
+        and date in ({{ partitions_to_replace | join(',') }})
+{% endif %}
+
 group by 1,2,3,4,5,6,7,8,9,10,11,12,13,14,15

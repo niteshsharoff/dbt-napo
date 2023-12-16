@@ -13,6 +13,7 @@
     },
     require_partition_filter=true,
     cluster_by=['event_name','user_id','ga_session_id','transaction_id'],
+    incremental_strategy='insert_overwrite',
     partitions=partitions_to_replace,
     schema='marts'
 )}}
