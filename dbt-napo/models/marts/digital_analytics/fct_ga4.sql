@@ -1,3 +1,9 @@
+{% set partitions_to_replace = ['current_date'] %}
+{% for i in range(3) %}
+    {% set partitions_to_replace = partitions_to_replace.append('date_sub(current_date, interval ' + (i+1)|string + ' day)') %}
+{% endfor %}
+
+
 {{config(
     materialized='incremental',
     partition_by={
@@ -7,10 +13,7 @@
     },
     require_partition_filter=true,
     cluster_by=['event_name','user_id','ga_session_id','transaction_id'],
-    pre_hook=["""
-        DECLARE table_exists BOOLEAN DEFAULT (SELECT COUNT(*) > 0 FROM `{{ target.project }}.{{ target.dataset }}.INFORMATION_SCHEMA.TABLES` WHERE table_name = '{{ this.table }}' );
-        IF table_exists THEN EXECUTE IMMEDIATE 'DELETE FROM {{ this }} WHERE event_date >= DATE_SUB(CURRENT_DATE(), INTERVAL 3 DAY)'; END IF;"""
-    ],
+    partitions=partitions_to_replace,
     schema='marts'
 )}}
 

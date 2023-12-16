@@ -1,10 +1,16 @@
+{% set partitions_to_replace = ['current_date'] %}
+{% for i in range(var('growth_sales_lookback_days')) %}
+    {% set partitions_to_replace = partitions_to_replace.append('date_sub(current_date, interval ' + (i+1)|string + ' day)') %}
+{% endfor %}
+
 {{config(
-    materialized = 'table',
+    materialized = 'incremental',
     partition_by = {
         'field':'date',
         'granularity':'day',
         'data_type':'date'
     },
+    partitions=partitions_to_replace,
     cluster_by=['channel','subchannel'],
     schema='marts'
 
