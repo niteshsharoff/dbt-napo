@@ -12,16 +12,11 @@
 
 with campaign as (
 SELECT 
-   segments_date as date
-    ,case 
-        when lower(campaign_name) like '%leadgen%' then 'leadgen'
-        when lower(campaign_name) not like any ('%leadgen%','%standalone%') then 'growth'
-        when lower(campaign_name) like '%standalone%' then 'pa_standalone'
-        else 'other'
-    end as napo_campaign_type
+    segments_date as date
+    ,{{marketing_campaign_classification('campaign_name')}} as napo_campaign_type
     ,case
-    when lower(segments_ad_network_type) like '%youtube%' then true
-    else false
+        when lower(segments_ad_network_type) like '%youtube%' then true
+        else false
     end as is_youtube_campaign
   ,sum(metrics_impressions) as impressions
   ,sum(metrics_clicks) as clicks 

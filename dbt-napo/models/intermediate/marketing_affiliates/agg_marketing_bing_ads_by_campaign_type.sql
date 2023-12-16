@@ -53,11 +53,7 @@ from daily_bing a
 
 SELECT 
   date
- ,case
-        when lower(trim(CampaignName)) not like any ('%leadgen%','%standalone%') then 'growth'
-        when  lower(trim(CampaignName)) like '%leadgen%' then 'leadgen'
-        else 'other'
-     end as napo_campaign_type
+ ,{{marketing_campaign_classification('CampaignName')}} as napo_campaign_type
  ,{{agg('impressions')}}
  ,{{agg('clicks')}}
  ,{{agg('all_conversions')}}

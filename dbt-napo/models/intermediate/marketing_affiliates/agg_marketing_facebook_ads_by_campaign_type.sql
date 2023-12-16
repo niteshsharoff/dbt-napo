@@ -12,12 +12,7 @@
 with data as (
 select
        date_start as date
-    ,case 
-        when lower(campaign_name) like '%leadgen%' then 'leadgen'
-        when lower(campaign_name) not like any ('%leadgen%','%standalone%') then 'growth'
-        when lower(campaign_name) like '%standalone%' then 'pa_standalone'
-        else 'other'
-    end as napo_campaign_type
+      ,{{marketing_campaign_classification('campaign_name')}} as napo_campaign_type
       ,sum(reach) as reach --TO DO resolve this to match Asights report
       ,sum(impressions) as impressions
       ,sum(clicks) as clicks
