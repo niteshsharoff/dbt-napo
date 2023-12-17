@@ -4,7 +4,8 @@
         'field':'date',
         'data_type':'date',
         'granularity':'day'
-    }
+    },
+    tags=['daily','growth']
 )}}
 
 -- In documentation, make it clear that only the purchase_insurance, Lead and view_quote are considered

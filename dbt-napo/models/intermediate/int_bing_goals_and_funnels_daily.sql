@@ -1,3 +1,7 @@
+{{config(
+    tags=['daily','growth']
+)}}
+
 with raw as (
 select
     cast(TimePeriod as date) as TimePeriod
@@ -14,6 +18,21 @@ qualify row_no = 1
 select 
     TimePeriod as date
     ,CampaignId
+    ,sum(
+      case
+        when Goal='generate_lead' then cast(AllConversions as numeric)
+        else null
+      end) as lead_conversions
+    ,sum(
+      case
+        when Goal='view_quote' then cast(AllConversions as numeric)
+        else null
+      end) as view_quote_conversions
+    ,sum(
+      case
+        when Goal='purchase' then cast(AllConversions as numeric)
+        else null
+      end) as purchase_conversions
     ,sum(
       case
         when Goal='generate_lead' then cast(AllConversions as numeric)

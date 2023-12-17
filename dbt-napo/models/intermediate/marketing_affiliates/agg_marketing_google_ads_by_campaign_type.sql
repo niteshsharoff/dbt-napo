@@ -6,7 +6,8 @@
             'data_type':'date',
             'granularity':'day'
         },
-        cluster_by = ['napo_campaign_type']
+        cluster_by = ['napo_campaign_type'],
+        tags=['daily','growth']
     )
 }}
 

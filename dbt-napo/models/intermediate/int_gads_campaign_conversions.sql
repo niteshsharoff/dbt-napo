@@ -1,4 +1,7 @@
--- Inline CTE for better optimization
+{{config(
+    tags=['daily','growth']
+)}}
+
 SELECT 
     segments_date as date
         ,case 

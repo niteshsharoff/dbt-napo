@@ -4,7 +4,8 @@
         'data_type':'date',
         'granularity':'day'
     },
-    cluster_by=['quote_source']
+    cluster_by=['quote_source'],
+    tags=['daily','growth']
 )}}
 
 with data as (

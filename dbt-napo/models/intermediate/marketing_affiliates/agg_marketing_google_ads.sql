@@ -6,7 +6,8 @@
             'data_type':'date',
             'granularity':'day'
         },
-        cluster_by = ['weekday','month','week']
+        cluster_by = ['weekday','month','week'],
+        tags=['daily','growth']
     )
 }}
 

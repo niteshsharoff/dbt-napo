@@ -1,3 +1,6 @@
+{{config(
+      tags=['daily','growth']
+)}}
 
 select cast(timestamp_seconds(cast(date_dt as int64)) as date) as date
       ,sum(clicks) as clicks

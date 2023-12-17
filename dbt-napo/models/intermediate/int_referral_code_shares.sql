@@ -1,4 +1,7 @@
-{{config(schema='marts')}}
+{{config(
+      schema='marts',
+      tags=['daily','growth']
+)}}
 
 SELECT date(timestamp_millis(created_at)) as created_date 
       ,count(distinct email) as unique_referrals_created
