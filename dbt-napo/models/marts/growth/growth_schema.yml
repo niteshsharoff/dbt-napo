@@ -28,7 +28,8 @@ models:
           the paid marketing channel or Google Ads within the paid marketing channel.
       - name: total_spend
         description: The total amount of money spent on a given marketing channel
-          and subchannel.
+          and subchannel. Affiliate total spend is Conectia's amount multiplied by VAT
+          (variable in dbt_project vat_percentage set to 20%)
       - name: platform_reported_clicks
         description: The total number of clicks reported by the marketing and affiliate
           platforms we use including Facebook/Meta, Google Ads, Bing & Conectia.
