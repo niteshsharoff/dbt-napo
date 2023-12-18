@@ -65,7 +65,6 @@ with
             campaign_tracking_setting_tracking_url,
             campaign_ad_serving_optimization_status,
             campaign_app_campaign_setting_app_store,
-            campaign_shopping_setting_sales_country,
             campaign_video_brand_safety_suitability,
             campaign_manual_cpc_enhanced_cpc_enabled,
             campaign_target_cpa_cpc_bid_floor_micros,
