@@ -14,5 +14,5 @@ select
     max(currencycode) as currency,
     sum(revenue) as conversion_value
 from {{ ref("stg_src_airbyte__bing_account_performance_report_daily") }}
-where accountnumber = '{{var(' bing_account_id ')}}'
+where accountnumber = '{{var('bing_account_id')}}'
 group by 1
