@@ -1,16 +1,12 @@
-with 
+with
 
-source as (
+    source as (
 
-    select * from {{ source('src_airbyte', 'google_ads_campaign_conversions') }}
+        select * from {{ source("src_airbyte", "google_ads_campaign_conversions") }}
 
-),
+    ),
 
-renamed as (
+    renamed as (select * from source)
 
-    select *
-    from source
-
-)
-
-select * from renamed
+select *
+from renamed
