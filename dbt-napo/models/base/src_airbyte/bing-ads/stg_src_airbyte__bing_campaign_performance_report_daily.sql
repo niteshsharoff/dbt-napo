@@ -75,7 +75,7 @@ with
             historicallandingpageexperience
 
         from source
-        where accountname = '{{var('bing_account_name')}}'
+        where accountname = '{{var("bing_account_name")}}'
 
     )
 

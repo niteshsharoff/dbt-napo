@@ -53,7 +53,7 @@ with
             lowqualitysophisticatedclicks
 
         from source
-        where accountnumber = '{{var('bing_account_id')}}'
+        where accountnumber = '{{var("bing_account_id")}}'
 
     )
 
