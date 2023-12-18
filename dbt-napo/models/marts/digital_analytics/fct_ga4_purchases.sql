@@ -1,3 +1,7 @@
+{{config(
+    tags=['daily']
+)}}
+
 select
     _table_suffix as date,
     event_name,
