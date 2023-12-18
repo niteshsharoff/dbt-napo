@@ -35,11 +35,6 @@ select
       end) as purchase_conversions
     ,sum(
       case
-        when Goal='generate_lead' then cast(AllConversions as numeric)
-        else null
-      end) as lead_conversions
-    ,sum(
-      case
         when Goal='view_quote' then cast(AllConversions as numeric)
         else null
       end) as view_quote_conversions
