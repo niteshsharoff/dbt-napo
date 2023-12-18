@@ -17,3 +17,7 @@ models:
     description: Normalized claims data
   - name: int_quote
     description: Normalized quote  data
+  - name: int_bing_goals_and_funnels_daily
+  - name: int_gads_campaign_conversions
+  - name: int_referral_code_shares
+  - name: int_sold_policies_excl_renewals
