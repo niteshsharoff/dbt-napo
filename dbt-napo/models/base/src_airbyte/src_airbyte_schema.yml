@@ -1,0 +1,25 @@
+version: 2
+
+sources:
+  - name: src_airbyte
+    schema: src_airbyte
+    tables:
+      - name: facebook_ads_insights
+        description: Meta advertising activity summary
+        tags: ['growth']
+      - name: bing_account_performance_report_daily
+        description: Bing advertising activity summary
+        tags: ['growth']
+      - name: bing_campaign_performance_report_daily
+        tags: ['growth']
+      - name: bing_goals_and_funnels_report_request
+        tags: ['growth']
+      - name: conectia_daily_summary
+        description: Daily affiliate activity summary (custom built connector)
+        tags: ['growth']
+      - name: google_ads_account_performance_report
+        tags: ['growth']
+      - name: google_ads_campaign
+        tags: ['growth']
+      - name: google_ads_campaign_conversions
+        tags: ['growth']

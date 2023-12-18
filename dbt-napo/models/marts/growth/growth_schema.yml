@@ -1,0 +1,60 @@
+version: 2
+
+models:
+  - name: growth_sales_by_channel
+    description: "Daily aggregation of data relevant to the growth department. This
+      includes:\n- Marketing spend for google ads, bing, facebook and affiliates\n
+      - User and Session data from GA4 behavioural data (users that consented to cookie
+      popup only)\n- Quote data from backend\n- Sales data from backend\n- Referral
+      code shares from backend "
+    columns:
+      - name: date
+        description: The calendar date associated with the metrics in each row.
+      - name: channel
+        description: A growth department defined higherarchy of the channel used for
+          the data pertaining to the table.
+      - name: subchannel
+        description: A subset within a marketing channel, such as Facebook within
+          the paid marketing channel or Google Ads within the paid marketing channel.
+      - name: total_spend
+        description: The total amount of money spent on a given marketing channel
+          and subchannel. Affiliate total spend is Conectia's amount multiplied by VAT
+          (variable in dbt_project vat_percentage set to 20%)
+      - name: platform_reported_clicks
+        description: The total number of clicks reported by the marketing and affiliate
+          platforms we use including Facebook/Meta, Google Ads, Bing & Conectia.
+      - name: platform_reported_quote_conversions
+        description: The total number of quotes requested as reported by the marketing
+          platforms we use. (Usually generate_lead or Lead conversions)
+      - name: platform_reported_purchase_conversions
+        description: The total number of sales made as reported by the marketing/affiliate
+          platforms we use.
+      - name: referral_code_shares
+        description: The number of times an existing customer shared their referral
+          code, with other customers. Data from our backend.
+      - name: landing_page_sessions
+        description: The number of GA4 sessions a customer (or device) visited the
+          relevant landing page. Usually the point of entry of the customer journey.
+          This data shows only users that consented to our cookie popup.
+      - name: landing_page_users
+        description: The number of GA4 users a customer (or device) visited the relevant
+          landing page. Usually the point of entry of the customer journey. This data
+          shows only users that consented to our cookie popup.
+      - name: quote_landing_sessions
+        description: The number of sessions that has a generate_lead GA4 event (only
+          cookie banner consented users are considered).
+      - name: quote_landing_users
+        description: The number of users that has a generate_lead GA4 event (only
+          cookie banner consented users are considered).
+      - name: quote_response_volume
+        description: The total number of quotes provided, split into direct, referral
+          or PCWs. Data generated from the backend.
+      - name: sales_volume_adjusted
+        description: 'The total number of sales generated from our backend, blended
+          in with marketing conversions. Please note: "Direct" sales have been modified
+          to subtract all marketing conversions, the number will be lower than the
+          actual backend reported "direct" sales.'
+      - name: platform_reported_lead_conversions
+        description: The number of leads generated reported by the marketing/affiliate
+          platforms we use. A lead represents a potential new customer and includes
+          conversions across Puppy Academy and Email sign ups.

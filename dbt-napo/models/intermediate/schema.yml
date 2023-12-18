@@ -17,3 +17,5 @@ models:
     description: Normalized claims data
   - name: int_quote
     description: Normalized quote  data
+  - name: int_referral_code_shares
+  - name: int_sold_policies_excl_renewals

@@ -29,6 +29,15 @@ clean-targets:         # directories to be removed by `dbt clean`
 # as tables. These settings can be overridden in the individual model files
 # using the `{{ config(...) }}` macro.
 
+vars:
+  # Bing account information, used to filter Airbyte data should the user be added to multiple Bing accounts
+  bing_account_id: 'F149C4W5'
+  bing_account_name: 'Napo'
+  #This is used to increase Conectia's (Affiliate) cost to ensure it matches their export. growth_sales_by_channel has the API's cost * 1+Vat (e.g. 1.2)
+  vat_percent: '0.2'
+  #The growth_sales_by_channel table will replace the last 30 days of data should marketing/affiliate conversions change with larger lookbacks
+  growth_sales_lookback_days: 30
+
 models:
   dbt_napo:
     +persist_docs:
