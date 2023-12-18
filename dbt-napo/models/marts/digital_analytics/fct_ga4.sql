@@ -31,6 +31,7 @@ with base_ga4 as (
         ,device.web_info.hostname
         ,replace(split((select value.string_value from unnest(event_params) where key = 'page_location'),'?')[safe_offset(0)],'https://www.napo.pet','') as page_path
         ,split((select value.string_value from unnest(event_params) where key = 'page_location'),'?')[safe_offset(1)] as query_params_raw
+        ,{{ga4_unnest('page_title')}}
         ,case
                 when traffic_source.name = '(organic)' and traffic_source.medium='cpc' and traffic_source.source = 'google' then struct(
                 'Paid Search' as name
@@ -52,7 +53,11 @@ with base_ga4 as (
         ,{{ga4_unnest('campaign','campaign')}}
     --  ,(select value.string_value from unnest(event_params) where key = 'page_location') as page_location
         ,coalesce(ecommerce.transaction_id,(select coalesce(value.string_value,cast(value.int_value as string)) from unnest(event_params) where key = 'transaction_id')) as transaction_id
-    
+        ,{{ga4_unnest('batch_ordering_id','batch_sequence_id')}}
+        ,event_params
+        ,items
+        ,device
+        ,geo
     from {{source('ga4','events')}}
     {%-if is_incremental()%}
     where _table_suffix >= format_date('%Y%m%d',date_sub(current_date(),INTERVAL 3 DAY))
@@ -81,36 +86,9 @@ from base_ga4
 ),
 joined as (
 select 
-     a.event_no
-    ,a.event_date
-    ,a.event_timestamp
-    ,a.user_id
-    ,a.ga_session_id
-    ,a.ga_session_number
-    ,a.event_name
-    ,a.hostname
-    ,a.page_path
+     a.* except(pcw_raw)
     ,d.napo_page_category
-    ,a.query_params_raw
-    ,a.landing_page_path
-    ,a.analytics_storage
-    ,a.quote_id
-    ,a.policy_ids
-    ,a.transaction_id
-    ,a.transaction_type
-    ,a.currency
-    ,a.policy_price_monthly
-    ,a.policy_price_annual
-    ,a.is_tiktok
-    ,a.is_facebook
-    ,a.is_gads
-    ,a.is_bing
-    ,a.is_pcw
-    ,a.page_referrer
-    ,lower(b.pcw_name) as pcw_name
-    ,a.traffic_source
-    ,a.collected_traffic_source
-    ,a.campaign
+    ,b.pcw_name
     ,{{ga4_default_channel_grouping('a.traffic_source.source','a.traffic_source.medium','c.source_category','a.campaign')}} as default_channel_grouping
 
 from features a
@@ -124,16 +102,7 @@ on a.landing_page_path = d.page_path and a.hostname = d.domain
 ),
 napo_attribution as (
 select 
-     event_no
-    ,event_date
-    ,event_timestamp
-    ,user_id
-    ,ga_session_id
-    ,ga_session_number
-    ,event_name
-    ,hostname
-    ,page_path
-    ,napo_page_category
+    * replace(lower(pcw_name) as pcw_name)
     ,case
         when is_pcw then 'pcw'
         when napo_page_category = 'brand_ambassador' then 'lead_generation'
@@ -145,7 +114,6 @@ select
         when lower(default_channel_grouping) in ('organic search','direct',null) then 'direct'
         else 'direct'
     end as napo_channel
-
     ,case
         when traffic_source.source like '%benefitshub%' then 'benefitshub'
         when traffic_source.source like '%perkbox%' then 'perkbox'
@@ -162,61 +130,10 @@ select
         when napo_page_category is not null then napo_page_category
         else 'organic'
     end as napo_subchannel
-    ,default_channel_grouping
-    ,query_params_raw
-    ,landing_page_path
-    ,analytics_storage
-    ,quote_id
-    ,policy_ids
-    ,transaction_id
-    ,transaction_type
-    ,currency
-    ,policy_price_monthly
-    ,policy_price_annual
-    ,is_tiktok
-    ,is_facebook
-    ,is_gads
-    ,is_bing
-    ,is_pcw
-    ,page_referrer
-    ,pcw_name
-    ,traffic_source
-    ,collected_traffic_source
-    ,campaign
 from joined
 )
 select 
-     event_no
-    ,event_date
-    ,event_timestamp
-    ,user_id
-    ,ga_session_id
-    ,ga_session_number
-    ,event_name
-    ,hostname
-    ,page_path
-    ,napo_page_category
+     * except(napo_channel, napo_subchannel)
     ,first_value(napo_channel) over(partition by user_id,ga_session_id order by event_no asc) as napo_channel
     ,first_value(napo_subchannel) over(partition by user_id,ga_session_id order by event_no asc) as napo_subchannel 
-    ,default_channel_grouping
-    ,query_params_raw
-    ,landing_page_path
-    ,analytics_storage
-    ,quote_id
-    ,policy_ids
-    ,transaction_id
-    ,transaction_type
-    ,currency
-    ,policy_price_monthly
-    ,policy_price_annual
-    ,is_tiktok
-    ,is_facebook
-    ,is_gads
-    ,is_bing
-    ,is_pcw
-    ,page_referrer
-    ,pcw_name
-    ,traffic_source
-    ,collected_traffic_source
-    ,campaign
 from napo_attribution
