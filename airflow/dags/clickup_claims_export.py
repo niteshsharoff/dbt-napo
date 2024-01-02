@@ -80,7 +80,7 @@ def get_snapshot(
         raise AirflowFailException
 
     pool = Pool()
-    max_pages = 300
+    max_pages = 400
     offset = 10
     page = 0
     results = []
