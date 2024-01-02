@@ -184,8 +184,8 @@ def weekly_report_row_count_check(data_interval_end: pendulum.datetime = None):
     """
     This task checks if the report is empty.
     """
-    _, end_date, run_date = get_weekly_reporting_period(data_interval_end)
-    filename = get_weekly_report_name(end_date)
+    _, _, run_date = get_weekly_reporting_period(data_interval_end)
+    filename = get_weekly_report_name(run_date)
     df = gcs_csv_to_dataframe(
         gcs_bucket=GCS_BUCKET,
         gcs_folder=f"{BQ_DATASET}/{WEEKLY_TABLE}/run_date={run_date.date()}",
