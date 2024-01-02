@@ -6,6 +6,7 @@ from google.cloud import bigquery
 from jinja2 import Environment, FileSystemLoader
 
 from airflow.models.dag import dag
+from airflow.models import Variable
 from airflow.operators.python import task
 from airflow.providers.dbt.cloud.operators.dbt import DbtCloudRunJobOperator
 from dags.workflows.create_bq_external_table import create_bq_table
@@ -18,7 +19,7 @@ EXTERNAL_TABLE_NAME = (
 PARTITION_KEY = "snapshot_date"
 PROJECT_NAME = "ae32-vpcservice-datawarehouse"
 
-DBT_CLOUD_JOB_ID = 289269
+DBT_CLOUD_JOB_ID = Variable.get("DBT_CLOUD_TEST_JOB_ID")
 
 
 @task
