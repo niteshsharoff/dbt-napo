@@ -201,8 +201,8 @@ def upload_weekly_report(data_interval_end: pendulum.datetime = None):
     """
     This task uploads the weekly report to Google Drive.
     """
-    _, end_date, run_date = get_weekly_reporting_period(data_interval_end)
-    report_name = get_weekly_report_name(end_date)
+    _, _, run_date = get_weekly_reporting_period(data_interval_end)
+    report_name = get_weekly_report_name(run_date)
     upload_to_google_drive(
         project_name=GCP_PROJECT_ID,
         gcs_bucket=GCS_BUCKET,
