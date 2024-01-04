@@ -29,6 +29,27 @@
     },
     "insurance_access": {
       "type": "boolean"
+    },
+    "sessions_total_time_spent": {
+      "type": "integer"
+    },
+    "freemium_access": {
+      "type": "boolean"
+    },
+    "experience": {
+      "type": ["string", "null"]
+    },
+    "training": {
+      "type": ["string", "null"]
+    },
+    "completed_onboarding": {
+      "type": "boolean"
+    },
+    "payment_provider_id": {
+      "type": ["string", "null"]
+    },
+    "updated_at": {
+      "type": ["integer", "null"]
     }
   },
   "additionalProperties": false

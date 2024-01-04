@@ -73,5 +73,10 @@
     "mode": "NULLABLE",
     "name": "cancellation_reason",
     "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "free_class",
+    "type": "BOOLEAN"
   }
 ]

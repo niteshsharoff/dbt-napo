@@ -47,6 +47,9 @@
     },
     "cancellation_reason": {
       "type": "string"
+    },
+    "free_class": {
+      "type": "boolean"
     }
   },
   "additionalProperties": false
