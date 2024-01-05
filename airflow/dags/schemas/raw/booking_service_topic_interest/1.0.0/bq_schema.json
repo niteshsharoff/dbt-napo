@@ -1,0 +1,22 @@
+[
+  {
+    "mode": "NULLABLE",
+    "name": "id",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "topic_uuid",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "customer_uuid",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "created_at",
+    "type": "INTEGER"
+  }
+]
