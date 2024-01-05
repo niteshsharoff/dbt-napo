@@ -66,8 +66,8 @@
   },
   {
     "mode": "NULLABLE",
-    "name": "free_class",
-    "type": "BOOLEAN"
+    "name": "attended_duration",
+    "type": "INTEGER"
   },
   {
     "mode": "NULLABLE",
@@ -76,7 +76,7 @@
   },
   {
     "mode": "NULLABLE",
-    "name": "attended_duration",
-    "type": "INTEGER"
+    "name": "free_class",
+    "type": "BOOLEAN"
   }
 ]

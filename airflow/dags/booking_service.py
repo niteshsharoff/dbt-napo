@@ -218,7 +218,7 @@ def export_booking_service_data():
     t21 >> t22 >> t23 >> t24
 
     # Creating raw.booking_service_topic_preference table in GCS
-    t25 = export_pg_table_to_gcs.override(task_id="export_booking_pg_table_to_gcs")(
+    t25 = export_pg_table_to_gcs.override(task_id="export_topic_preference_pg_table_to_gcs")(
         "topic_preference", "updated_at"
     )
 
@@ -231,7 +231,7 @@ def export_booking_service_data():
     )
 
     # Creating raw.booking_service_topic_preference table in BQ
-    t28 = create_bq_table.override(task_id="create_booking_bq_table")(
+    t28 = create_bq_table.override(task_id="create_topic_preference_bq_table")(
         "topic_preference",
         "booking_service_topic_preference",
         "dags/schemas/raw/booking_service_topic_preference/bq_schema.json",
@@ -241,7 +241,7 @@ def export_booking_service_data():
     t25 >> t26 >> t27 >> t28
 
     # Creating raw.booking_service_purchases table in GCS
-    t29 = export_pg_table_to_gcs.override(task_id="export_booking_pg_table_to_gcs")(
+    t29 = export_pg_table_to_gcs.override(task_id="export_purchases_pg_table_to_gcs")(
         "purchases", "updated_at"
     )
 
@@ -254,7 +254,7 @@ def export_booking_service_data():
     )
 
     # Creating raw.booking_service_purchases table in BQ
-    t32 = create_bq_table.override(task_id="create_booking_bq_table")(
+    t32 = create_bq_table.override(task_id="create_purchases_bq_table")(
         "purchases",
         "booking_service_purchases",
         "dags/schemas/raw/booking_service_purchases/bq_schema.json",
