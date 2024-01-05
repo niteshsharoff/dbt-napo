@@ -128,7 +128,7 @@ def export_booking_service_data():
     t5 >> t6 >> t7 >> t8
 
     # Creating raw.booking_service_content_completion table in GCS
-    t9 = export_pg_table_to_gcs.override(task_id="export_booking_pg_table_to_gcs")(
+    t9 = export_pg_table_to_gcs.override(task_id="export_content_completion_pg_table_to_gcs")(
         "content_completion", "updated_at"
     )
 
@@ -140,7 +140,7 @@ def export_booking_service_data():
         "content_completion", "raw", "1.0.0"
     )
 
-    t12 = create_bq_table.override(task_id="create_booking_bq_table")(
+    t12 = create_bq_table.override(task_id="create_content_completion_bq_table")(
         "content_completion",
         "booking_service_content_completion",
         "dags/schemas/raw/booking_service_content_completion/bq_schema.json",
@@ -150,7 +150,7 @@ def export_booking_service_data():
     t9 >> t10 >> t11 >> t12
 
     # Creating raw.booking_service_pet table in GCS
-    t13 = export_pg_table_to_gcs.override(task_id="export_booking_pg_table_to_gcs")(
+    t13 = export_pg_table_to_gcs.override(task_id="export_pet_pg_table_to_gcs")(
         "pet", "updated_at"
     )
 
@@ -162,7 +162,7 @@ def export_booking_service_data():
         "pet", "raw", "1.0.0"
     )
 
-    t16 = create_bq_table.override(task_id="create_booking_bq_table")(
+    t16 = create_bq_table.override(task_id="create_pet_bq_table")(
         "pet",
         "booking_service_pet",
         "dags/schemas/raw/booking_service_pet/bq_schema.json",
@@ -172,7 +172,7 @@ def export_booking_service_data():
     t13 >> t14 >> t15 >> t16
 
     # Creating raw.booking_service_subscription table in GCS
-    t17 = export_pg_table_to_gcs.override(task_id="export_booking_pg_table_to_gcs")(
+    t17 = export_pg_table_to_gcs.override(task_id="export_subscription_pg_table_to_gcs")(
         "subscription", "updated_at"
     )
 
@@ -185,7 +185,7 @@ def export_booking_service_data():
     )
 
     # Creating raw.booking_service_subscription table in BQ
-    t20 = create_bq_table.override(task_id="create_booking_bq_table")(
+    t20 = create_bq_table.override(task_id="create_subscription_bq_table")(
         "subscription",
         "booking_service_subscription",
         "dags/schemas/raw/booking_service_subscription/bq_schema.json",
@@ -195,7 +195,7 @@ def export_booking_service_data():
     t17 >> t18 >> t19 >> t20
 
     # Creating raw.booking_service_topic_interest table in GCS
-    t21 = export_pg_table_to_gcs.override(task_id="export_booking_pg_table_to_gcs")(
+    t21 = export_pg_table_to_gcs.override(task_id="export_topic_interest_pg_table_to_gcs")(
         "topic_interest", "updated_at"
     )
 
@@ -208,7 +208,7 @@ def export_booking_service_data():
     )
 
     # Creating raw.booking_service_topic_interest table in BQ
-    t24 = create_bq_table.override(task_id="create_booking_bq_table")(
+    t24 = create_bq_table.override(task_id="create_topic_interest_bq_table")(
         "topic_interest",
         "booking_service_topic_interest",
         "dags/schemas/raw/booking_service_topic_interest/bq_schema.json",
