@@ -31,37 +31,12 @@
   },
   {
     "mode": "NULLABLE",
-    "name": "source",
-    "type": "STRING"
-  },
-  {
-    "mode": "NULLABLE",
-    "name": "purchased_access",
-    "type": "BOOLEAN"
-  },
-  {
-    "mode": "NULLABLE",
-    "name": "insurance_access",
-    "type": "BOOLEAN"
-  },
-  {
-    "mode": "NULLABLE",
-    "name": "sessions_total_time_spent",
+    "name": "updated_at",
     "type": "INTEGER"
   },
   {
     "mode": "NULLABLE",
-    "name": "freemium_access",
-    "type": "BOOLEAN"
-  },
-  {
-    "mode": "NULLABLE",
-    "name": "experience",
-    "type": "STRING"
-  },
-  {
-    "mode": "NULLABLE",
-    "name": "training",
+    "name": "payment_provider_id",
     "type": "STRING"
   },
   {
@@ -71,12 +46,37 @@
   },
   {
     "mode": "NULLABLE",
-    "name": "payment_provider_id",
+    "name": "training",
     "type": "STRING"
   },
   {
     "mode": "NULLABLE",
-    "name": "updated_at",
+    "name": "experience",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "freemium_access",
+    "type": "BOOLEAN"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "sessions_total_time_spent",
     "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "insurance_access",
+    "type": "BOOLEAN"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "purchased_access",
+    "type": "BOOLEAN"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "source",
+    "type": "STRING"
   }
 ]
