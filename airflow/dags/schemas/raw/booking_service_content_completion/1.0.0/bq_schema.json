@@ -22,7 +22,7 @@
   {
     "mode": "NULLABLE",
     "name": "star_rating",
-    "type": "STRING"
+    "type": "INTEGER"
   },
   {
     "mode": "NULLABLE",

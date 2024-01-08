@@ -18,5 +18,10 @@
     "mode": "NULLABLE",
     "name": "created_at",
     "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "updated_at",
+    "type": "INTEGER"
   }
 ]

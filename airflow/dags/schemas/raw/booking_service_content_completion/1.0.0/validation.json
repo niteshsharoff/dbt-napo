@@ -16,7 +16,7 @@
       "type": "string"
     },
     "star_rating": {
-      "type": ["string", "null"]
+      "type": ["integer", "null"]
     },
     "created_at": {
       "type": "integer"

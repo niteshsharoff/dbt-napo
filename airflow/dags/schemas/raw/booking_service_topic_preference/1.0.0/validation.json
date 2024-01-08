@@ -6,7 +6,7 @@
     "id": {
       "type": "integer"
     },
-    "topic": {
+    "topic_uuid": {
       "type": "string"
     },
     "customer_uuid": {
