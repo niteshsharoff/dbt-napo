@@ -9,6 +9,9 @@
     "uuid": {
       "type": "string"
     },
+    "payment_uuid": {
+      "type": "string"
+    },
     "status": {
       "type": "string"
     },

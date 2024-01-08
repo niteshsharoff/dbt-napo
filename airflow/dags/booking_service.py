@@ -219,7 +219,7 @@ def export_booking_service_data():
 
     # Creating raw.booking_service_topic_preference table in GCS
     t25 = export_pg_table_to_gcs.override(task_id="export_topic_preference_pg_table_to_gcs")(
-        "topic_preference", "updated_at"
+        "topic_preference", "created_at"
     )
 
     t26 = validate_raw_data.override(task_id="validate_topic_preference_data")(
