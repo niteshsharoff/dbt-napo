@@ -18,6 +18,9 @@
     "star_rating": {
       "type": ["string", "null"]
     },
+    "created_at": {
+      "type": "integer"
+    },
     "updated_at": {
       "type": "integer"
     },

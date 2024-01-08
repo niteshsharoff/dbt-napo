@@ -11,6 +11,11 @@
   },
   {
     "mode": "NULLABLE",
+    "name": "payment_uuid",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
     "name": "status",
     "type": "STRING"
   },
