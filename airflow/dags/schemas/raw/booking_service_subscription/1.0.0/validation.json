@@ -20,6 +20,9 @@
     },
     "created_at": {
       "type": "integer"
+    },
+    "payment_provider_id": {
+      "type": "string"
     }
   },
   "additionalProperties": false

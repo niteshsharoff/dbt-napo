@@ -12,9 +12,6 @@
     "customer_uuid": {
       "type": "string"
     },
-    "updated_at": {
-      "type": "integer"
-    },
     "created_at": {
       "type": "integer"
     }
