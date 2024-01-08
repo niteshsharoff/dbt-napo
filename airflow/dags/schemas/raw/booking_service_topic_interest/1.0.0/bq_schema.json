@@ -6,7 +6,7 @@
   },
   {
     "mode": "NULLABLE",
-    "name": "topic_uuid",
+    "name": "topic",
     "type": "STRING"
   },
   {
