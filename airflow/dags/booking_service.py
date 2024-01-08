@@ -143,7 +143,7 @@ def export_booking_service_data():
     t12 = create_bq_table.override(task_id="create_content_completion_bq_table")(
         "content_completion",
         "booking_service_content_completion",
-        "dags/schemas/raw/booking_service_content_completion/bq_schema.json",
+        "dags/schemas/raw/booking_service_content_completion/1.0.0/bq_schema.json",
         "1.0.0",
     )
 
@@ -165,7 +165,7 @@ def export_booking_service_data():
     t16 = create_bq_table.override(task_id="create_pet_bq_table")(
         "pet",
         "booking_service_pet",
-        "dags/schemas/raw/booking_service_pet/bq_schema.json",
+        "dags/schemas/raw/booking_service_pet/1.0.0/bq_schema.json",
         "1.0.0",
     )
 
@@ -188,7 +188,7 @@ def export_booking_service_data():
     t20 = create_bq_table.override(task_id="create_subscription_bq_table")(
         "subscription",
         "booking_service_subscription",
-        "dags/schemas/raw/booking_service_subscription/bq_schema.json",
+        "dags/schemas/raw/booking_service_subscription/1.0.0/bq_schema.json",
         "1.0.0",
     )
 
@@ -211,7 +211,7 @@ def export_booking_service_data():
     t24 = create_bq_table.override(task_id="create_topic_interest_bq_table")(
         "topic_interest",
         "booking_service_topic_interest",
-        "dags/schemas/raw/booking_service_topic_interest/bq_schema.json",
+        "dags/schemas/raw/booking_service_topic_interest/1.0.0/bq_schema.json",
         "1.0.0",
     )
 
@@ -234,7 +234,7 @@ def export_booking_service_data():
     t28 = create_bq_table.override(task_id="create_topic_preference_bq_table")(
         "topic_preference",
         "booking_service_topic_preference",
-        "dags/schemas/raw/booking_service_topic_preference/bq_schema.json",
+        "dags/schemas/raw/booking_service_topic_preference/1.0.0/bq_schema.json",
         "1.0.0",
     )
 
@@ -257,7 +257,7 @@ def export_booking_service_data():
     t32 = create_bq_table.override(task_id="create_purchases_bq_table")(
         "purchases",
         "booking_service_purchases",
-        "dags/schemas/raw/booking_service_purchases/bq_schema.json",
+        "dags/schemas/raw/booking_service_purchases/1.0.0/bq_schema.json",
         "1.0.0",
     )
 
