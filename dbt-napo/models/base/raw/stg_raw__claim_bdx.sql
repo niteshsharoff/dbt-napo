@@ -60,7 +60,8 @@ select
             then '2023-10-01'
             when source_name = 'October 2023 Claims to send v3 Denys fixed dates.csv'
             then '2023-11-01'
-            when source_name = 'November 2023 Claims Bdx - to send v3 v2.csv'
+            when
+                source_name = 'November 2023 Claims Bdx - to send v3 - imported by Ryan'
             then '2023-12-01'
             when source_name = 'December 2023 Claims Bdx - to send - imported by Ewan'
             then '2024-01-01'
