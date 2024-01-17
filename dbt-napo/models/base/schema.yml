@@ -44,6 +44,8 @@ sources:
         description: "Puppy Academy booking data"
       - name: booking_service_customer
         description: "Puppy Academy customer data"
+      - name: booking_service_subscription
+        description: "Puppy Academy subscription data"
       - name: activatedreferral
         description: Referral creation and activation log
   - name: firestore
