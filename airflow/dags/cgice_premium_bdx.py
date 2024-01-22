@@ -13,10 +13,14 @@ from airflow.utils.task_group import TaskGroup
 from dags.workflows.common import gcs_csv_to_dataframe
 from dags.workflows.create_bq_view import create_bq_view
 from dags.workflows.export_bq_result_to_gcs import export_query_to_gcs
-from dags.workflows.reporting.cgice.utils import (get_monthly_report_name,
-                                                  get_monthly_reporting_period)
-from dags.workflows.upload_to_google_drive import (file_exists_on_google_drive,
-                                                   upload_to_google_drive)
+from dags.workflows.reporting.cgice.utils import (
+    get_monthly_report_name,
+    get_monthly_reporting_period,
+)
+from dags.workflows.upload_to_google_drive import (
+    file_exists_on_google_drive,
+    upload_to_google_drive,
+)
 
 JINJA_ENV = Environment(loader=FileSystemLoader("dags/"))
 PARTITION_INTEGRITY_CHECK = JINJA_ENV.get_template("sql/partition_integrity_check.sql")
@@ -34,6 +38,18 @@ BQ_DATASET = "reporting"
 DBT_CLOUD_JOB_ID = 289269
 
 GOOGLE_DRIVE_FOLDER_ID = "1541hzsET3OMSyc4JKlCdl3HmbK9wmXH3"
+
+
+@task
+def check_run_date(data_interval_end: pendulum.datetime = None):
+    if (
+        (data_interval_end.day_of_week == 0)
+        or (data_interval_end.day == 1)
+        or (data_interval_end.day == 15)
+    ):
+        return True
+    else:
+        raise AirflowSkipException
 
 
 @task
@@ -139,7 +155,7 @@ def upload_report_to_gdrive(data_interval_end: pendulum.datetime = None):
 @dag(
     dag_id="cgice_premium_bdx",
     start_date=pendulum.datetime(2023, 7, 1, tz="UTC"),
-    schedule_interval="0 4 1,15 * *",  # 4am on every 15th day-of-month
+    schedule_interval="0 4 * * *",  # 4am daily
     catchup=False,
     default_args={"retries": 0},
     max_active_runs=1,
