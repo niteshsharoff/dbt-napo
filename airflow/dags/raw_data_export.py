@@ -185,7 +185,7 @@ def export_quote_service_data():
     # Quote service database tables
     for pg_table, bq_dataset, bq_table, schema_version, pg_date_column in [
         ("quote_quoterequest", "raw", "quoterequest", "1.0.0", "created_at"),
-        ("quote_commonbreedmapping", "raw", "quote_commonbreedmapping", "1.0.0", None),
+        ("quote_commonbreedmapping", "raw", "commonbreedmapping", "1.0.0", None),
     ]:
 
         @task_group(group_id=f"quote_{bq_table}")
