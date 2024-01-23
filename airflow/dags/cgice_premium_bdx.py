@@ -171,7 +171,8 @@ def cgice():
             trigger_rule="one_success",
         )
         (
-            create_view_on_bq()
+            check_run_date()
+            >> create_view_on_bq()
             >> export_report_to_gcs()
             >> [
                 data_integrity_check(),
