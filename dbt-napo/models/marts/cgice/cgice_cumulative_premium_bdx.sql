@@ -40,6 +40,7 @@ with
             case when pet.multipet_number is null then 'No' else 'Yes' end as multipet,
             cast(transaction_at as date) as transaction_date,
             case
+                -- when transaction_type = 'New Policy' then policy.start_date
                 when transaction_type = 'Cancellation'
                 then policy.cancel_date
                 else cast(transaction_at as date)
@@ -48,8 +49,22 @@ with
             policy.start_date as start_date,
             policy.end_date as end_date,
             policy.policy_year + 1 as policy_year,
-            policy.cancel_date as cancellation_date,
-            policy.cancel_reason as cancellation_reason,
+            case
+                when
+                    transaction_type = 'New Policy'
+                    or transaction_type = 'Renewal'
+                    or transaction_type = 'Reinstatement'
+                then null
+                else policy.cancel_date
+            end as cancellation_date,
+            case
+                when
+                    transaction_type = 'New Policy'
+                    or transaction_type = 'Renewal'
+                    or transaction_type = 'Reinstatement'
+                then null
+                else policy.cancel_reason
+            end as cancellation_reason,
             'Direct Debit' as payment_method,
             policy.payment_plan_type as payment_period,
             finance.premium_difference_ipt_inc
