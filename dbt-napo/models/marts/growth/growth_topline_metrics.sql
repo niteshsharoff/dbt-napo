@@ -30,6 +30,7 @@ select
     pet_id,
     format_date('%Y-%m', policy_start_date) as cohort_started,
     format_date('%Y-%m', created_date) as cohort_created,
+    format_date('%Y-%m', cancel_date) as cohort_cancellation,
     policy_start_date,
     created_date,
     cancel_date,
