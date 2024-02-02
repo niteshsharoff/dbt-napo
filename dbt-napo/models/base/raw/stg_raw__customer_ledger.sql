@@ -1,3 +1,5 @@
+{{ config(materialized="table") }}
+
 with
     customer_ledger as (
         select
