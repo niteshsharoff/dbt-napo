@@ -1,3 +1,5 @@
+{{ config(materialized="table") }}
+
 with recursive
     renewed_policy_ids as (
         select distinct (new_policy_id) from {{ ref("stg_raw__renewal") }}

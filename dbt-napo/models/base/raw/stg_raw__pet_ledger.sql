@@ -1,3 +1,5 @@
+{{ config(materialized="table") }}
+
 with
     pet_ledger as (
         select

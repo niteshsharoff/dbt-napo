@@ -1,4 +1,5 @@
-{{ config(pre_hook=["{{declare_policy_udfs()}}"]) }}
+{{ config(materialized="table", pre_hook=["{{declare_policy_udfs()}}"]) }}
+
 with
     extended_ledger as (
         select
