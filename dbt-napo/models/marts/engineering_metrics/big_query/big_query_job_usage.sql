@@ -1,3 +1,5 @@
+{{ config(schema="marts") }}
+
 with
     big_query_job_usage as (
         select

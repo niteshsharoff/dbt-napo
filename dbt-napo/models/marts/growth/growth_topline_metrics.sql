@@ -19,9 +19,10 @@ with
                 partition by pet.pet_id, policy.current_policy_year
                 order by policy.change_at desc
             ) as ranking
-        from dbt.int_policy_history a
+        from {{ ref("int_policy_history") }} a
         left join
-            dbt_marts.cgice_cumulative_premium_bdx b on a.policy.policy_id = b.policy_id
+            {{ ref("cgice_cumulative_premium_bdx") }} b
+            on a.policy.policy_id = b.policy_id
         where
             (policy.sold_at is not null or policy.annual_payment_id is not null)
             and transaction_type in ('New Policy', 'Renewal')
