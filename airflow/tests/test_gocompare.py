@@ -2,8 +2,11 @@ import pendulum
 import pytest
 
 from dags.workflows.reporting.gocompare.utils import (
-    get_monthly_report_name, get_monthly_reporting_period,
-    get_weekly_report_name, get_weekly_reporting_period)
+    get_monthly_report_name,
+    get_monthly_reporting_period,
+    get_weekly_report_name,
+    get_weekly_reporting_period,
+)
 
 
 @pytest.mark.parametrize(

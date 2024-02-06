@@ -1,16 +1,17 @@
+from datetime import timedelta
 import pandas as pd
 import pendulum
 
 from airflow.models import Variable
 from airflow.models.dag import dag
 from airflow.operators.python import task
-from airflow.providers.google.cloud.sensors.gcs import GCSObjectExistenceSensor
 from dags.clickup_claims_export import GCS_RAW_FOLDER
 from dags.workflows.common import gcs_csv_to_dataframe
 from dags.workflows.convert_clickup_claim_tasks_to_claims import (
     convert_clickup_claim_tasks_to_claims,
 )
 from dags.workflows.create_bq_external_table import create_external_bq_table
+from airflow.sensors.external_task import ExternalTaskSensor
 
 GCP_PROJECT_ID = Variable.get("GCP_PROJECT_ID")
 GCP_REGION = Variable.get("GCP_REGION")
@@ -28,23 +29,23 @@ def transform_clickup_claims_to_claims(
     archived_vet_claims = gcs_csv_to_dataframe(
         gcs_bucket=GCS_BUCKET,
         gcs_folder=f"{vet_claims_folder}/snapshot_date={run_date}",
-        filename="archived_claims.csv",
+        pattern=f"*/archived_claims*.csv",
     )
     vet_claims = gcs_csv_to_dataframe(
         gcs_bucket=GCS_BUCKET,
         gcs_folder=f"{vet_claims_folder}/snapshot_date={run_date}",
-        filename="claims.csv",
+        pattern=f"*/claims*.csv",
     )
     claims_folder = f"raw/clickup_claims_snapshot/{GCS_DATA_VERSION}"
     archived_customer_claims = gcs_csv_to_dataframe(
         gcs_bucket=GCS_BUCKET,
         gcs_folder=f"{claims_folder}/snapshot_date={run_date}",
-        filename="archived_claims.csv",
+        pattern=f"*/archived_claims*.csv",
     )
     customer_claims = gcs_csv_to_dataframe(
         gcs_bucket=GCS_BUCKET,
         gcs_folder=f"{claims_folder}/snapshot_date={run_date}",
-        filename="claims.csv",
+        pattern=f"*/claims*.csv",
     )
 
     vet_clickup_claims_df = pd.concat([vet_claims, archived_vet_claims])
@@ -82,7 +83,7 @@ def create_claims_snapshot_table():
     dag_id="clickup_claims_transform",
     start_date=pendulum.datetime(2023, 4, 24, tz="UTC"),
     schedule_interval="0 8 * * *",
-    catchup=True,
+    catchup=False,
     default_args={"retries": 0},
     max_active_runs=1,
     max_active_tasks=8,
@@ -90,28 +91,35 @@ def create_claims_snapshot_table():
 )
 def clickup_claims_transform():
     run_date = "{{ data_interval_end.date() }}"
+    claim_data_check = ExternalTaskSensor(
+        task_id="clickup_claims_export_dependency_check",
+        # task_id in dags/clickup_claims_export.py
+        external_dag_id="clickup_claims_export",
+        external_task_id="load_clickup_claims_snapshot",
+        # fail after 5 minutes
+        timeout=300,
+        allowed_states=["success"],
+        failed_states=["failed", "skipped"],
+        mode="reschedule",
+        # 0 6 * * *
+        execution_delta=timedelta(hours=2),
+    )
+    vet_claim_data_check = ExternalTaskSensor(
+        task_id="clickup_vet_claims_export_dependency_check",
+        # task_id in dags/clickup_vet_claims_export.py
+        external_dag_id="clickup_vet_claims_export",
+        external_task_id="load_vet_clickup_claims_snapshot",
+        # fail after 5 minutes
+        timeout=300,
+        allowed_states=["success"],
+        failed_states=["failed", "skipped"],
+        mode="reschedule",
+        # 0 5 * * *
+        execution_delta=timedelta(hours=3),
+    )
     t1 = transform_clickup_claims_to_claims()
     t2 = create_claims_snapshot_table()
-    (
-        [
-            GCSObjectExistenceSensor(
-                task_id=f"{folder}_{file}",
-                bucket=GCS_BUCKET,
-                object=f"raw/{folder}/{GCS_DATA_VERSION}/snapshot_date={run_date}/{file}",
-                mode="poke",
-                poke_interval=5 * 60,
-                timeout=60 * 60,
-            )
-            for folder, file in [
-                ("clickup_claims_snapshot", "claims.csv"),
-                ("clickup_claims_snapshot", "archived_claims.csv"),
-                ("clickup_vet_claims_snapshot", "claims.csv"),
-                ("clickup_vet_claims_snapshot", "archived_claims.csv"),
-            ]
-        ]
-        >> t1
-        >> t2
-    )
+    ([claim_data_check, vet_claim_data_check] >> t1 >> t2)
 
 
 clickup_claims_transform()
