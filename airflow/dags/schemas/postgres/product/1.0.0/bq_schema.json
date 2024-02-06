@@ -133,5 +133,10 @@
     "mode": "NULLABLE",
     "name": "generic_wording_document_v2",
     "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "is_active",
+    "type": "BOOLEAN"
   }
 ]
