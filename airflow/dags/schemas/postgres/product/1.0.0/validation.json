@@ -83,6 +83,9 @@
     },
     "generic_wording_document_v2": {
       "type": ["string", "null"]
+    },
+    "is_active": {
+      "type": "boolean"
     }
   },
   "additionalProperties": false
