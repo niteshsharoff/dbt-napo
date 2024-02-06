@@ -211,7 +211,7 @@ def create_clickup_bq_external_table(table_name: str, schema_name: str):
     max_active_tasks=8,
     tags=["raw", "clickup"],
     dagrun_timeout=timedelta(
-        minutes=120
+        minutes=60
     ),  # don't let this DAG hog resources indefinitely
 )
 def clickup_claims_export():
