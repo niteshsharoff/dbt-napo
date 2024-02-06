@@ -1,8 +1,10 @@
 import pendulum
 import pytest
 
-from dags.workflows.reporting.cgice.utils import (get_monthly_report_name,
-                                                  get_monthly_reporting_period)
+from dags.workflows.reporting.cgice.utils import (
+    get_monthly_report_name,
+    get_monthly_reporting_period,
+)
 
 
 @pytest.mark.parametrize(

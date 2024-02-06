@@ -126,7 +126,7 @@ def report_row_count_check(data_interval_end: pendulum.datetime = None):
             BQ_DATASET,
             start_date.date().format("YYYY-MM"),
         ),
-        filename=filename,
+        pattern=f"*/{filename}",
         encoding="utf-16",
     )
     logging.info(df.head())

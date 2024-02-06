@@ -11,19 +11,24 @@ from airflow.models import Variable
 from airflow.models.dag import dag
 from airflow.operators.empty import EmptyOperator
 from airflow.providers.dbt.cloud.operators.dbt import DbtCloudRunJobOperator
-from airflow.providers.google.cloud.hooks.compute_ssh import \
-    ComputeEngineSSHHook
+from airflow.providers.google.cloud.hooks.compute_ssh import ComputeEngineSSHHook
 from airflow.providers.ssh.operators.ssh import SSHOperator
 from airflow.utils.task_group import TaskGroup
 from dags.workflows.common import gcs_csv_to_dataframe
 from dags.workflows.create_bq_view import create_bq_view
 from dags.workflows.export_bq_result_to_gcs import export_query_to_gcs
 from dags.workflows.reporting.gocompare.utils import (
-    get_monthly_report_name, get_monthly_reporting_period,
-    get_monthly_view_name, get_weekly_report_name, get_weekly_reporting_period,
-    get_weekly_view_name)
-from dags.workflows.upload_to_google_drive import (file_exists_on_google_drive,
-                                                   upload_to_google_drive)
+    get_monthly_report_name,
+    get_monthly_reporting_period,
+    get_monthly_view_name,
+    get_weekly_report_name,
+    get_weekly_reporting_period,
+    get_weekly_view_name,
+)
+from dags.workflows.upload_to_google_drive import (
+    file_exists_on_google_drive,
+    upload_to_google_drive,
+)
 
 JINJA_ENV = Environment(loader=FileSystemLoader("dags/"))
 SFTP_SCRIPT = JINJA_ENV.get_template("bash/sftp_upload.sh")
@@ -189,7 +194,7 @@ def weekly_report_row_count_check(data_interval_end: pendulum.datetime = None):
     df = gcs_csv_to_dataframe(
         gcs_bucket=GCS_BUCKET,
         gcs_folder=f"{BQ_DATASET}/{WEEKLY_TABLE}/run_date={run_date.date()}",
-        filename=filename,
+        pattern=f"*/{filename}",
     )
     df.head()
     if df.empty:
@@ -307,7 +312,7 @@ def monthly_report_row_count_check(data_interval_end: pendulum.datetime = None):
     df = gcs_csv_to_dataframe(
         gcs_bucket=GCS_BUCKET,
         gcs_folder=f"{BQ_DATASET}/{MONTHLY_TABLE}/run_date={run_date.date()}",
-        filename=filename,
+        pattern=f"*/{filename}",
     )
     df.head()
     if df.empty:

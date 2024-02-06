@@ -1,15 +1,16 @@
 import pendulum
 from jinja2 import Environment, FileSystemLoader
 from workflows.export_bq_result_to_gcs import export_query_to_gcs
-from workflows.upload_to_google_drive import (file_exists_on_google_drive,
-                                              upload_to_google_drive)
+from workflows.upload_to_google_drive import (
+    file_exists_on_google_drive,
+    upload_to_google_drive,
+)
 
 from airflow.decorators import task
 from airflow.models import Variable
 from airflow.models.dag import dag
 from airflow.operators.empty import EmptyOperator
-from airflow.providers.google.cloud.hooks.compute_ssh import \
-    ComputeEngineSSHHook
+from airflow.providers.google.cloud.hooks.compute_ssh import ComputeEngineSSHHook
 from airflow.providers.ssh.operators.ssh import SSHOperator
 
 JINJA_ENV = Environment(loader=FileSystemLoader("dags/bash/"))

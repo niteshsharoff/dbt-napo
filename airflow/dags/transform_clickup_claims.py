@@ -28,23 +28,23 @@ def transform_clickup_claims_to_claims(
     archived_vet_claims = gcs_csv_to_dataframe(
         gcs_bucket=GCS_BUCKET,
         gcs_folder=f"{vet_claims_folder}/snapshot_date={run_date}",
-        filename="archived_claims.csv",
+        pattern=f"*/archived_claims_*.csv",
     )
     vet_claims = gcs_csv_to_dataframe(
         gcs_bucket=GCS_BUCKET,
         gcs_folder=f"{vet_claims_folder}/snapshot_date={run_date}",
-        filename="claims.csv",
+        pattern=f"*/claims_*.csv",
     )
     claims_folder = f"raw/clickup_claims_snapshot/{GCS_DATA_VERSION}"
     archived_customer_claims = gcs_csv_to_dataframe(
         gcs_bucket=GCS_BUCKET,
         gcs_folder=f"{claims_folder}/snapshot_date={run_date}",
-        filename="archived_claims.csv",
+        pattern=f"*/archived_claims_*.csv",
     )
     customer_claims = gcs_csv_to_dataframe(
         gcs_bucket=GCS_BUCKET,
         gcs_folder=f"{claims_folder}/snapshot_date={run_date}",
-        filename="claims.csv",
+        pattern=f"*/claims_*.csv",
     )
 
     vet_clickup_claims_df = pd.concat([vet_claims, archived_vet_claims])
