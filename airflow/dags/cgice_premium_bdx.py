@@ -1,15 +1,7 @@
 import logging
+from datetime import timedelta
 
 import pendulum
-from google.cloud import bigquery
-from jinja2 import Environment, FileSystemLoader
-
-from airflow.exceptions import AirflowFailException, AirflowSkipException
-from airflow.models import Variable
-from airflow.models.dag import dag
-from airflow.operators.python import task
-from airflow.providers.dbt.cloud.operators.dbt import DbtCloudRunJobOperator
-from airflow.utils.task_group import TaskGroup
 from dags.workflows.common import gcs_csv_to_dataframe
 from dags.workflows.create_bq_view import create_bq_view
 from dags.workflows.export_bq_result_to_gcs import export_query_to_gcs
@@ -21,6 +13,15 @@ from dags.workflows.upload_to_google_drive import (
     file_exists_on_google_drive,
     upload_to_google_drive,
 )
+from google.cloud import bigquery
+from jinja2 import Environment, FileSystemLoader
+
+from airflow.exceptions import AirflowFailException, AirflowSkipException
+from airflow.models import Variable
+from airflow.models.dag import dag
+from airflow.operators.python import task
+from airflow.sensors.external_task import ExternalTaskSensor
+from airflow.utils.task_group import TaskGroup
 
 JINJA_ENV = Environment(loader=FileSystemLoader("dags/"))
 PARTITION_INTEGRITY_CHECK = JINJA_ENV.get_template("sql/partition_integrity_check.sql")
@@ -163,12 +164,18 @@ def upload_report_to_gdrive(data_interval_end: pendulum.datetime = None):
 )
 def cgice():
     with TaskGroup(group_id="cgice_premium_bdx_monthly", prefix_group_id=False):
-        dbt_checks = DbtCloudRunJobOperator(
+        dbt_checks = ExternalTaskSensor(
             task_id="dbt_checks",
-            job_id=DBT_CLOUD_JOB_ID,
-            check_interval=10,
+            # task_id in dags/dbt.py
+            external_dag_id="dbt",
+            external_task_id="dbt_test",
+            # dbt cloud tests should not take longer than 5 minutes
             timeout=300,
-            trigger_rule="one_success",
+            allowed_states=["success"],
+            failed_states=["failed", "skipped"],
+            mode="reschedule",
+            # 15 1 * * *
+            execution_delta=timedelta(hours=3, minutes=-15),
         )
         (
             check_run_date()
