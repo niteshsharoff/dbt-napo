@@ -1,19 +1,7 @@
 import logging
+from datetime import timedelta
 
 import pendulum
-from google.cloud import bigquery
-from jinja2 import Environment, FileSystemLoader
-
-from airflow.datasets import Dataset
-from airflow.decorators import task
-from airflow.exceptions import AirflowFailException, AirflowSkipException
-from airflow.models import Variable
-from airflow.models.dag import dag
-from airflow.operators.empty import EmptyOperator
-from airflow.providers.dbt.cloud.operators.dbt import DbtCloudRunJobOperator
-from airflow.providers.google.cloud.hooks.compute_ssh import ComputeEngineSSHHook
-from airflow.providers.ssh.operators.ssh import SSHOperator
-from airflow.utils.task_group import TaskGroup
 from dags.workflows.common import gcs_csv_to_dataframe
 from dags.workflows.create_bq_view import create_bq_view
 from dags.workflows.export_bq_result_to_gcs import export_query_to_gcs
@@ -29,6 +17,19 @@ from dags.workflows.upload_to_google_drive import (
     file_exists_on_google_drive,
     upload_to_google_drive,
 )
+from google.cloud import bigquery
+from jinja2 import Environment, FileSystemLoader
+
+from airflow.datasets import Dataset
+from airflow.decorators import task
+from airflow.exceptions import AirflowFailException, AirflowSkipException
+from airflow.models import Variable
+from airflow.models.dag import dag
+from airflow.operators.empty import EmptyOperator
+from airflow.providers.google.cloud.hooks.compute_ssh import ComputeEngineSSHHook
+from airflow.providers.ssh.operators.ssh import SSHOperator
+from airflow.sensors.external_task import ExternalTaskSensor
+from airflow.utils.task_group import TaskGroup
 
 JINJA_ENV = Environment(loader=FileSystemLoader("dags/"))
 SFTP_SCRIPT = JINJA_ENV.get_template("bash/sftp_upload.sh")
@@ -362,12 +363,18 @@ def go_compare():
     is_first_day_of_week = weekly_branch()
     is_first_day_of_month = monthly_branch()
 
-    dbt_checks = DbtCloudRunJobOperator(
+    dbt_checks = ExternalTaskSensor(
         task_id="dbt_checks",
-        job_id=DBT_CLOUD_JOB_ID,
-        check_interval=10,
+        # task_id in dags/dbt.py
+        external_dag_id="dbt",
+        external_task_id="dbt_test",
+        # dbt cloud tests should not take longer than 5 minutes
         timeout=300,
-        trigger_rule="one_success",
+        allowed_states=["success"],
+        failed_states=["failed", "skipped"],
+        mode="reschedule",
+        # 15 1 * * *
+        execution_delta=timedelta(hours=3),
     )
 
     # Weekly tasks branch
