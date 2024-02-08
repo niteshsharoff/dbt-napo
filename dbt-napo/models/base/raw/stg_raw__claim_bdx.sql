@@ -65,7 +65,7 @@ select
             then '2023-12-01'
             when source_name = 'December 2023 Claims Bdx - to send - imported by Ewan'
             then '2024-01-01'
-            when source_name = 'Napo_Pet_Claim_Bdx_20240101'
+            when source_name = 'Claims Bdx Jan 2024 - Internal Upload'
             then '2024-02-01'
         -- add rows here when importing new BDXs --
         end as date
