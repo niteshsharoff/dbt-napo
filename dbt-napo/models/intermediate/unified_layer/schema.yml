@@ -188,3 +188,11 @@ models:
         description: "Semantic version."
       - name: quote_at
         description: "Derived from `created_at`."
+
+  - name: dim_claim
+    latest_version: 1
+    versions:
+      - v: 1
+        description: "A type 2 SCD table sourced from historical claim_bdx reports uploaded by Finance and Insurex."
+      - v: 2
+        description: "A type 2 SCD table derived from `int_claim_history` which track changes made to underlying claim-service tables using CDC events."
