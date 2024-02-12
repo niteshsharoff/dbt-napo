@@ -91,6 +91,7 @@ with
                 continuation,
                 accident,
                 illness,
+                fast_track_gen_2,
                 -- re-ordering metadata columns
                 source,
                 is_archived,
@@ -112,7 +113,8 @@ with
                 automated,
                 continuation,
                 accident,
-                illness
+                illness,
+                fast_track_gen_2
             ) as tags,
             source,
             is_archived,
@@ -137,7 +139,8 @@ with
                     'automated',
                     'continuation',
                     'accident',
-                    'illness'
+                    'illness',
+                    'ft gen2' as fast_track_gen_2
                 )
             )
     )
