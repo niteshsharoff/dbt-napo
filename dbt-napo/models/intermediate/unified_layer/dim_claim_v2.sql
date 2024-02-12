@@ -320,10 +320,18 @@ with
             incurred_amount,
             recovery_amount,
             grp_id
+    ),
+    dim_claim as (
+        select *
+        from collate_duplicates_in_grp
+        union distinct
+        -- interpolate claim_bdx rows
+        select * except (effective_to)
+        from {{ ref("dim_claim", v=1) }}
     )
 select
     *,
     lead(effective_from, 1, timestamp("2999-01-01 00:00:00+00")) over (
         partition by claim_reference order by effective_from
     ) as effective_to
-from collate_duplicates_in_grp
+from dim_claim
