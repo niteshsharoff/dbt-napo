@@ -23,3 +23,6 @@ sources:
         tags: ['growth']
       - name: google_ads_campaign_conversions
         tags: ['growth']
+      - name: stripe_customers
+      - name: stripe_payment_intents
+      - name: stripe_subscriptions
