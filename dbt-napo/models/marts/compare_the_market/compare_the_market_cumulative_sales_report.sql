@@ -29,23 +29,27 @@ with
         select
             "Napo Limited" as partner_name,
             case
-                when product.reference = "essential4K"
+                when
+                    product.reference = "essential4K"
+                    or product.reference = "essential99"
                 then "Napo Comfort"
-                when product.reference = "advanced"
+                when product.reference = "advanced" or product.reference = "advanced99"
                 then "Napo Balance"
-                when product.reference = "harmony"
+                when product.reference = "harmony" or product.reference = "harmony99"
                 then "Napo Harmony"
-                when product.reference = "serenity"
+                when product.reference = "serenity" or product.reference = "serenity99"
                 then "Napo Serenity"
             end as brand_name,
             case
-                when product.reference = "essential4K"
+                when
+                    product.reference = "essential4K"
+                    or product.reference = "essential99"
                 then "NAP1"
-                when product.reference = "advanced"
+                when product.reference = "advanced" or product.reference = "advanced99"
                 then "NAP2"
-                when product.reference = "harmony"
+                when product.reference = "harmony" or product.reference = "harmony99"
                 then "NAP3"
-                when product.reference = "serenity"
+                when product.reference = "serenity" or product.reference = "serenity99"
                 then "NAP4"
             end as brand_code,
             "CTM" as aggregator_name,
