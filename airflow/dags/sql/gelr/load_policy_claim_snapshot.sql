@@ -97,8 +97,8 @@ with
     extended_claim_history as (
         select * except(run_date)
             , effective_from = max(effective_from) over (partition by claim_reference order by effective_from desc) as _is_latest
-        from `dbt.dim_claim`, constants
-        where effective_from <= constants.run_date
+        from `dbt.dim_claim_v1`, constants
+        where date(effective_from) <= constants.run_date
     ),
     claim_snapshot as (
         select * except (_is_latest)
