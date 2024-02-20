@@ -59,13 +59,13 @@ def load_csv_from_s3_to_gcs(
 @task
 def create_external_table():
     bq_dataset = "raw"
-    bq_table_name = "market_data"
+    bq_table_name = "market_offer"
     create_external_bq_table(
         project_name=GCP_PROJECT_ID,
         region=GCP_REGION,
         dataset_name=bq_dataset,
         table_name=bq_table_name,
-        schema_path=f"dags/schemas/raw/market_data/bq_schema.json",  # auto-detect schema
+        schema_path=f"dags/schemas/raw/market_offer/bq_schema.json",  # auto-detect schema
         source_uri=f"gs://data-warehouse-harbour/raw/market_data/*",
         partition_uri=f"gs://data-warehouse-harbour/raw/market_data",
         source_format="CSV",
