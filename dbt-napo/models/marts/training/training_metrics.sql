@@ -3,7 +3,7 @@
 with
     transactions as (
         select *, date(transaction_at) as transaction_date
-        from {{ ref("int_training_transactions") }}
+        from {{ ref("int_training_transaction") }}
     ),
     ad_spend as (
         select 'ad_spend' as metric, date as transaction_date, sum(total_spend) as cnt

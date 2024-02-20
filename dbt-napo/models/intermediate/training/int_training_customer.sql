@@ -8,9 +8,9 @@ with
             sub.payment_plan_type,
             cus.created_at,
             cus.updated_at
-        from {{ ref("stg_src_airbyte__stripe_customers") }} cus
+        from {{ ref("stg_src_airbyte__stripe_customer") }} cus
         join
-            {{ ref("stg_src_airbyte__stripe_subscriptions") }} sub
+            {{ ref("stg_src_airbyte__stripe_subscription") }} sub
             on cus.stripe_customer_id = sub.stripe_customer_id
     ),
     booking_db_customers as (
@@ -48,8 +48,7 @@ with
         from customers
     ),
     -- There should only be 1 row per [customer_uuid, stripe_customer_id] combo
-    -- in this table. This might be a problem if there are multiple stripe customers
-    -- per Napo customer
+    -- in this table. There can be multiple stripe customers per Napo customer
     final as (
         select
             *,

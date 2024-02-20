@@ -24,7 +24,7 @@ with
             null as payment_amount,
             cast(null as string) as notes,
             cast(null as string) as cancel_reason
-        from {{ ref("stg_src_airbyte__stripe_subscriptions") }}
+        from {{ ref("stg_src_airbyte__stripe_subscription") }}
         where trial_started_at is not null
     ),
     trial_ended as (
@@ -38,7 +38,7 @@ with
             null as payment_amount,
             cast(null as string) as notes,
             cast(null as string) as cancel_reason
-        from {{ ref("stg_src_airbyte__stripe_subscriptions") }}
+        from {{ ref("stg_src_airbyte__stripe_subscription") }}
         where trial_ended_at is not null
     ),
     cancellations as (
@@ -52,7 +52,7 @@ with
             null as payment_amount,
             cast(null as string) as notes,
             cancellation_reason as cancel_reason
-        from {{ ref("stg_src_airbyte__stripe_subscriptions") }}
+        from {{ ref("stg_src_airbyte__stripe_subscription") }}
         where cancelled_at is not null
     ),
     payment_intents as (
@@ -66,9 +66,9 @@ with
             pi.payment_amount_mu / 100 as payment_amount,
             pi.payment_description as notes,
             cast(null as string) as cancel_reason
-        from {{ ref("stg_src_airbyte__stripe_payment_intents") }} pi
+        from {{ ref("stg_src_airbyte__stripe_payment_intent") }} pi
         left join
-            {{ ref("int_training_customers") }} cu
+            {{ ref("int_training_customer") }} cu
             on pi.stripe_customer_id = cu.stripe_customer_id
     ),
     events as (
@@ -110,7 +110,7 @@ with
             (
                 select
                     *,
-                    -- Partition by subscription_id to so we don't count miscount
+                    -- Partition by subscription_id so we don't count miscount
                     -- first payments on renewal
                     -- Partition by transaction type to get the instalment number for
                     -- a subscription
