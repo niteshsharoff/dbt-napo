@@ -1,3 +1,5 @@
+{{ config(schema="marts") }}
+
 with
     transactions as (
         select *, date(transaction_at) as transaction_date
