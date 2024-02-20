@@ -10,7 +10,7 @@ with
             null as payment_amount,
             cast(null as string) as notes,
             cast(null as string) as cancel_reason
-        from {{ ref("stg_raw__booking_service_customer") }}
+        from {{ ref("stg_booking_service__customer") }}
         where customer_uuid is not null
     ),
     trial_started as (

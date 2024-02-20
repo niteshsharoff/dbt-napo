@@ -21,7 +21,7 @@ with
             cast(null as string) as payment_plan_type,
             created_at,
             updated_at
-        from {{ ref("stg_raw__booking_service_customer") }}
+        from {{ ref("stg_booking_service__customer") }}
     ),
     customers as (
         select *
