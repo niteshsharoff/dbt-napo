@@ -2,7 +2,7 @@ version: 2
 
 models:
   - name: int_training_customer
-    description: "A table which interpolates customer data from stripe with customer data from booking service."
+    description: "This table interpolates customer data from stripe with customer data from booking service."
     columns:
       - name: stripe_customer_id
         description: "ID of a customer object on Stripe. It's possible for a Napo customer to be associated with multiple Stripe customer objects."
