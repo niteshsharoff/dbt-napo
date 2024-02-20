@@ -51,12 +51,17 @@ with
     -- in this table. There can be multiple stripe customers per Napo customer
     final as (
         select
-            *,
+            stripe_customer_id,
+            customer_uuid,
+            stripe_subscription_id,
+            payment_plan_type,
+            created_at,
+            updated_at,
             min(created_at) over (
                 partition by customer_uuid, stripe_customer_id
             ) as _earliest
         from backpopulate_customer_uuid
     )
-select *
+select * except (_earliest)
 from final
 where created_at = _earliest

@@ -1,8 +1,8 @@
 with
     registrations as (
         select
-            created_at as transaction_at,
-            'pa_registration' as transaction_type,
+            created_at as event_tx,
+            'pa_registration' as event_type,
             customer_uuid,
             stripe_customer_id,
             cast(null as string) as stripe_subscription_id,
@@ -15,7 +15,7 @@ with
     ),
     trial_started as (
         select
-            trial_started_at as transaction_at,
+            trial_started_at as event_tx,
             'trial_started' as trial_started_at,
             customer_uuid,
             stripe_customer_id,
@@ -29,8 +29,8 @@ with
     ),
     trial_ended as (
         select
-            trial_ended_at as transaction_at,
-            'trial_ended' as transaction_type,
+            trial_ended_at as event_tx,
+            'trial_ended' as event_type,
             customer_uuid,
             stripe_customer_id,
             stripe_subscription_id,
@@ -43,8 +43,8 @@ with
     ),
     cancellations as (
         select
-            cancelled_at as transaction_at,
-            'cancelled' as transaction_type,
+            cancelled_at as event_tx,
+            'cancelled' as event_type,
             customer_uuid,
             stripe_customer_id,
             stripe_subscription_id,
@@ -57,8 +57,8 @@ with
     ),
     payment_intents as (
         select
-            pi.created_at as transaction_at,
-            'payment_intent' as transaction_type,
+            pi.created_at as event_tx,
+            'payment_intent' as event_type,
             cu.customer_uuid as customer_uuid,
             pi.stripe_customer_id,
             cu.stripe_subscription_id,
@@ -89,10 +89,18 @@ with
     ),
     recurring_payments as (
         select
-            * except (rn),
+            event_tx,
+            event_type,
+            customer_uuid,
+            stripe_customer_id,
+            stripe_subscription_id,
+            payment_plan_type,
+            payment_amount,
+            notes,
+            cancel_reason,
             case
                 when
-                    transaction_type = 'payment_intent'
+                    event_type = 'payment_intent'
                     and rn > 1
                     -- There is currently no reliable way to discern other payments.
                     -- AFAIK these are payments where the customer_uuid isn't tracked
@@ -100,7 +108,7 @@ with
                     and customer_uuid is not null
                 then true
                 when
-                    transaction_type = 'payment_intent'
+                    event_type = 'payment_intent'
                     and rn = 1
                     and customer_uuid is not null
                 then false
@@ -116,8 +124,8 @@ with
                     -- a subscription
                     row_number() over (
                         partition by
-                            stripe_customer_id, transaction_type, stripe_subscription_id
-                        order by transaction_at
+                            stripe_customer_id, event_type, stripe_subscription_id
+                        order by event_tx
                     ) as rn
                 from events
             )

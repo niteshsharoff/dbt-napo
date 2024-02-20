@@ -1,0 +1,42 @@
+version: 2
+
+models:
+  - name: int_training_customer
+    description: "A table which interpolates customer data from stripe with customer data from booking service."
+    columns:
+      - name: stripe_customer_id
+        description: "ID of a customer object on Stripe. It's possible for a Napo customer to be associated with multiple Stripe customer objects."
+      - name: customer_uuid
+        description: "Internal UUID for a Napo customer."
+      - name: stripe_subscription_id
+        description: "ID of a subscription object on Stripe. Napo customer_uuid can be recovered from the Stripe subscription's metadata."
+      - name: payment_plan_type
+        description: "The payment plan associated with a customer's Stripe subscription. Can be 'year' or 'month'."
+      - name: created_at
+        description: "The earliest timestamp at which a customer entry is recorded in Napo's systems. This can be through booking-service DB or extracted from Stripe by Airbyte."
+      - name: updated_at
+        description: "The timestamp at which the customer row was last updated."
+
+  - name: int_training_event
+    description: '{{ doc("int_training_event") }}'
+    columns:
+      - name: event_tx
+        description: "Timestamp at which the event occured."
+      - name: event_type
+        description: "Can be one of the following: 'trial_started', 'payment_intent', 'cancelled', 'trial_ended', 'pa_registration'"
+      - name: customer_uuid
+        description: "Internal UUID for a Napo customer."
+      - name: stripe_customer_id
+        description: "ID of a customer object on Stripe. It's possible for a Napo customer to be associated with multiple Stripe customer objects."
+      - name: stripe_subscription_id
+        description: "ID of a subscription object on Stripe. Napo customer_uuid can be recovered from the Stripe subscription's metadata."
+      - name: payment_plan_type
+        description: "The payment plan associated with a customer's Stripe subscription. Can be 'year' or 'month'."
+      - name: payment_amount
+        description: "Payment amount sourced from Stripe in minor units."
+      - name: notes
+        description: "Payment description sourced from Stripe (if applicable)."
+      - name: cancel_reason
+        description: "Subscription cancellation reason sourced from Stripe (if applicable)."
+      - name: recurring_payment
+        description: "True if a payment_intent is recurring, False otherwise."
