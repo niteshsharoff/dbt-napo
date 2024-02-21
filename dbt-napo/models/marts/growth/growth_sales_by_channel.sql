@@ -54,7 +54,8 @@ with
                     -- ('training_product', 'training_product'),
                     ('pa_standalone', 'google'),
                     ('pa_standalone', 'facebook'),
-                    ('pa_standalone', 'bing')
+                    -- ('pa_standalone', 'bing'),
+                    ('pa_standalone', 'youtube')
                 ]
             )
     ),
