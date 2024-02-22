@@ -1,7 +1,5 @@
 select distinct
-    -- coalesce(ch.created_at, pi.created_at) as event_tx,
     pi.payment_description as description,
-    -- pi.payment_status as payment_intent_status,
     ch.status as charge_status,
     ch.charge_amount_mu / 100 as charge_amount,
     ch.reason as failure_reason,
@@ -14,17 +12,17 @@ select distinct
     pi.created_at as payment_intent_at,
     ch.created_at as charge_at,
     re.refunded_at as refund_at,
-    pi.payment_intent_id,
-    ch.charge_id,
+    pi.stripe_payment_intent_id,
+    ch.stripe_charge_id,
     pi.stripe_customer_id,
     cu.stripe_subscription_id
-from {{ ref("stg_src_airbyte__stripe_payment_intent") }} pi
+from {{ ref("stg_src_airbyte__stripe_payment_intents") }} pi
 left join
-    {{ ref("stg_src_airbyte__stripe_charge") }} ch
-    on pi.payment_intent_id = ch.payment_intent_id
+    {{ ref("stg_src_airbyte__stripe_charges") }} ch
+    on pi.stripe_payment_intent_id = ch.stripe_payment_intent_id
 left join
-    {{ ref("int_training_customer") }} cu
+    {{ ref("int_training_customers") }} cu
     on pi.stripe_customer_id = cu.stripe_customer_id
 left join
-    {{ ref("stg_src_airbyte__stripe_refund") }} re
-    on pi.payment_intent_id = re.payment_intent_id
+    {{ ref("stg_src_airbyte__stripe_refunds") }} re
+    on pi.stripe_payment_intent_id = re.stripe_payment_intent_id

@@ -1,7 +1,9 @@
 {{ config(schema="marts") }}
 
 with
-    events as (select *, date(event_tx) as date from {{ ref("int_training_event") }}),
+    events as (
+        select *, date(event_tx) as date from {{ ref("int_training_customer_events") }}
+    ),
     ad_spend as (
         select 'ad_spend' as metric, date, sum(total_spend) as cnt
         from {{ ref("growth_sales_by_channel") }}
@@ -24,14 +26,14 @@ with
     new_annual as (
         select 'new_annual' as metric, date, count(distinct customer_uuid) as cnt
         from events
-        where event_type = 'payment_intent' and payment_plan_type = 'year'
+        where event_type = 'payment' and payment_plan_type = 'year'
         group by date
     ),
     new_monthly as (
         select 'new_monthly' as metric, date, count(distinct customer_uuid) as cnt
         from events
         where
-            event_type = 'payment_intent'
+            event_type = 'payment'
             and payment_plan_type = 'month'
             and recurring_payment = false
         group by date
@@ -40,7 +42,7 @@ with
         select 'recurring_monthly' as metric, date, count(distinct customer_uuid) as cnt
         from events
         where
-            event_type = 'payment_intent'
+            event_type = 'payment'
             and payment_plan_type = 'month'
             and recurring_payment = true
         group by date
@@ -48,28 +50,25 @@ with
     new_revenue as (
         select 'new_revenue' as metric, date, sum(payment_amount) as cnt
         from events
-        where
-            event_type = 'payment_intent'
-            and customer_uuid is not null
-            and recurring_payment = false
+        where event_type = 'payment' and recurring_payment = false
         group by date
     ),
     recurring_revenue as (
         select 'recurring_revenue' as metric, date, sum(payment_amount) as cnt
         from events
-        where
-            event_type = 'payment_intent'
-            and customer_uuid is not null
-            and recurring_payment = true
+        where event_type = 'payment' and recurring_payment = true
         group by date
     ),
     other_revenue as (
         select 'other_revenue' as metric, date, sum(payment_amount) as cnt
         from events
-        where
-            event_type = 'payment_intent'
-            and customer_uuid is null
-            and stripe_customer_id is null
+        where event_type = 'payment' and recurring_payment is null
+        group by date
+    ),
+    refunds as (
+        select 'refund' as metric, date, sum(refund_amount) as cnt
+        from events
+        where event_type = 'refund'
         group by date
     ),
     final as (
@@ -99,6 +98,9 @@ with
         union all
         select *
         from other_revenue
+        union all
+        select *
+        from refunds
     ),
     metrics_table as (
         select
@@ -113,7 +115,8 @@ with
             cast(
                 coalesce(round(recurring_revenue, 2), 0.0) as numeric
             ) as recurring_revenue,
-            cast(coalesce(round(other_revenue, 2), 0.0) as numeric) as other_revenue
+            cast(coalesce(round(other_revenue, 2), 0.0) as numeric) as other_revenue,
+            cast(coalesce(round(refund, 2), 0.0) as numeric) as refund_amount
         from
             final pivot (
                 sum(cnt) for metric in (
@@ -125,7 +128,8 @@ with
                     'recurring_monthly',
                     'new_revenue',
                     'recurring_revenue',
-                    'other_revenue'
+                    'other_revenue',
+                    'refund'
                 )
             )
         order by date

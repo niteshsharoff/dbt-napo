@@ -2,7 +2,7 @@ with
     refunds as (
         select
             id as stripe_refund_id,
-            payment_intent as payment_intent_id,
+            payment_intent as stripe_payment_intent_id,
             amount as refund_amount_mu,
             reason as refund_reason,
             status as refund_status,

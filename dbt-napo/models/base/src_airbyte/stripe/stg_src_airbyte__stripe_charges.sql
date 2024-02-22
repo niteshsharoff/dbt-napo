@@ -1,5 +1,5 @@
 select
-    id as charge_id,
+    id as stripe_charge_id,
     paid,
     amount as charge_amount_mu,
     status,
@@ -8,6 +8,6 @@ select
     customer as stripe_customer_id,
     json_extract_scalar(outcome, '$.reason') as reason,
     refunded,
-    payment_intent as payment_intent_id,
+    payment_intent as stripe_payment_intent_id,
     failure_message
 from {{ source("src_airbyte", "stripe_charges") }}
