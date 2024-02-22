@@ -30,7 +30,7 @@ with
             {{ target.schema }}.get_breed_for_pet(
                 pet.species, pet.size, pet.breed_category, pet.breed_name
             ) as pet_breed,
-            dbt_jeremiahmai.calculate_age_in_months(
+            {{ target.schema }}.calculate_age_in_months(
                 pet.date_of_birth, policy.start_date
             ) as pet_age,
             pet.gender as pet_gender,
