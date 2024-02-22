@@ -26,3 +26,5 @@ sources:
       - name: stripe_customers
       - name: stripe_payment_intents
       - name: stripe_subscriptions
+      - name: stripe_refunds
+      - name: stripe_charges

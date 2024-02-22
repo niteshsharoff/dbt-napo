@@ -1,5 +1,5 @@
 select
-    id as payment_intent_id,
+    id as stripe_payment_intent_id,
     customer as stripe_customer_id,
     description as payment_description,
     status as payment_status,
