@@ -58,6 +58,3 @@ sources:
       - name: bookings
       - name: email_reminders
       - name: sms_reminders
-models:
-  - name: stg_raw__policy_ledger
-    description: '{{ doc("stg_raw__policy_ledger") }}'
