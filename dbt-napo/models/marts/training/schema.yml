@@ -1,0 +1,26 @@
+version: 2
+
+models:
+  - name: training_funnel_metrics
+    description: "Training & Socialisation funnel metrics aggregated by day."
+    columns:
+      - name: date
+        description: "Aggregation date."
+      - name: ad_spend
+        description: "Ad spend sourced from growth_sales_by_channel where channel = 'pa_standalone'."
+      - name: registrations
+        description: "Number of customers in booking-service DB where source = 'pa_registrant'."
+      - name: free_trials_started
+        description: "Number of free trials started aggregated by day."
+      - name: new_annual
+        description: "Count of payment intents aggregated by day where payment_plan_type = 'year'."
+      - name: new_monthly
+        description: "Count of payment intents aggregated by day where payment_plan_type = 'month' and recurring_payment = false."
+      - name: recurring_monthly
+        description: "Count of payment intents aggregated by day where payment_plan_type = 'month' and recurring_payment = true."
+      - name: new_revenue
+        description: "Sum of payment amounts aggreated by day where recurring_payment = false."
+      - name: recurring_revenue
+        description: "Sum of payment amounts aggreated by day where recurring_payment = true."
+      - name: other_revenue
+        description: "Sum of payment amounts aggreated by day where stripe_customer_id and customer_uuid is null."

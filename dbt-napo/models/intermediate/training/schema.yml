@@ -1,0 +1,80 @@
+version: 2
+
+models:
+  - name: int_training_customers
+    description: "This table interpolates customer data from stripe with customer data from booking service."
+    columns:
+      - name: stripe_customer_id
+        description: "ID of a customer object on Stripe. It's possible for a Napo customer to be associated with multiple Stripe customer objects."
+      - name: customer_uuid
+        description: "Internal UUID for a Napo customer."
+      - name: stripe_subscription_id
+        description: "ID of a subscription object on Stripe. Napo customer_uuid can be recovered from the Stripe subscription's metadata."
+      - name: payment_plan_type
+        description: "The payment plan associated with a customer's Stripe subscription. Can be 'year' or 'month'."
+      - name: created_at
+        description: "The earliest timestamp at which a customer entry is recorded in Napo's systems. This can be through booking-service DB or extracted from Stripe by Airbyte."
+      - name: updated_at
+        description: "The timestamp at which the customer row was last updated."
+
+  - name: int_training_customer_events
+    description: '{{ doc("int_training_customer_events") }}'
+    columns:
+      - name: event_tx
+        description: "Timestamp at which the event occured."
+      - name: event_type
+        description: "Can be one of the following: 'trial_started', 'payment_intent', 'cancelled', 'trial_ended', 'pa_registration'"
+      - name: customer_uuid
+        description: "Internal UUID for a Napo customer."
+      - name: stripe_customer_id
+        description: "ID of a customer object on Stripe. It's possible for a Napo customer to be associated with multiple Stripe customer objects."
+      - name: stripe_subscription_id
+        description: "ID of a subscription object on Stripe. Napo customer_uuid can be recovered from the Stripe subscription's metadata."
+      - name: payment_plan_type
+        description: "The payment plan associated with a customer's Stripe subscription. Can be 'year' or 'month'."
+      - name: payment_amount
+        description: "Payment amount sourced from Stripe in minor units."
+      - name: notes
+        description: "Payment description sourced from Stripe (if applicable)."
+      - name: cancel_reason
+        description: "Subscription cancellation reason sourced from Stripe (if applicable)."
+      - name: recurring_payment
+        description: "True if a payment_intent is recurring, False otherwise."
+
+  - name: int_training_payments
+    description: "Payments table for Training & Socialisation based on Stripe's unified payments report."
+    columns:
+      - name: description
+        description: "Stripe's payment intent description."
+      - name: charge_status
+        description: "The status of the charge object on Stripe."
+      - name: charge_amount
+        description: "The amount the customer is charged (in pounds)."
+      - name: failure_reason
+        description: "The reason Stripe has failed to charge a customer."
+      - name: payment_plan_type
+        description: "The payment plan type of the customer's Stripe subscription."
+      - name: refund_status
+        description: "The status of the refund on Stripe."
+      - name: refund_amount
+        description: "The amount refunded to the customer (in pounds)."
+      - name: refund_reason
+        description: "The reason for a refund."
+      - name: email
+        description: "Customer email address."
+      - name: customer_uuid
+        description: "Napo internal customer unique identifier."
+      - name: payment_intent_at
+        description: "When the payment intent object was created."
+      - name: charge_at
+        description: "When the charge object was created."
+      - name: refund_at
+        description: "When the refund object was created."
+      - name: stripe_payment_intent_id
+        description: "Stripe's payment intent ID."
+      - name: stripe_charge_id
+        description: "Stripe's charge ID."
+      - name: stripe_customer_id
+        description: "Stripe's customer ID."
+      - name: stripe_subscription_id
+        description: "Stripe's subscription ID."
