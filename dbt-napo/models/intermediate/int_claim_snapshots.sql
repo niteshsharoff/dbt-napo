@@ -91,6 +91,9 @@ with
                 continuation,
                 accident,
                 illness,
+                automated_continuation,
+                automated_new_accident,
+                automated_new_illness,
                 -- re-ordering metadata columns
                 source,
                 is_archived,
@@ -112,7 +115,10 @@ with
                 automated,
                 continuation,
                 accident,
-                illness
+                illness,
+                automated_continuation,
+                automated_new_accident,
+                automated_new_illness
             ) as tags,
             source,
             is_archived,
@@ -137,7 +143,10 @@ with
                     'automated',
                     'continuation',
                     'accident',
-                    'illness'
+                    'illness',
+                    'automated-continuation' as automated_continuation,
+                    'automated-new-accident' as automated_new_accident,
+                    'automated-new-illness' as automated_new_illness
                 )
             )
     )

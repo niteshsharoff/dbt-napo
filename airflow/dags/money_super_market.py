@@ -1,5 +1,14 @@
 import logging
+from datetime import timedelta
 
+from dags.workflows.common import gcs_csv_to_dataframe
+from dags.workflows.create_bq_view import create_bq_view
+from dags.workflows.export_bq_result_to_gcs import export_query_to_gcs
+from dags.workflows.reporting.msm.utils import *
+from dags.workflows.upload_to_google_drive import (
+    file_exists_on_google_drive,
+    upload_to_google_drive,
+)
 from google.cloud import bigquery
 from jinja2 import Environment, FileSystemLoader
 
@@ -10,16 +19,10 @@ from airflow.models import Variable
 from airflow.models.dag import dag
 from airflow.operators.empty import EmptyOperator
 from airflow.providers.dbt.cloud.operators.dbt import DbtCloudRunJobOperator
-from airflow.providers.google.cloud.hooks.compute_ssh import \
-    ComputeEngineSSHHook
+from airflow.providers.google.cloud.hooks.compute_ssh import ComputeEngineSSHHook
 from airflow.providers.ssh.operators.ssh import SSHOperator
+from airflow.sensors.external_task import ExternalTaskSensor
 from airflow.utils.task_group import TaskGroup
-from dags.workflows.common import gcs_csv_to_dataframe
-from dags.workflows.create_bq_view import create_bq_view
-from dags.workflows.export_bq_result_to_gcs import export_query_to_gcs
-from dags.workflows.reporting.msm.utils import *
-from dags.workflows.upload_to_google_drive import (file_exists_on_google_drive,
-                                                   upload_to_google_drive)
 
 JINJA_ENV = Environment(loader=FileSystemLoader("dags/"))
 SFTP_SCRIPT = JINJA_ENV.get_template("bash/sftp_upload.sh")
@@ -187,7 +190,7 @@ def weekly_report_row_count_check(data_interval_end: pendulum.datetime = None):
     df = gcs_csv_to_dataframe(
         gcs_bucket=GCS_BUCKET,
         gcs_folder=f"{BQ_DATASET}/{WEEKLY_TABLE}/run_date={run_date.date()}",
-        filename=filename,
+        pattern=f"*/{filename}",
     )
     df.head()
     if df.empty:
@@ -308,7 +311,7 @@ def monthly_report_row_count_check(data_interval_end: pendulum.datetime = None):
     df = gcs_csv_to_dataframe(
         gcs_bucket=GCS_BUCKET,
         gcs_folder=f"{BQ_DATASET}/{MONTHLY_TABLE}/run_date={run_date.date()}",
-        filename=filename,
+        pattern=f"*/{filename}",
     )
     df.head()
     if df.empty:
@@ -360,12 +363,18 @@ def money_super_market():
     # This can get expensive if we run these checks for each PCW individually once they
     # are all migrated to BQ. Consider moving to a new DBT only DAG and enforce cross
     # DAG dependencies with ExternalTaskSensor
-    dbt_checks = DbtCloudRunJobOperator(
+    dbt_checks = ExternalTaskSensor(
         task_id="dbt_checks",
-        job_id=DBT_CLOUD_JOB_ID,
-        check_interval=10,
+        # task_id in dags/dbt.py
+        external_dag_id="dbt",
+        external_task_id="dbt_test",
+        # dbt cloud tests should not take longer than 5 minutes
         timeout=300,
-        trigger_rule="one_success",
+        allowed_states=["success"],
+        failed_states=["failed", "skipped"],
+        mode="reschedule",
+        # 15 1 * * *
+        execution_delta=timedelta(hours=3, minutes=-15),
     )
 
     is_first_day_of_week = weekly_branch()

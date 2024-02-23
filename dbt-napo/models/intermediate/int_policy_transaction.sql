@@ -143,7 +143,7 @@ with
                 cast(campaign.discount_percentage as numeric) as discount_percentage,
                 campaign.affiliate_channel
             ) as campaign
-        from {{ ref("int_policy_history") }}
+        from {{ ref("int_policy_history", v=2) }}
     ),
     policy_history_with_audit_dimension as (
         select

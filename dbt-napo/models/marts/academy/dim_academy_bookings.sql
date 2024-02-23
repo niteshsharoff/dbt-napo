@@ -1,8 +1,8 @@
 with
     raw as (
         select
-            a.id as id,
-            a.uuid,
+            a.booking_id as id,
+            a.booking_uuid,
             a.status,
             a.class_uuid as class_uuid,
             a.class_name,

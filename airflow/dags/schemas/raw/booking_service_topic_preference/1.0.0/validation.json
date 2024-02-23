@@ -1,0 +1,20 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "booking_topic_preference postgres table validation schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "topic_uuid": {
+      "type": "string"
+    },
+    "customer_uuid": {
+      "type": "string"
+    },
+    "created_at": {
+      "type": "integer"
+    }
+  },
+  "additionalProperties": false
+}

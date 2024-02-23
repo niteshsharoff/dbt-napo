@@ -11,9 +11,15 @@ models:
     description: Joins on subscription, policy and payments. Policy ID taken for annual subscriptions from stg_policy and monthly subscriptions taken from int_payments
   - name: int_policy_history
     description: '{{ doc("int_policy_history") }}'
+    latest_version: 1
+    versions:
+      - v: 1
+      - v: 2
   - name: int_policy_transaction
     description: '{{ doc("int_policy_transaction") }}'
   - name: int_claim_snapshot
     description: Normalized claims data
   - name: int_quote
     description: Normalized quote  data
+  - name: int_referral_code_shares
+  - name: int_sold_policies_excl_renewals

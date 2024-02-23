@@ -13,6 +13,7 @@ from airflow.exceptions import AirflowFailException, AirflowSkipException
 from airflow.models import Variable
 from airflow.models.dag import dag
 from airflow.operators.empty import EmptyOperator
+from dags.workflows.common import gcs_csv_to_dataframe
 from dags.workflows.create_bq_external_table import create_external_bq_table
 
 GCP_PROJECT_ID = Variable.get("GCP_PROJECT_ID")
@@ -80,10 +81,11 @@ def get_snapshot(
         raise AirflowFailException
 
     pool = Pool()
-    max_pages = 300
+    max_pages = 600
     offset = 10
     page = 0
     results = []
+    batch_size = 1000
 
     while True:
         page_args = [(i, list_id, archived) for i in range(page, page + offset)]
@@ -103,20 +105,22 @@ def get_snapshot(
     if not any(results):
         raise AirflowSkipException
 
-    df = pd.DataFrame.from_records(results)
-    logging.info(df.count())
+    # Hitting memory bottleneck, process in batches until we replace the pipeline with claims DB
+    for i in range(0, len(results), batch_size):
+        df = pd.DataFrame.from_records(results[i : i + batch_size])
 
-    for column in CLICKUP_JSON_FIELDS:
-        df[column] = df[column].astype(object).apply(json.dumps)
+        for column in CLICKUP_JSON_FIELDS:
+            df[column] = df[column].astype(object).apply(json.dumps)
 
-    df.to_csv(
-        "{gcs_path}/snapshot_date={run_date}/{filename}.csv".format(
-            gcs_path=f"{GCS_RAW_FOLDER}/{gcs_folder}/{GCS_DATA_VERSION}",
-            run_date=data_interval_end.date(),
-            filename="claims" if archived == "false" else "archived_claims",
-        ),
-        index=False,
-    )
+        df.to_csv(
+            "{gcs_path}/snapshot_date={run_date}/{filename}_{batch_number}.csv".format(
+                gcs_path=f"{GCS_RAW_FOLDER}/{gcs_folder}/{GCS_DATA_VERSION}",
+                run_date=data_interval_end.date(),
+                filename="claims" if archived == "false" else "archived_claims",
+                batch_number=i,
+            ),
+            index=False,
+        )
 
 
 def _get_time_in_status_batch(task_ids: List[str]):
@@ -143,17 +147,18 @@ def get_time_in_status(
     output_gcs_folder: str,
     data_interval_end: pendulum.datetime = None,
 ):
-    if data_interval_end.date() != date.today():
+    run_date = data_interval_end.date()
+    if run_date != date.today():
         logging.error("Cannot get a snapshot in the past from ClickUp API")
         raise AirflowFailException
 
-    tasks_df = pd.read_csv(
-        "{gcs_path}/snapshot_date={run_date}/claims.csv".format(
-            gcs_path=f"{GCS_RAW_FOLDER}/{input_gcs_folder}/{GCS_DATA_VERSION}",
-            run_date=data_interval_end.date(),
-        )
+    tasks_df = gcs_csv_to_dataframe(
+        GCS_BUCKET,
+        f"raw/{input_gcs_folder}/{GCS_DATA_VERSION}/snapshot_date={run_date}",
+        "*/claims_*",
     )[["id", "custom_id"]]
     task_ids = tasks_df["id"].tolist()
+    logging.info(f"Retrieiving time in status for {len(tasks_df)} claims")
 
     batch_size = CLICKUP_MAX_TASK_IDS_PER_REQUEST
 
@@ -174,7 +179,7 @@ def get_time_in_status(
     results_df.to_csv(
         "{gcs_path}/snapshot_date={run_date}/claims.csv".format(
             gcs_path=f"{GCS_RAW_FOLDER}/{output_gcs_folder}/{GCS_DATA_VERSION}",
-            run_date=data_interval_end.date(),
+            run_date=run_date,
         ),
         index=False,
     )
@@ -206,7 +211,7 @@ def create_clickup_bq_external_table(table_name: str, schema_name: str):
     max_active_tasks=8,
     tags=["raw", "clickup"],
     dagrun_timeout=timedelta(
-        minutes=120
+        minutes=60
     ),  # don't let this DAG hog resources indefinitely
 )
 def clickup_claims_export():

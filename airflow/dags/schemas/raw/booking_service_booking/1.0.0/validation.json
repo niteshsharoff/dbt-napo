@@ -47,6 +47,12 @@
     },
     "cancellation_reason": {
       "type": "string"
+    },
+    "free_class": {
+      "type": "boolean"
+    },
+    "reminder_email_sent": {
+      "type": "boolean"
     }
   },
   "additionalProperties": false

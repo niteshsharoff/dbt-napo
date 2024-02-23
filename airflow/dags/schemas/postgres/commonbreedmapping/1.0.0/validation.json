@@ -1,0 +1,23 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "policy_customer postgres table validation schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "common_breed_name": {
+      "type": "string"
+    },
+    "source_breed_id": {
+      "type": "string"
+    },
+    "source_breed_name": {
+      "type": "string"
+    },
+    "source": {
+      "type": "string"
+    }
+  },
+  "additionalProperties": false
+}

@@ -127,5 +127,141 @@ def export_booking_service_data():
 
     t5 >> t6 >> t7 >> t8
 
+    # Creating raw.booking_service_content_completion table in GCS
+    t9 = export_pg_table_to_gcs.override(task_id="export_content_completion_pg_table_to_gcs")(
+        "content_completion", "updated_at"
+    )
+
+    t10 = validate_raw_data.override(task_id="validate_content_completion_data")(
+        "content_completion", "booking_service_content_completion", "1.0.0"
+    )
+
+    t11 = commit_raw_data.override(task_id="commit_content_completion_data")(
+        "content_completion", "raw", "1.0.0"
+    )
+
+    t12 = create_bq_table.override(task_id="create_content_completion_bq_table")(
+        "content_completion",
+        "booking_service_content_completion",
+        "dags/schemas/raw/booking_service_content_completion/1.0.0/bq_schema.json",
+        "1.0.0",
+    )
+
+    t9 >> t10 >> t11 >> t12
+
+    # Creating raw.booking_service_pet table in GCS
+    t13 = export_pg_table_to_gcs.override(task_id="export_pet_pg_table_to_gcs")(
+        "pet", "updated_at"
+    )
+
+    t14 = validate_raw_data.override(task_id="validate_pet_data")(
+        "pet", "booking_service_pet", "1.0.0"
+    )
+
+    t15 = commit_raw_data.override(task_id="commit_pet_data")(
+        "pet", "raw", "1.0.0"
+    )
+
+    t16 = create_bq_table.override(task_id="create_pet_bq_table")(
+        "pet",
+        "booking_service_pet",
+        "dags/schemas/raw/booking_service_pet/1.0.0/bq_schema.json",
+        "1.0.0",
+    )
+
+    t13 >> t14 >> t15 >> t16
+
+    # Creating raw.booking_service_subscription table in GCS
+    t17 = export_pg_table_to_gcs.override(task_id="export_subscription_pg_table_to_gcs")(
+        "subscription", "updated_at"
+    )
+
+    t18 = validate_raw_data.override(task_id="validate_subscription_data")(
+        "subscription", "booking_service_subscription", "1.0.0"
+    )
+
+    t19 = commit_raw_data.override(task_id="commit_subscription_data")(
+        "subscription", "raw", "1.0.0"
+    )
+
+    # Creating raw.booking_service_subscription table in BQ
+    t20 = create_bq_table.override(task_id="create_subscription_bq_table")(
+        "subscription",
+        "booking_service_subscription",
+        "dags/schemas/raw/booking_service_subscription/1.0.0/bq_schema.json",
+        "1.0.0",
+    )
+
+    t17 >> t18 >> t19 >> t20
+
+    # Creating raw.booking_service_topic_interest table in GCS
+    t21 = export_pg_table_to_gcs.override(task_id="export_topic_interest_pg_table_to_gcs")(
+        "topic_interest", "updated_at"
+    )
+
+    t22 = validate_raw_data.override(task_id="validate_topic_interest_data")(
+        "topic_interest", "booking_service_topic_interest", "1.0.0"
+    )
+
+    t23 = commit_raw_data.override(task_id="commit_topic_interest_data")(
+        "topic_interest", "raw", "1.0.0"
+    )
+
+    # Creating raw.booking_service_topic_interest table in BQ
+    t24 = create_bq_table.override(task_id="create_topic_interest_bq_table")(
+        "topic_interest",
+        "booking_service_topic_interest",
+        "dags/schemas/raw/booking_service_topic_interest/1.0.0/bq_schema.json",
+        "1.0.0",
+    )
+
+    t21 >> t22 >> t23 >> t24
+
+    # Creating raw.booking_service_topic_preference table in GCS
+    t25 = export_pg_table_to_gcs.override(task_id="export_topic_preference_pg_table_to_gcs")(
+        "topic_preference", "created_at"
+    )
+
+    t26 = validate_raw_data.override(task_id="validate_topic_preference_data")(
+        "topic_preference", "booking_service_topic_preference", "1.0.0"
+    )
+
+    t27 = commit_raw_data.override(task_id="commit_topic_preference_data")(
+        "topic_preference", "raw", "1.0.0"
+    )
+
+    # Creating raw.booking_service_topic_preference table in BQ
+    t28 = create_bq_table.override(task_id="create_topic_preference_bq_table")(
+        "topic_preference",
+        "booking_service_topic_preference",
+        "dags/schemas/raw/booking_service_topic_preference/1.0.0/bq_schema.json",
+        "1.0.0",
+    )
+
+    t25 >> t26 >> t27 >> t28
+
+    # Creating raw.booking_service_purchases table in GCS
+    t29 = export_pg_table_to_gcs.override(task_id="export_purchases_pg_table_to_gcs")(
+        "purchases", "updated_at"
+    )
+
+    t30 = validate_raw_data.override(task_id="validate_purchases_data")(
+        "purchases", "booking_service_purchases", "1.0.0"
+    )
+
+    t31 = commit_raw_data.override(task_id="commit_purchases_data")(
+        "purchases", "raw", "1.0.0"
+    )
+
+    # Creating raw.booking_service_purchases table in BQ
+    t32 = create_bq_table.override(task_id="create_purchases_bq_table")(
+        "purchases",
+        "booking_service_purchases",
+        "dags/schemas/raw/booking_service_purchases/1.0.0/bq_schema.json",
+        "1.0.0",
+    )
+
+    t29 >> t30 >> t31 >> t32
+
 
 export_booking_service_data()

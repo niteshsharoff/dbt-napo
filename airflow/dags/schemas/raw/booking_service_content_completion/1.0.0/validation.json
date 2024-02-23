@@ -1,0 +1,32 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "booking_content_completion postgres table validation schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "content_uuid": {
+      "type": "string"
+    },
+    "content_type": {
+      "type": "string"
+    },
+    "customer_uuid": {
+      "type": "string"
+    },
+    "star_rating": {
+      "type": ["integer", "null"]
+    },
+    "created_at": {
+      "type": "integer"
+    },
+    "updated_at": {
+      "type": "integer"
+    },
+    "soft_delete": {
+      "type": "boolean"
+    }
+  },
+  "additionalProperties": false
+}

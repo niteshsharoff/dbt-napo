@@ -1,0 +1,38 @@
+{
+  "$schema": "http://json-schema.org/draft-04/schema#",
+  "description": "booking_pet postgres table validation schema",
+  "type": "object",
+  "properties": {
+    "id": {
+      "type": "integer"
+    },
+    "uuid": {
+      "type": "string"
+    },
+    "date_of_birth": {
+      "type": "integer"
+    },
+    "date_of_homecoming": {
+      "type": ["null","integer"]
+    },
+    "gender": {
+      "type": "string"
+    },
+    "customer_uuid": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string"
+    },
+    "is_home": {
+      "type": "boolean"
+    },
+    "updated_at": {
+      "type": "integer"
+    },
+    "created_at": {
+      "type": "integer"
+    }
+  },
+  "additionalProperties": false
+}

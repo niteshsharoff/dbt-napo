@@ -34,7 +34,11 @@ with
                 case
                     when policy.cancel_date is null
                     then date_diff(constants.run_date, policy.start_date, day)
-                    else date_diff(policy.cancel_date, policy.start_date, day)
+                    else date_diff(
+                        if(policy.cancel_date > policy.end_date, policy.end_date, policy.cancel_date),
+                        policy.start_date,
+                        day
+                    )
                 end,
                 365
             ) as policy_duration,
@@ -68,8 +72,14 @@ with
                     -- Pro-rated cancellation
                     when policy_status = 'cancelled'
                     then
-                        premium_price_ipt_inc
-                        * (date_diff(policy.cancel_date, policy.start_date, day) / 365)
+                        premium_price_ipt_inc * (
+                            date_diff(
+                                -- Use policy end_date when cancel_date > end_date
+                                if(policy.cancel_date > policy.end_date, policy.end_date, policy.cancel_date),
+                                policy.start_date,
+                                day
+                            ) / 365
+                        )
                     -- Earned premium
                     else premium_price_ipt_inc * (policy_duration / 365)
                 end,
@@ -87,7 +97,7 @@ with
     extended_claim_history as (
         select * except(run_date)
             , effective_from = max(effective_from) over (partition by claim_reference order by effective_from desc) as _is_latest
-        from `dbt_marts.dim_claim`, constants
+        from `dbt.dim_claim`, constants
         where effective_from <= constants.run_date
     ),
     claim_snapshot as (

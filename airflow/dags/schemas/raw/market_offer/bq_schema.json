@@ -1,0 +1,152 @@
+[
+  {
+    "mode": "NULLABLE",
+    "name": "RiskId",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "Provider",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "Species",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "AnnualPremium",
+    "type": "FLOAT"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "ClaimLimit",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "AnnualClaimLimit",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "ExcessLimit",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "ExcessCoPaymentLimit",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "UkOnlyCallCentres",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "DeathByAccident",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "BoardingFees",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "LostOrStolen",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "AdvertisingLimit",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "ThirdPartyLiability",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "ThirdPartyLiabilityExcess",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "HourClaimsService24",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "VetAdviceLine",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "LegalAdvice",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "BereavementCounselling",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "DeathByIllness",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "QuarantineCosts",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "LossOfPetPassport",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "SetUpFees",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "AdjustmentFee",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "DuplicateDocumentsFee",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "CancellationFee",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "RenewalFee",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "TimeStamp",
+    "type": "TIMESTAMP"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "CoverCategory",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "CoverStartDate",
+    "type": "DATE"
+  }
+]

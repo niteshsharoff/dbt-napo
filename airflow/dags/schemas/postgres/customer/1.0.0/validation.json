@@ -68,6 +68,9 @@
     },
     "is_pa_customer": {
       "type": "boolean"
+    },
+    "is_email_verified": {
+      "type": ["boolean", "null"]
     }
   },
   "additionalProperties": false

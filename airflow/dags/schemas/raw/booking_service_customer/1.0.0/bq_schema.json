@@ -31,8 +31,43 @@
   },
   {
     "mode": "NULLABLE",
-    "name": "source",
+    "name": "updated_at",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "payment_provider_id",
     "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "completed_onboarding",
+    "type": "BOOLEAN"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "training",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "experience",
+    "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "freemium_access",
+    "type": "BOOLEAN"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "sessions_total_time_spent",
+    "type": "INTEGER"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "insurance_access",
+    "type": "BOOLEAN"
   },
   {
     "mode": "NULLABLE",
@@ -41,7 +76,7 @@
   },
   {
     "mode": "NULLABLE",
-    "name": "insurance_access",
-    "type": "BOOLEAN"
+    "name": "source",
+    "type": "STRING"
   }
 ]

@@ -59,13 +59,13 @@ def load_csv_from_s3_to_gcs(
 @task
 def create_external_table():
     bq_dataset = "raw"
-    bq_table_name = "market_data"
+    bq_table_name = "market_offer"
     create_external_bq_table(
         project_name=GCP_PROJECT_ID,
         region=GCP_REGION,
         dataset_name=bq_dataset,
         table_name=bq_table_name,
-        schema_path=None,  # auto-detect schema
+        schema_path=f"dags/schemas/raw/market_offer/bq_schema.json",  # auto-detect schema
         source_uri=f"gs://data-warehouse-harbour/raw/market_data/*",
         partition_uri=f"gs://data-warehouse-harbour/raw/market_data",
         source_format="CSV",
@@ -74,9 +74,9 @@ def create_external_table():
 
 @dag(
     dag_id="market_data",
-    start_date=pendulum.datetime(2022, 12, 29, tz="UTC"),
+    start_date=pendulum.datetime(2021, 6, 29, tz="UTC"),
     schedule_interval="0 1 * * *",
-    max_active_runs=1,
+    max_active_runs=7,
     catchup=True,
     tags=["daily", "external", "pricing"],
 )

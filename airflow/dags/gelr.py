@@ -1,3 +1,4 @@
+from datetime import timedelta
 import logging
 from typing import Optional
 
@@ -6,19 +7,18 @@ from google.cloud import bigquery
 from jinja2 import Environment, FileSystemLoader
 
 from airflow.models.dag import dag
+from airflow.models import Variable
 from airflow.operators.python import task
 from airflow.providers.dbt.cloud.operators.dbt import DbtCloudRunJobOperator
 from dags.workflows.create_bq_external_table import create_bq_table
 
+from airflow.sensors.external_task import ExternalTaskMarker, ExternalTaskSensor
+
 JINJA_ENV = Environment(loader=FileSystemLoader("dags/sql/gelr"))
 
-EXTERNAL_TABLE_NAME = (
-    "ae32-vpcservice-datawarehouse.airflow.policy_claim_snapshot"
-)
+EXTERNAL_TABLE_NAME = "ae32-vpcservice-datawarehouse.airflow.policy_claim_snapshot"
 PARTITION_KEY = "snapshot_date"
 PROJECT_NAME = "ae32-vpcservice-datawarehouse"
-
-DBT_CLOUD_JOB_ID = 289269
 
 
 @task
@@ -67,19 +67,23 @@ def insert_data_from_query(data_interval_end: Optional[pendulum.DateTime] = None
 @dag(
     dag_id="gelr",
     start_date=pendulum.datetime(2021, 10, 18, tz="UTC"),
-    schedule_interval="0 1 * * *",
-    catchup=True,
+    schedule_interval="15 1 * * *",
+    catchup=False,
     default_args={"retries": 0},
     max_active_runs=7,
     tags=["pricing", "gelr", "daily"],
 )
 def gelr():
-    dbt_checks = DbtCloudRunJobOperator(
+    dbt_checks = ExternalTaskSensor(
         task_id="dbt_checks",
-        job_id=DBT_CLOUD_JOB_ID,
-        check_interval=10,
+        # task_id in dags/dbt.py
+        external_dag_id="dbt",
+        external_task_id="dbt_test",
+        # dbt cloud tests should not take longer than 5 minutes
         timeout=300,
-        trigger_rule="one_success",
+        allowed_states=["success"],
+        failed_states=["failed", "skipped"],
+        mode="reschedule",
     )
     (
         dbt_checks
