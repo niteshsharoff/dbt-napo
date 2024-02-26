@@ -26,7 +26,7 @@ def mocked_get_gocompare_policies(mocker: MockerFixture):
     )
     customer1_policy2 = dict(
         customer_uuid=CUSTOMER1_UUID,
-        quote_id=CUSTOMER1_POLICY2_QUOTE_ID,
+        quote_id=CUSTOMER1_POLICY1_QUOTE_ID,
         quote_source="gocompare",
         policy_start_date=datetime(2024, 1, 2),
         name="Rover",
@@ -103,25 +103,23 @@ def mocked_get_gocompare_quotes_between(mocker: MockerFixture):
                     CUSTOMER1_POLICY1_QUOTE_ID,
                     "gocompare",
                     datetime(2024, 1, 1).isoformat(),
-                ],
-                [
-                    CUSTOMER1_POLICY2_QUOTE_ID,
-                    "gocompare",
-                    datetime(2024, 1, 1).isoformat(),
+                    {"start_date": datetime(2024, 1, 1)},
                 ],
                 [
                     CUSTOMER2_POLICY1_QUOTE_ID,
                     "gocompare",
                     datetime(2024, 1, 1).isoformat(),
+                    {"start_date": datetime(2024, 1, 1)},
                 ],
                 [
                     CUSTOMER3_POLICY1_QUOTE_ID,
                     "gocompare",
                     datetime(2024, 1, 1).isoformat(),
+                    {"start_date": datetime(2024, 1, 1)},
                 ],
             ]
         ),
-        columns=["quote_uuid", "quote_source", "quote_at"],
+        columns=["quote_uuid", "quote_source", "quote_at", "common_quote"],
     )
 
     gocompare_quotes_between = gocompare_quotes_between.convert_dtypes()

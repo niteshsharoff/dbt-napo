@@ -5,12 +5,21 @@ from typing import List
 
 import pandas as pd
 import pydantic
+import requests
+from google.auth.transport.requests import Request
+from google.oauth2.id_token import fetch_id_token
 
+from airflow.models import Variable
 from airflow.models.dag import dag
 from airflow.operators.empty import EmptyOperator
 from airflow.operators.python import task
 
 logger = logging.getLogger(__name__)
+
+
+def _get_promotion_service_id_token():
+    PROMOTION_SERVICE_BASE_URL = Variable.get("PROMOTION_SERVICE_BASE_URL")
+    return fetch_id_token(Request(), PROMOTION_SERVICE_BASE_URL)
 
 
 class CreateCustomer(pydantic.BaseModel):
@@ -37,7 +46,7 @@ def _get_gocompare_policies() -> pd.DataFrame:
 def _get_gocompare_quotes_between(start: datetime, end: datetime) -> pd.DataFrame:
     return pd.read_gbq(
         f"""
-        select (quote_uuid, quote_source, quote_at)
+        select (quote_uuid, quote_source, quote_at, common_quote)
         from
             dbt.dim_quote
         where
@@ -79,7 +88,7 @@ def _get_eligible_customers() -> pd.DataFrame:
     )
 
     pets_by_customer = (
-        eligible_policies_df.groupby(["customer_uuid"])["pet_name"]
+        eligible_policies_df.groupby(["customer_uuid", "quote_uuid"])["pet_name"]
         .apply(list)
         .reset_index()
     )
@@ -88,13 +97,65 @@ def _get_eligible_customers() -> pd.DataFrame:
     customers_df = eligible_customers_df.merge(
         pets_by_customer, how="inner", left_on="customer_uuid", right_on="customer_uuid"
     )
+    df = customers_df.merge(
+        gocompare_quotes_df, how="inner", left_on="quote_uuid", right_on="quote_uuid"
+    )
 
-    return customers_df
+    return df
+
+
+def _create_redemptions_for_customers(customers_df):
+    PROMOTION_SERVICE_BASE_URL = Variable.get("PROMOTION_SERVICE_BASE_URL")
+    id_token = _get_promotion_service_id_token()
+    for customer in customers_df.to_dict("records"):
+        promotion_code = "GOCOMPAREJAN2024"
+
+        create_redemption = {
+            "customer_uuid": customer["customer_uuid"],
+            "customer_email": customer["email"],
+            "quote_uuid": customer["quote_uuid"],
+            "quote_start_date": datetime.strptime(
+                (customer["common_quote"]["start_date"]), "%Y-%m-%d %H:%M:%S"
+            ).strftime("%Y-%m-%d"),
+            "has_active_policies": True,
+            "customer_is_in_arrears": False,
+            "customer_first_name": customer["first_name"],
+            "customer_pet_names": customer["pet_name"],
+        }
+
+        response = requests.post(
+            f"{PROMOTION_SERVICE_BASE_URL}/promotions/{promotion_code}/redemption",
+            json=create_redemption,
+            headers={"Authorization": f"Bearer {id_token}"},
+        )
+        if response.status_code != 200:
+            if response.status_code == 400:
+                logger.warning(
+                    "Received client error from promotion service for "
+                    f"quote {create_redemption['quote_uuid']}: {response.content}"
+                )
+            elif response.status_code == 500:
+                logger.warning(
+                    "Received server error from promotion service for "
+                    f"quote {create_redemption['quote_uuid']}: {response.content}"
+                )
+            else:
+                logger.error(
+                    "Received unexpected error from promotion service "
+                    f"for quote {create_redemption['quote_uuid']}: {response.content}"
+                )
+        else:
+            logger.info(f"Received success for quote {create_redemption['quote_uuid']}")
 
 
 @task(task_id="get_eligible_customers")
 def get_eligible_customers():
     return _get_eligible_customers()
+
+
+@task(task_id="create_redemptions")
+def create_redemptions_for_customers(customers_df):
+    return _create_redemptions_for_customers(customers_df)
 
 
 @dag(
