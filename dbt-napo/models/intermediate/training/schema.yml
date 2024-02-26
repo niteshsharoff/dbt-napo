@@ -17,8 +17,8 @@ models:
       - name: updated_at
         description: "The timestamp at which the customer row was last updated."
 
-  - name: int_training_customer_events
-    description: '{{ doc("int_training_customer_events") }}'
+  - name: int_training_payment_events
+    description: '{{ doc("int_training_payment_events") }}'
     columns:
       - name: event_tx
         description: "Timestamp at which the event occured."
