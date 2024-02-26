@@ -24,7 +24,12 @@ sources:
       - name: google_ads_campaign_conversions
         tags: ['growth']
       - name: stripe_customers
+        tags: ['training']
       - name: stripe_payment_intents
+        tags: ['training']
       - name: stripe_subscriptions
+        tags: ['training']
       - name: stripe_refunds
+        tags: ['training']
       - name: stripe_charges
+        tags: ['training']
