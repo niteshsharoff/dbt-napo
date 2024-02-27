@@ -21,6 +21,8 @@ with
             payment.paid_amount_mu,
             claim.policy_id,
             claim.product_id,
+            claim.pet_id,
+            claim.customer_id,
             greatest(
                 greatest(claim.effective_from, condition.effective_from),
                 payment.effective_from
