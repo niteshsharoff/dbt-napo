@@ -153,4 +153,3 @@ select distinct
     py.notes,
     py.cancel_reason
 from recurring_payments py
-left join {{ ref("int_training_customers") }} cu on py.customer_uuid = cu.customer_uuid
