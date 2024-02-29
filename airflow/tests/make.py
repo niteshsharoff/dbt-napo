@@ -80,7 +80,7 @@ def mocked_get_gocompare_policies(mocker: MockerFixture):
         ),
         columns=[
             "customer_uuid",
-            "quote_uuid",
+            "quote_id",
             "quote_source",
             "policy_start_date",
             "name",
