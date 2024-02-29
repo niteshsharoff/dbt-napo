@@ -2,7 +2,7 @@
 
 with
     events as (
-        select *, date(event_tx) as date from {{ ref("int_training_customer_events") }}
+        select *, date(event_tx) as date from {{ ref("int_training_payment_events") }}
     ),
     ad_spend as (
         select 'ad_spend' as metric, date, sum(total_spend) as cnt

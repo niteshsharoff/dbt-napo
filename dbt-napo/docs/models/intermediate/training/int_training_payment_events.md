@@ -1,4 +1,4 @@
-{% docs int_training_customer_events %}
+{% docs int_training_payment_events %}
 
 A best effort reconstruction of training domain events using a combination of raw data sources from backend and Stripe.
 

@@ -140,7 +140,7 @@ with
                 from events
             )
     )
-select
+select distinct
     py.event_tx,
     py.event_type,
     py.customer_uuid,
