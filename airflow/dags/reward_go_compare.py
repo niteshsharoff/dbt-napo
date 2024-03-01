@@ -138,9 +138,16 @@ def _create_redemptions_for_customers():
         headers={"Authorization": f"Bearer {id_token}"},
     )
 
-    existing_redemptions = [redemption for redemption in existing_redemptions if redemption["promotion"]["code"] == GO_COMPARE_PROMOTION_CODE]
+    existing_redemptions = [
+        redemption
+        for redemption in existing_redemptions
+        if redemption["promotion"]["code"] == GO_COMPARE_PROMOTION_CODE
+    ]
 
-    redemption_lookup = {(redemption["customer"]["uuid"], redemption["quote_uuid"]): redemption for redemption in existing_redemptions}
+    redemption_lookup = {
+        (redemption["customer"]["uuid"], redemption["quote_uuid"]): redemption
+        for redemption in existing_redemptions
+    }
 
     for policy in eligible_policies_df.to_dict("records"):
 
@@ -168,18 +175,23 @@ def _create_redemptions_for_customers():
         )
         if response.status_code != 200:
             if response.status_code == 400:
-                logger.warning(
-                    "Received client error from promotion service for "
-                    f"quote {create_redemption['quote_uuid']}: {response.content}"
-                )
+                message = f"Received client error from promotion service for quote {create_redemption['quote_uuid']}: {response.content}"
+                logger.warning(message)
+                raise AirflowException(
+                    message
+                )  # don't continue, we want to know if this failed
             elif response.status_code == 500:
-                logger.warning(
-                    "Received server error from promotion service for "
-                    f"quote {create_redemption['quote_uuid']}: {response.content}"
-                )
+                message = f"Received server error from promotion service for quote {create_redemption['quote_uuid']}: {response.content}"
+                logger.warning(message)
+                raise AirflowException(
+                    message
+                )  # don't continue, we want to know if this failed
             else:
                 message = f"Received unexpected error from promotion service for quote {create_redemption['quote_uuid']}: {response.content}"
                 logger.error(message)
+                raise AirflowException(
+                    message
+                )  # don't continue, we want to know if this failed
         else:
             logger.info(f"Received success for quote {create_redemption['quote_uuid']}")
 
@@ -281,20 +293,21 @@ def create_rewards():
         )
         if response.status_code != 200:
             if response.status_code == 400:
-                logger.warning(
-                    "Received client error from promotion service whilst "
-                    f"rewarding redemption {redemption['uuid']}: {response.content}"
-                )
+                message = "Received client error from promotion service whilst rewarding redemption {redemption['uuid']}: {response.content}"
+                logger.warning(message)
+                raise AirflowException(message)
             elif response.status_code == 500:
-                logger.warning(
-                    "Received server error from promotion service whilst "
-                    f"rewarding redemption {redemption['uuid']}: {response.content}"
-                )
+                message = "Received server error from promotion service whilst rewarding redemption {redemption['uuid']}: {response.content}"
+                logger.warning(message)
+                raise AirflowException(
+                    message
+                )  # don't continue, we want to know if this failed
             else:
-                logger.error(
-                    "Received unexpected error from promotion service whilst "
-                    f"rewarding redemption {redemption['uuid']}: {response.content}"
-                )
+                message = "Received unexpected error from promotion service whilst rewarding redemption {redemption['uuid']}: {response.content}"
+                logger.error(message)
+                raise AirflowException(
+                    message
+                )  # don't continue, we want to know if this failed
         else:
             logger.info(f"Received success whilst rewarding {redemption['uuid']}")
 
