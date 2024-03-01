@@ -75,7 +75,7 @@ def _get_eligible_customers():
             and quote.created_at <= 1706659200000
             and quote.source = "tungsten-vale"
             and policy.start_date >= date("2024-01-01")
-            and date_diff(current_date(), policy.start_date, DAY) = 60
+            and date_diff(current_date(), policy.start_date, DAY) >= 60
             and policy.sold_at is not null and policy.cancel_date is null
         """
     )
@@ -121,17 +121,33 @@ def _get_eligible_customers():
         ]
     )
     gocompare_eligible_policies_df.to_csv(
-        f"gs://{GCS_BUCKET}/go-compare-rewards/reporting/run_date={date.today()}/eligible_customers.csv",
+        f"gs://{GCS_BUCKET}/go-compare-rewards/reporting/run_date={date.today()}/customers.csv",
         index=False,
     )
 
 
 def _create_redemptions_for_customers():
     eligible_policies_df = pd.read_csv(
-        f"gs://{GCS_BUCKET}/go-compare-rewards/reporting/run_date={date.today()}/eligible_customers.csv"
+        f"gs://{GCS_BUCKET}/go-compare-rewards/reporting/run_date={date.today()}/customers.csv"
     )
     id_token = _get_promotion_service_id_token()
+
+    # get redemptions that have already been created
+    existing_redemptions = _paginate_url(
+        f"{PROMOTION_SERVICE_BASE_URL}/redemptions/",
+        headers={"Authorization": f"Bearer {id_token}"},
+    )
+
+    existing_redemptions = [redemption for redemption in existing_redemptions if redemption["promotion"]["code"] == GO_COMPARE_PROMOTION_CODE]
+
+    redemption_lookup = {(redemption["customer"]["uuid"], redemption["quote_uuid"]): redemption for redemption in existing_redemptions}
+
     for policy in eligible_policies_df.to_dict("records"):
+
+        # skip if redemption has already been created for this customer and quote
+        if (policy["customer_uuid"], policy["quote_uuid"]) in redemption_lookup:
+            continue
+
         promotion_code = GO_COMPARE_PROMOTION_CODE
 
         create_redemption = {
