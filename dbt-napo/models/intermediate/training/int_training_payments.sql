@@ -7,7 +7,7 @@ select distinct
     re.refund_status,
     re.refund_amount_mu / 100 as refund_amount,
     re.refund_reason,
-    cu.email as email,
+    coalesce(cu.email, ch.receipt_email) as email,
     cu.customer_uuid as customer_uuid,
     pi.created_at as payment_intent_at,
     ch.created_at as charge_at,
