@@ -1,6 +1,6 @@
 import ast
 import logging
-from urllib.parse import urlparse
+import urllib.parse as urlparse
 import uuid
 from datetime import date, datetime
 from typing import Any, List
@@ -75,7 +75,6 @@ def _get_eligible_customers():
             and quote.created_at <= 1706659200000
             and quote.source = "tungsten-vale"
             and policy.start_date >= date("2024-01-01")
-            and date_diff(current_date(), policy.start_date, DAY) >= 60
             and policy.sold_at is not null and policy.cancel_date is null
         """
     )
@@ -157,6 +156,9 @@ def _create_redemptions_for_customers():
 
         promotion_code = GO_COMPARE_PROMOTION_CODE
 
+        pet_names = ast.literal_eval(policy["pet_name"])
+        pet_names = [name.strip() for name in pet_names]
+
         create_redemption = {
             "customer_uuid": policy["customer_uuid"],
             "customer_email": policy["email"],
@@ -165,7 +167,7 @@ def _create_redemptions_for_customers():
             "has_active_policies": True,
             "customer_is_in_arrears": False,
             "customer_first_name": policy["first_name"],
-            "customer_pet_names": policy["pet_name"],
+            "customer_pet_names": pet_names,
         }
 
         response = requests.post(
@@ -177,9 +179,9 @@ def _create_redemptions_for_customers():
             if response.status_code == 400:
                 message = f"Received client error from promotion service for quote {create_redemption['quote_uuid']}: {response.content}"
                 logger.warning(message)
-                raise AirflowException(
-                    message
-                )  # don't continue, we want to know if this failed
+                # raise AirflowException(
+                #     message
+                # )  # don't continue, we want to know if this failed
             elif response.status_code == 500:
                 message = f"Received server error from promotion service for quote {create_redemption['quote_uuid']}: {response.content}"
                 logger.warning(message)
@@ -245,7 +247,7 @@ def create_report():
 
 @task(task_id="get_eligible_customers")
 def get_eligible_customers():
-    return _get_eligible_customers()
+    _get_eligible_customers()
 
 
 @task(task_id="create_redemptions")
@@ -255,34 +257,47 @@ def create_redemptions_for_customers():
 
 @task(task_id="create_rewards")
 def create_rewards():
-    create_rewards_df = pd.read_gbq(
-        f"""
-        select
-            quote_uuid,
-            has_active_policies as redemption_has_active_policies,
-            customer_is_in_arrears
-        from
-            dbt_marts.promotion__gift_card_promotion_redemptions
+
+    active_policies_for_quotes = pd.read_gbq(
+        """
+        select quote.quote_id, policy.sold_at, policy.cancel_date from (
+            select * except (row_effective_from)
+            from (
+                select *
+                , max(row_effective_from) over(partition by policy.policy_id) as _latest
+                from `ae32-vpcservice-datawarehouse.dbt.int_policy_history_v2`
+            )
+            where row_effective_from = _latest)
         where
-            promotion_code = '{GO_COMPARE_PROMOTION_CODE}'
-        order by
-            quote_start_date
-    """
+            quote.created_at >= 1704067200000
+            and quote.created_at <= 1706659200000
+            and quote.source = "tungsten-vale"
+            and policy.start_date >= date("2024-01-01")
+        """
     )
-    create_rewards_lookup = create_rewards_df.set_index("quote_uuid").to_dict("index")
+    print(active_policies_for_quotes.columns)
+    active_policies_for_quotes = active_policies_for_quotes.rename(columns ={"quote_id": "quote_uuid"})
+    active_policies_for_quotes['redemption_has_active_policies'] = active_policies_for_quotes['sold_at'].notnull() & active_policies_for_quotes['cancel_date'].isnull()
+    active_policies_for_quotes = active_policies_for_quotes.groupby("quote_uuid")['redemption_has_active_policies'].agg(any).reset_index()
+    create_rewards_lookup = active_policies_for_quotes.set_index("quote_uuid").to_dict("index")
+
 
     id_token = _get_promotion_service_id_token()
     redemptions = _paginate_url(
         f"{PROMOTION_SERVICE_BASE_URL}/redemptions/",
         headers={"Authorization": f"Bearer {id_token}"},
     )
+    redemptions = [
+        redemption
+        for redemption in redemptions
+        if redemption["promotion"]["code"] == GO_COMPARE_PROMOTION_CODE
+    ]
     for redemption in redemptions:
+        quote_uuid = redemption["quote_uuid"]
         if redemption["quote_uuid"] not in create_rewards_lookup:
             continue
         create_reward = create_rewards_lookup[redemption["quote_uuid"]]
-        create_reward["customer_is_in_arrears"] = bool(
-            create_reward["customer_is_in_arrears"]
-        )
+        create_reward["customer_is_in_arrears"] = False
         create_reward["redemption_has_active_policies"] = bool(
             create_reward["redemption_has_active_policies"]
         )
@@ -293,17 +308,16 @@ def create_rewards():
         )
         if response.status_code != 200:
             if response.status_code == 400:
-                message = "Received client error from promotion service whilst rewarding redemption {redemption['uuid']}: {response.content}"
+                message = f"Received client error from promotion service whilst rewarding redemption {redemption['uuid']}: {response.content}"
                 logger.warning(message)
-                raise AirflowException(message)
             elif response.status_code == 500:
-                message = "Received server error from promotion service whilst rewarding redemption {redemption['uuid']}: {response.content}"
+                message = f"Received server error from promotion service whilst rewarding redemption {redemption['uuid']}: {response.content}"
                 logger.warning(message)
                 raise AirflowException(
                     message
                 )  # don't continue, we want to know if this failed
             else:
-                message = "Received unexpected error from promotion service whilst rewarding redemption {redemption['uuid']}: {response.content}"
+                message = f"Received unexpected error from promotion service whilst rewarding redemption {redemption['uuid']}: {response.content}"
                 logger.error(message)
                 raise AirflowException(
                     message
@@ -311,10 +325,21 @@ def create_rewards():
         else:
             logger.info(f"Received success whilst rewarding {redemption['uuid']}")
 
+@task(task_id="check_runa_balance")
+def check_runa_balance():
+    report_df = pd.read_csv(
+       f"gs://{GCS_BUCKET}/go-compare-rewards/reporting/run_date={date.today()}/report.csv",
+    )
+    amount_due_gbp = round(report_df["amount_due_pence"].sum() / 100, 2)
+    raise AirflowException(
+        f"Check that the £{amount_due_gbp} due is available in Runa and then"
+        " mark as success to continue"
+    )
+
 
 @dag(
     dag_id="reward_gocompare_customers",
-    schedule_interval="0 10 * * *",  # run daily at 10am
+    schedule_interval=None,
     start_date=datetime(2024, 3, 1, 10, 0, 0),
     default_args={"retries": 0},
     tags=["promotion"],
@@ -324,6 +349,7 @@ def reward_gocompare_customers():
         get_eligible_customers()
         >> create_redemptions_for_customers()
         >> create_report.override(task_id="create_before_report")()
+        >> check_runa_balance()
         >> create_rewards()
         >> create_report.override(task_id="create_after_report")()
     )
