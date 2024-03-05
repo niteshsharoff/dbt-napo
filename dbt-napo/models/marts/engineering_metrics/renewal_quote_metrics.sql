@@ -1,7 +1,7 @@
 {{ config(schema="marts") }}
 {{ config(pre_hook=["{{declare_policy_udfs()}}"]) }}
 
-select p.policy_id, p.start_date, p.end_date, r.old_policy_id as renewal_old_policy_id
+select p.policy_id, p.start_date, p.end_date, r.uuid as renewal_uuid
 from {{ ref("stg_raw__policy") }} p
 left join {{ ref("stg_raw__renewal") }} r on r.old_policy_id = p.policy_id
 where
