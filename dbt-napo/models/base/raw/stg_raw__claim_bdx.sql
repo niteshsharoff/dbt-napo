@@ -70,7 +70,11 @@ select
         -- add rows here when importing new BDXs --
         end as date
     ) as bdx_nominal_date,
-    *
+    case
+        when claim_substatus = 'accepted' then claims_paid_to_date else 0
+    end as claims_paid_to_date_bdx_logic_applied,
+    claims_paid_to_date as claims_paid_to_date_inconsistent_definition,
+    * except (claims_paid_to_date)
 from `raw.claim_bdx_monthly`
 where
     source_name
