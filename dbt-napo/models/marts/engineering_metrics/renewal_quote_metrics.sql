@@ -8,3 +8,4 @@ where
     {{ target.schema }}.is_sold(p.annual_payment_id, p.subscription_id) = true
     and p.cancel_date is null
     and p.end_date between current_date() and date_add(current_date(), interval 28 day)
+    and r.uuid is null
