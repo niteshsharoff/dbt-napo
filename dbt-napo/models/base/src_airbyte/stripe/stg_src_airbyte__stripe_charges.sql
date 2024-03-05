@@ -9,5 +9,6 @@ select
     json_extract_scalar(outcome, '$.reason') as reason,
     refunded,
     payment_intent as stripe_payment_intent_id,
-    failure_message
+    failure_message,
+    receipt_email
 from {{ source("src_airbyte", "stripe_charges") }}
