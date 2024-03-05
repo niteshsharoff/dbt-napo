@@ -375,6 +375,7 @@ def go_compare():
         mode="reschedule",
         # 15 1 * * *
         execution_delta=timedelta(hours=3),
+        trigger_rule="one_success",
     )
 
     # Weekly tasks branch

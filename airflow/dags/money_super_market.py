@@ -360,9 +360,6 @@ def money_super_market():
     """
     run_date = "{{ data_interval_end.date() }}"
     no_op = EmptyOperator(task_id="no_op", trigger_rule="one_success")
-    # This can get expensive if we run these checks for each PCW individually once they
-    # are all migrated to BQ. Consider moving to a new DBT only DAG and enforce cross
-    # DAG dependencies with ExternalTaskSensor
     dbt_checks = ExternalTaskSensor(
         task_id="dbt_checks",
         # task_id in dags/dbt.py
@@ -375,6 +372,7 @@ def money_super_market():
         mode="reschedule",
         # 15 1 * * *
         execution_delta=timedelta(hours=3, minutes=-15),
+        trigger_rule="one_success",
     )
 
     is_first_day_of_week = weekly_branch()
