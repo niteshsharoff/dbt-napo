@@ -67,7 +67,7 @@ def insert_data_from_query(data_interval_end: Optional[pendulum.DateTime] = None
 @dag(
     dag_id="gelr",
     start_date=pendulum.datetime(2021, 10, 18, tz="UTC"),
-    schedule_interval="15 1 * * *",
+    schedule_interval="30 1 * * *",
     catchup=False,
     default_args={"retries": 0},
     max_active_runs=7,
