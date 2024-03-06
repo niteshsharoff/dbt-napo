@@ -18,7 +18,7 @@ with
             reason_for_claim as condition,
             decline_reason as decline_reason,
             coalesce(total_value_of_claim, 0.0) as invoice_amount,
-            coalesce(claims_paid_to_date, 0.0) as paid_amount,
+            coalesce(claims_paid_to_date_bdx_logic_applied, 0.0) as paid_amount,
             coalesce(reserve, 0.0) as reserve,
             coalesce(incurred_value, 0.0) as incurred_amount,
             coalesce(recovery, 0.0) as recovery_amount,
