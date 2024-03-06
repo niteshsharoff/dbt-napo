@@ -73,3 +73,7 @@ models:
         description: "Total number of videos completed (including re-watches)."
       - name: first_class_attended
         description: "Name of the first class a customer has attended."
+      - name: is_training_customer
+        description: "Set to true if the customer has purchased a policy with Napo at any point in time."
+      - name: is_insurance_customer
+        description: "Set to true if the customer can be found in our booking database or via Stripe payments."

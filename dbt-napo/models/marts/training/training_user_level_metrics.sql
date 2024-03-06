@@ -3,9 +3,9 @@
 with
     call_with_trainers as (
         select
-            email,
+            receipt_email as email,
             count(distinct stripe_charge_id) over (
-                partition by email
+                partition by receipt_email
             ) as trainer_sessions_booked
         from {{ ref("int_training_payments") }}
         where lower(description) like '%call with a trainer%'
@@ -17,7 +17,9 @@ with
             'pa_standalone' as customer_type,
             registration_date,
             cast(subscription_created_at as date) as purchase_date,
-            cast(subscription_cancelled_at as date) as subscription_cancel_date
+            cast(subscription_cancelled_at as date) as subscription_cancel_date,
+            is_insurance_customer,
+            is_training_customer
         from {{ ref("int_training_customers") }}
     ),
     agg_session_metrics as (
@@ -93,7 +95,7 @@ with
             coalesce(engagement.sessions_attended, 0) as sessions_attended,
             coalesce(engagement.sessions_missed, 0) as sessions_missed,
             coalesce(engagement.sessions_cancelled, 0) as sessions_cancelled,
-            coalesce(engagement.sessions_time_spent, 0) as sessions_time_spent,
+            coalesce(engagement.sessions_time_spent, 0) as sessions_time_spent_seconds,
             coalesce(engagement.classes_scheduled, 0) as classes_scheduled,
             coalesce(engagement.classes_joined, 0) as classes_joined,
             coalesce(engagement.classes_attended, 0) as classes_attended,
@@ -101,7 +103,9 @@ with
             coalesce(engagement.classes_cancelled, 0) as classes_cancelled,
             coalesce(engagement.videos_played, 0) as videos_played,
             coalesce(engagement.videos_completed, 0) as videos_completed,
-            engagement.first_class_attended as first_class_attended
+            engagement.first_class_attended as first_class_attended,
+            is_insurance_customer,
+            is_training_customer
         from customer_metrics customer
         full outer join call_with_trainers calls on customer.email = calls.email
         left join
