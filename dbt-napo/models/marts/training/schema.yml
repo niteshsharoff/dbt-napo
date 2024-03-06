@@ -24,3 +24,56 @@ models:
         description: "Sum of payment amounts aggreated by day where recurring_payment = true."
       - name: other_revenue
         description: "Sum of payment amounts aggreated by day where stripe_customer_id and customer_uuid is null."
+
+  - name: training_user_level_metrics
+    description: "Training & Socialisation engagement metrics (cumulative)."
+    latest_version: 1
+    versions:
+      - v: 1
+    columns:
+      - name: customer_uuid
+        description: "Napo internal customer unique identifier."
+      - name: email
+        description: "Customer email address."
+      - name: customer_type
+        description: "pa_standalone"
+      - name: registration_date
+        description: "The date the customer object is created in booking-service DB."
+      - name: purchase_date
+        description: "The date the customer's Stripe subscription was created."
+      - name: subscription_cancel_date
+        description: "The date the customer's Stripe subscription was cancelled."
+      - name: talk_to_trainer_sessions_booked
+        description: "Number of 'call with a trainer' sessions booked"
+      - name: sessions_scheduled
+        description: "Number of sessions scheduled."
+      - name: sessions_joined
+        description: "Number of sessions joined."
+      - name: sessions_attended
+        description: "Number of sessions attended."
+      - name: sessions_missed
+        description: "Number of sessions missed."
+      - name: sessions_cancelled
+        description: "Number of sessions cancelled."
+      - name: sessions_time_spent
+        description: "Cumulative time spent across all sessions (in seconds)."
+      - name: classes_scheduled
+        description: "Number of classes scheduled, multiple sessions for the same class is only counted once."
+      - name: classes_joined
+        description: "Number of classes joined, multiple sessions for the same class is only counted once."
+      - name: classes_attended
+        description: "Number of classes attended, multiple sessions for the same class is only counted once."
+      - name: classes_missed
+        description: "Number of classes missed, multiple sessions for the same class is only counted once."
+      - name: classes_cancelled
+        description: "Number of classes cancelled, multiple sessions for the same class is only counted once."
+      - name: videos_played
+        description: "Total number of videos played (including re-watches)."
+      - name: videos_completed
+        description: "Total number of videos completed (including re-watches)."
+      - name: first_class_attended
+        description: "Name of the first class a customer has attended."
+      - name: is_training_customer
+        description: "Set to true if the customer has purchased a policy with Napo at any point in time."
+      - name: is_insurance_customer
+        description: "Set to true if the customer can be found in our booking database or via Stripe payments."

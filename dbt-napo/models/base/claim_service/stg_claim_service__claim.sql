@@ -23,6 +23,8 @@ with
             -- link to policy dimension
             cast(json_extract_scalar(payload, '$.policy_id') as int) as policy_id,
             cast(json_extract_scalar(payload, '$.product_id') as int) as product_id,
+            cast(json_extract_scalar(payload, '$.pet_id') as int) as pet_id,
+            cast(json_extract_scalar(payload, '$.customer_id') as int) as customer_id,
             cast(
                 json_extract_scalar(payload, '$.updated_at') as timestamp
             ) as updated_at

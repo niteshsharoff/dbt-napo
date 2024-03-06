@@ -18,7 +18,7 @@ with
             reason_for_claim as condition,
             decline_reason as decline_reason,
             coalesce(total_value_of_claim, 0.0) as invoice_amount,
-            coalesce(claims_paid_to_date, 0.0) as paid_amount,
+            coalesce(claims_paid_to_date_bdx_logic_applied, 0.0) as paid_amount,
             coalesce(reserve, 0.0) as reserve,
             coalesce(incurred_value, 0.0) as incurred_amount,
             coalesce(recovery, 0.0) as recovery_amount,
@@ -198,13 +198,13 @@ with
             claim_sub_type,
             condition,
             decline_reason,
-            invoice_amount,
-            paid_amount,
-            reserve,
-            incurred_amount,
-            recovery_amount,
-            min(effective_from) as effective_from,
-            max(effective_to) as effective_to
+            cast(invoice_amount as numeric) as invoice_amount,
+            cast(paid_amount as numeric) as paid_amount,
+            cast(reserve as numeric) as reserve,
+            cast(incurred_amount as numeric) as incurred_amount,
+            cast(recovery_amount as numeric) as recovery_amount,
+            cast(min(effective_from) as timestamp) as effective_from,
+            cast(max(effective_to) as timestamp) as effective_to
         from assign_grp_id
         group by
             policy_number,

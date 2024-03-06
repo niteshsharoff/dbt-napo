@@ -140,7 +140,7 @@ with
                 from events
             )
     )
-select
+select distinct
     py.event_tx,
     py.event_type,
     py.customer_uuid,
@@ -153,4 +153,3 @@ select
     py.notes,
     py.cancel_reason
 from recurring_payments py
-left join {{ ref("int_training_customers") }} cu on py.customer_uuid = cu.customer_uuid

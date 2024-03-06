@@ -91,6 +91,7 @@ with
                 continuation,
                 accident,
                 illness,
+                fast_track_gen_2,
                 automated_continuation,
                 automated_new_accident,
                 automated_new_illness,
@@ -116,6 +117,7 @@ with
                 continuation,
                 accident,
                 illness,
+                fast_track_gen_2,
                 automated_continuation,
                 automated_new_accident,
                 automated_new_illness
@@ -144,6 +146,7 @@ with
                     'continuation',
                     'accident',
                     'illness',
+                    'ft gen2' as fast_track_gen_2,
                     'automated-continuation' as automated_continuation,
                     'automated-new-accident' as automated_new_accident,
                     'automated-new-illness' as automated_new_illness

@@ -11,7 +11,7 @@ DBT_CLOUD_JOB_ID = Variable.get("DBT_CLOUD_TEST_JOB_ID")
 @dag(
     dag_id="dbt",
     start_date=pendulum.datetime(2024, 1, 31, tz="UTC"),
-    schedule_interval="15 1 * * *",
+    schedule_interval="30 1 * * *",
     catchup=True,
     default_args={"retries": 0},
     max_active_runs=1,

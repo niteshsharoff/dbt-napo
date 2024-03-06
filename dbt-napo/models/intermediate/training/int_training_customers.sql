@@ -1,73 +1,111 @@
 with
+    -- All customers in our Insurance databases, including those who haven't purchased
+    -- a policy
+    dim_customer as (
+        select customer_uuid, email
+        from
+            (
+                select
+                    *, max(effective_from) over (partition by customer_uuid) as _latest
+                from {{ ref("dim_customer") }}
+            )
+        where effective_from = _latest
+    ),
+    -- Recover uuid from subscription metadata if missing in customer object
     stripe_customers as (
-        select
-            cus.stripe_customer_id,
-            -- Recover uuid from subscription metadata if missing in customer object
-            coalesce(cus.customer_uuid, sub.customer_uuid) as customer_uuid,
-            cus.email,
-            sub.stripe_subscription_id,
-            sub.payment_plan_type,
-            cus.created_at,
-            cus.updated_at
+        select cus.stripe_customer_id, sub.customer_uuid as customer_uuid, cus.email
         from {{ ref("stg_src_airbyte__stripe_customers") }} cus
-        join
+        left join
             {{ ref("stg_src_airbyte__stripe_subscriptions") }} sub
             on cus.stripe_customer_id = sub.stripe_customer_id
     ),
     booking_db_customers as (
-        select
-            stripe_customer_id,
-            customer_uuid,
-            cast(null as string) as email,
-            cast(null as string) as stripe_subscription_id,
-            cast(null as string) as payment_plan_type,
-            created_at,
-            updated_at
+        select stripe_customer_id, customer_uuid
         from {{ ref("stg_booking_service__customers") }}
     ),
-    customers as (
-        select *
-        from stripe_customers
-        union distinct
-        select *
-        from booking_db_customers
-    ),
-    -- This backpopulates subscription and customer info for stripe customers that
-    -- aren't in our backend (Example: cus_PJWINKZfjrEc8y)
-    backpopulate_customer_uuid as (
+    booking_and_stripe_customers as (
         select
-            * except (customer_uuid, payment_plan_type, stripe_subscription_id, email),
-            first_value(email ignore nulls) over (
-                partition by stripe_customer_id order by stripe_subscription_id desc
-            ) as email,
-            first_value(stripe_subscription_id ignore nulls) over (
-                partition by stripe_customer_id order by stripe_subscription_id desc
-            ) as stripe_subscription_id,
-            first_value(payment_plan_type ignore nulls) over (
-                partition by stripe_customer_id order by payment_plan_type desc
-            ) as payment_plan_type,
-            first_value(customer_uuid ignore nulls) over (
-                partition by stripe_customer_id order by customer_uuid desc
-            ) as customer_uuid
-        from customers
+            -- Backpopulate customer_uuid for customer data pulled from stripe
+            coalesce(booking.customer_uuid, stripe.customer_uuid) as customer_uuid,
+            stripe.email
+        from booking_db_customers booking
+        full outer join
+            stripe_customers stripe
+            on booking.stripe_customer_id = stripe.stripe_customer_id
     ),
-    -- There should only be 1 row per [customer_uuid, stripe_customer_id] combo
-    -- in this table. There can be multiple stripe customers per Napo customer
+    training_customers as (
+        select
+            training.customer_uuid,
+            -- Backpopulate email address for training customers
+            coalesce(training.email, dim_customer.email) as email
+        from booking_and_stripe_customers training
+        join dim_customer on training.customer_uuid = dim_customer.customer_uuid
+    ),
+    -- The grain of this table is at the policy level, this captures only customers
+    -- that have purchased a policy
+    insurance_customers as (
+        select customer.customer_uuid, customer.email
+        from {{ ref("dim_policy_claim_snapshot") }}
+        where
+            snapshot_date
+            = (select max(snapshot_date) from {{ ref("dim_policy_claim_snapshot") }})
+    ),
+    insurance_and_training_customers as (
+        select distinct
+            insurance.customer_uuid as insurance_customer_uuid,
+            -- backpopulate email addresses for insurance customers
+            coalesce(insurance.email, training.email) as email,
+            training.customer_uuid as training_customer_uuid,
+            case
+                when insurance.customer_uuid is not null then true else false
+            end as is_insurance_customer,
+            case
+                when training.customer_uuid is not null then true else false
+            end as is_training_customer
+        from insurance_customers insurance
+        full outer join
+            training_customers training
+            on insurance.customer_uuid = training.customer_uuid
+    ),
+    one_off_stripe_payments as (
+        select distinct
+            dim_customer.customer_uuid as customer_uuid, receipt_email as email
+        from {{ ref("int_training_payments") }} payment
+        left join dim_customer on payment.receipt_email = dim_customer.email
+        where payment.customer_uuid is null
+    ),
+    all_customers as (
+        select distinct
+            coalesce(
+                insurance_customer_uuid, training_customer_uuid, pmt.customer_uuid
+            ) as customer_uuid,
+            coalesce(cus.email, pmt.email) as email,
+            coalesce(is_insurance_customer, false) as is_insurance_customer,
+            case
+                when pmt.email is not null then true else is_training_customer
+            end as is_training_customer
+        from insurance_and_training_customers cus
+        full outer join one_off_stripe_payments pmt on cus.email = pmt.email
+    ),
+    -- Lookup registration date and subscription dates
     final as (
         select
-            stripe_customer_id,
-            customer_uuid,
-            email,
-            stripe_subscription_id,
-            payment_plan_type,
-            created_at,
-            updated_at,
-            min(created_at) over (
-                partition by customer_uuid, stripe_customer_id
-            ) as _earliest
-        from backpopulate_customer_uuid
-    -- left join {{ ref("dim_customer") }} cu on bp.customer_uuid = cu.customer_uuid
+            customer.customer_uuid,
+            customer.email,
+            cast(backend.created_at as date) as registration_date,
+            subscription.stripe_customer_id,
+            subscription.created_at as subscription_created_at,
+            subscription.cancelled_at as subscription_cancelled_at,
+            customer.is_insurance_customer,
+            customer.is_training_customer
+        from all_customers customer
+        left join
+            {{ ref("stg_booking_service__customers") }} backend
+            on customer.customer_uuid = backend.customer_uuid
+        left join
+            {{ ref("stg_src_airbyte__stripe_subscriptions") }} subscription
+            on customer.customer_uuid = subscription.customer_uuid
     )
-select * except (_earliest)
+select *
 from final
-where created_at = _earliest
+where is_training_customer = true

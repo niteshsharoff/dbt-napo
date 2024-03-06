@@ -572,37 +572,37 @@
       {
         "mode": "NULLABLE",
         "name": "invoice_amount",
-        "type": "FLOAT"
+        "type": "NUMERIC"
       },
       {
         "mode": "NULLABLE",
         "name": "paid_amount",
-        "type": "FLOAT"
+        "type": "NUMERIC"
       },
       {
         "mode": "NULLABLE",
         "name": "reserve",
-        "type": "FLOAT"
+        "type": "NUMERIC"
       },
       {
         "mode": "NULLABLE",
         "name": "incurred_amount",
-        "type": "FLOAT"
+        "type": "NUMERIC"
       },
       {
         "mode": "NULLABLE",
         "name": "recovery_amount",
-        "type": "FLOAT"
+        "type": "NUMERIC"
       },
       {
         "mode": "NULLABLE",
         "name": "effective_from",
-        "type": "DATE"
+        "type": "TIMESTAMP"
       },
       {
         "mode": "NULLABLE",
         "name": "effective_to",
-        "type": "DATE"
+        "type": "TIMESTAMP"
       }
     ],
     "mode": "REPEATED",
