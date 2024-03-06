@@ -1,5 +1,11 @@
 version: 2
 
+sources:
+  - name: airflow
+    schema: airflow
+    tables:
+      - name: policy_claim_snapshot
+
 models:
   - name: dim_pet
     description: "A type 2 SCD table tracking any changes made to a `pet` model in policy-service."

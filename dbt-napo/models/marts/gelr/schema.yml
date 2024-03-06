@@ -1,12 +1,5 @@
 version: 2
 
-sources:
-  - name: airflow
-    schema: airflow
-    tables:
-      - name: policy_claim_snapshot
-
-
 models:
   - name: gelr_policy_history
     description: "Track changes to any dimension linked to a policy."

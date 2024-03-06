@@ -6,28 +6,18 @@ models:
     columns:
       - name: customer_uuid
         description: "Internal UUID for a Napo customer."
-      - name: stripe_customer_id
-        description: "ID of a customer object on Stripe. It's possible for a Napo customer to be associated with multiple Stripe customer objects."
       - name: email
         description: "Customer email address."
-      - name: stripe_subscription_id
-        description: "ID of a subscription object on Stripe. Napo customer_uuid can be recovered from the Stripe subscription's metadata."
-      - name: payment_plan_type
-        description: "The payment plan associated with a customer's Stripe subscription. Can be 'year' or 'month'."
-      - name: is_training_customer
-        description: "true if the customer is in our insurance databases."
-      - name: is_insurance_customer
-        description: "true if the customer is in our training databases."
       - name: registration_date
         description: "The date the customer object is created in booking-service DB."
       - name: subscription_created_at
         description: "The date the customer's Stripe subscription was created."
       - name: subscription_cancelled_at
         description: "The date the customer's Stripe subscription was cancelled."
-      - name: created_at
-        description: "The earliest timestamp at which a customer entry is recorded in Napo's systems. This can be through booking-service DB or extracted from Stripe by Airbyte."
-      - name: updated_at
-        description: "The timestamp at which the customer row was last updated."
+      - name: is_training_customer
+        description: "true if the customer is in our insurance databases."
+      - name: is_insurance_customer
+        description: "true if the customer is in our training databases."
 
   - name: int_training_payment_events
     description: '{{ doc("int_training_payment_events") }}'

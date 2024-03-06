@@ -2,7 +2,7 @@ with
     stripe_customers as (
         select
             id as stripe_customer_id,
-            cast(null as string) as customer_uuid,
+            name,
             email,
             timestamp_seconds(created) as created_at,
             timestamp_seconds(updated) as updated_at,
