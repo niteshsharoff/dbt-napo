@@ -1,0 +1,56 @@
+version: 2
+
+models:
+  - name: int_quote_raw_requests
+    description: "Denormalised fields extracted from raw quote request data from quote-service"
+    columns:
+      - name: quote_uuid
+        description: ""
+      - name: quote_at
+        description: ""
+      - name: status
+        description: ""
+      - name: quote_source
+        description: ""
+      - name: applicant_firstname
+        description: ""
+      - name: applicant_surname
+        description: ""
+      - name: applicant_dob
+        description: ""
+      - name: applicant_email
+        description: ""
+      - name: applicant_address_1
+        description: ""
+      - name: applicant_address_2
+        description: ""
+      - name: applicant_address_3
+        description: ""
+      - name: applicant_address_4
+        description: ""
+      - name: applicant_address_5
+        description: ""
+      - name: applicant_postcode
+        description: ""
+      - name: pet_name
+        description: ""
+      - name: pet_dob
+        description: ""
+      - name: pet_gender
+        description: ""
+      - name: pet_species
+        description: ""
+      - name: pet_breed_category
+        description: "Can one of 'pedigree', 'cross', 'mixed'"
+      - name: pet_source_breed_name
+        description: "Source breed name sourced from quote-service breed map"
+      - name: pet_common_breed_name
+        description: "Common breed name sourced from quote-service breed map"
+      - name: pet_is_microchipped
+        description: ""
+      - name: pet_is_aggressive
+        description: ""
+      - name: pet_is_neutered
+        description: ""
+      - name: pet_is_vaccinated
+        description: ""

@@ -1,3 +1,5 @@
+{{ config(materialized="table", tags=["daily", "growth"]) }}
+
 with
     quote_requests as (
         select *
