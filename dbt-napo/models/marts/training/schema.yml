@@ -35,6 +35,8 @@ models:
         description: "Napo internal customer unique identifier."
       - name: email
         description: "Customer email address."
+      - name: name
+        description: "Customer full name."
       - name: customer_type
         description: "pa_standalone"
       - name: registration_date
