@@ -1,4 +1,4 @@
-{{ config(schema="marts") }}
+{{ config(schema="marts", tags=["daily"]) }}
 
 with
     call_with_trainers as (
@@ -14,6 +14,7 @@ with
         select
             customer_uuid,
             email,
+            name,
             'pa_standalone' as customer_type,
             registration_date,
             cast(subscription_created_at as date) as purchase_date,
@@ -85,6 +86,7 @@ with
         select
             customer.customer_uuid,
             coalesce(customer.email, calls.email) as email,
+            customer.name,
             customer_type,
             registration_date,
             purchase_date,

@@ -8,6 +8,8 @@ models:
         description: "Internal UUID for a Napo customer."
       - name: email
         description: "Customer email address."
+      - name: name
+        description: "Customer full name."
       - name: registration_date
         description: "The date the customer object is created in booking-service DB."
       - name: subscription_created_at
