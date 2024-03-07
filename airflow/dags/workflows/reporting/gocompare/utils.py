@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Literal, Tuple
 
 import pendulum
 
@@ -23,14 +23,14 @@ def get_weekly_report_name(run_date: pendulum.datetime):
     return f"napoweek{run_date.strftime('%U%B%Y').lower()}.csv"
 
 
-def get_monthly_report_name(run_date: pendulum.datetime):
+def get_monthly_report_name(run_date: pendulum.datetime, source: Literal["gocompare", "stickeewhitelabel"]):
     end_date = run_date.subtract(days=1)
-    return f"napo{end_date.strftime('%B%Y').lower()}.csv"
+    return f"napo{end_date.strftime('%B%Y').lower()}{source}.csv"
 
 
 def get_weekly_view_name(start_date: pendulum.datetime):
     return "gocompare_sales_report_weekly_{}".format(start_date.format("YYYYMMDD"))
 
 
-def get_monthly_view_name(start_date: pendulum.datetime):
-    return "gocompare_sales_report_monthly_{}".format(start_date.format("YYYYMMDD"))
+def get_monthly_view_name(start_date: pendulum.datetime, source: Literal["gocompare", "stickeewhitelabel"]):
+    return "{}_sales_report_monthly_{}".format(source, start_date.format("YYYYMMDD"))

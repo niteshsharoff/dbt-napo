@@ -1,3 +1,3 @@
 select * except (_transaction_at)
-from dbt_marts.gocompare_cumulative_sales_report
+from {{ source_table_name }}
 where _transaction_at >= '{{ start_date }}' and _transaction_at < '{{ end_date }}'
