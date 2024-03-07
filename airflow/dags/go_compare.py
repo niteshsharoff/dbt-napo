@@ -113,20 +113,32 @@ def weekly_branch(data_interval_end: pendulum.datetime = None):
 @task(outlets=[Dataset(f"{BQ_DATASET}.{WEEKLY_TABLE}_*")])
 def create_weekly_view(data_interval_end: pendulum.datetime = None):
     """
-    This task creates a Big Query weekly view on top of dbt_marts.gocompare_cumulative_sales_report
+    This task creates a Big Query weekly view on top of dbt_marts.gocompare_cumulative_sales_report and dbt_marts.whitelabel_cumulative_sales_report and unions the two together
     """
     start_date, _, run_date = get_weekly_reporting_period(data_interval_end)
     create_bq_view(
         project_name=GCP_PROJECT_ID,
         dataset_name=BQ_DATASET,
         view_name=get_weekly_view_name(start_date),
-        view_query=GOCOMPARE_SALES_REPORT_QUERY.render(
-            dict(
-                start_date=start_date.strftime("%Y-%m-%d"),
-                end_date=run_date.strftime("%Y-%m-%d"),
-                snapshot_at=run_date.strftime("%Y-%m-%d"),
-            )
-        ),
+        view_query=f"""
+            {GOCOMPARE_SALES_REPORT_QUERY.render(
+                dict(
+                    start_date=start_date.strftime("%Y-%m-%d"),
+                    end_date=run_date.strftime("%Y-%m-%d"),
+                    snapshot_at=run_date.strftime("%Y-%m-%d"),
+                    source_table=GOCOMPARE_MONTHLY_TABLE
+                )
+            )}
+            UNION ALL
+            {GOCOMPARE_SALES_REPORT_QUERY.render(
+                dict(
+                    start_date=start_date.strftime("%Y-%m-%d"),
+                    end_date=run_date.strftime("%Y-%m-%d"),
+                    snapshot_at=run_date.strftime("%Y-%m-%d"),
+                    source_table=WHITELABEL_MONTHLY_TABLE
+                )
+            )}
+            """,
     )
 
 
