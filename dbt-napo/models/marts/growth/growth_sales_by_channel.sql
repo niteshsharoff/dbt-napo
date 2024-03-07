@@ -31,6 +31,7 @@ with
                     struct('pcw' as channel, 'moneysupermarket' as subchannel),
                     ('pcw', 'comparethemarket'),
                     ('pcw', 'gocompare'),
+                    ('pcw', 'stickeewhitelabel'),
                     ('pcw', 'confused'),
                     ('paid_marketing', 'facebook'),
                     ('paid_marketing', 'google'),
