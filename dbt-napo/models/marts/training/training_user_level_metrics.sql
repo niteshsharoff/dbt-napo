@@ -1,4 +1,4 @@
-{{ config(schema="marts") }}
+{{ config(schema="marts", tags=["daily"]) }}
 
 with
     call_with_trainers as (
