@@ -2,7 +2,7 @@ with
     -- All customers in our Insurance databases, including those who haven't purchased
     -- a policy
     dim_customer as (
-        select customer_uuid, email
+        select customer_uuid, email, initcap(concat(first_name, ' ', last_name)) as name
         from
             (
                 select
@@ -13,7 +13,11 @@ with
     ),
     -- Recover uuid from subscription metadata if missing in customer object
     stripe_customers as (
-        select cus.stripe_customer_id, sub.customer_uuid as customer_uuid, cus.email
+        select
+            cus.stripe_customer_id,
+            sub.customer_uuid as customer_uuid,
+            cus.email,
+            initcap(cus.name) as name
         from {{ ref("stg_src_airbyte__stripe_customers") }} cus
         left join
             {{ ref("stg_src_airbyte__stripe_subscriptions") }} sub
@@ -27,7 +31,8 @@ with
         select
             -- Backpopulate customer_uuid for customer data pulled from stripe
             coalesce(booking.customer_uuid, stripe.customer_uuid) as customer_uuid,
-            stripe.email
+            stripe.email,
+            stripe.name
         from booking_db_customers booking
         full outer join
             stripe_customers stripe
@@ -37,14 +42,18 @@ with
         select
             training.customer_uuid,
             -- Backpopulate email address for training customers
-            coalesce(training.email, dim_customer.email) as email
+            coalesce(training.email, dim_customer.email) as email,
+            coalesce(training.name, dim_customer.name) as name
         from booking_and_stripe_customers training
         join dim_customer on training.customer_uuid = dim_customer.customer_uuid
     ),
     -- The grain of this table is at the policy level, this captures only customers
     -- that have purchased a policy
     insurance_customers as (
-        select customer.customer_uuid, customer.email
+        select
+            customer.customer_uuid,
+            customer.email,
+            initcap(concat(customer.first_name, ' ', customer.last_name)) as name
         from {{ ref("dim_policy_claim_snapshot") }}
         where
             snapshot_date
@@ -55,6 +64,7 @@ with
             insurance.customer_uuid as insurance_customer_uuid,
             -- backpopulate email addresses for insurance customers
             coalesce(insurance.email, training.email) as email,
+            coalesce(insurance.name, training.name) as name,
             training.customer_uuid as training_customer_uuid,
             case
                 when insurance.customer_uuid is not null then true else false
@@ -69,7 +79,9 @@ with
     ),
     one_off_stripe_payments as (
         select distinct
-            dim_customer.customer_uuid as customer_uuid, receipt_email as email
+            dim_customer.customer_uuid as customer_uuid,
+            receipt_email as email,
+            dim_customer.name as name
         from {{ ref("int_training_payments") }} payment
         left join dim_customer on payment.receipt_email = dim_customer.email
         where payment.customer_uuid is null
@@ -80,6 +92,7 @@ with
                 insurance_customer_uuid, training_customer_uuid, pmt.customer_uuid
             ) as customer_uuid,
             coalesce(cus.email, pmt.email) as email,
+            coalesce(cus.name, pmt.name) as name,
             coalesce(is_insurance_customer, false) as is_insurance_customer,
             case
                 when pmt.email is not null then true else is_training_customer
@@ -92,6 +105,7 @@ with
         select
             customer.customer_uuid,
             customer.email,
+            customer.name,
             cast(backend.created_at as date) as registration_date,
             subscription.stripe_customer_id,
             subscription.created_at as subscription_created_at,
