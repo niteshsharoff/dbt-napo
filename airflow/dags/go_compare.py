@@ -340,7 +340,7 @@ def upload_monthly_report(data_interval_end: pendulum.datetime = None):
 @dag(
     dag_id="go_compare",
     start_date=pendulum.datetime(2023, 7, 23, tz="UTC"),
-    schedule_interval="15 4 * * *",
+    schedule_interval="30 4 * * *",
     catchup=True,
     default_args={"retries": 0},
     max_active_runs=1,
@@ -373,7 +373,7 @@ def go_compare():
         allowed_states=["success"],
         failed_states=["failed", "skipped"],
         mode="reschedule",
-        # 15 1 * * *
+        # 30 1 * * *
         execution_delta=timedelta(hours=3),
         trigger_rule="one_success",
     )
