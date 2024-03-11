@@ -73,7 +73,8 @@ with
             attended,
             missed,
             cancelled,
-            first_class_attended
+            first_class_attended,
+            first_class_attended_at
         from pivot_metric_to_class_grain
     )
 select *
