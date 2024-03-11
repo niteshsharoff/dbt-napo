@@ -23,12 +23,25 @@ with
     -- A class can have multiple sessions, we only count the status of the first
     -- session for a giving class
     filter_earliest_status_occurence as (
-        select customer_uuid, class_uuid, class_name, status, first_class_attended
+        select
+            customer_uuid,
+            class_uuid,
+            class_name,
+            status,
+            first_class_attended,
+            case
+                when first_class_attended = class_name then session_date else null
+            end as first_class_attended_at
         from class_data
         where created_at = _first_instance_at
     ),
     pivot_metric_to_class_grain as (
-        select *
+        select
+            * except (first_class_attended_at),
+            -- Populate first class attended at timestamp for each row
+            min(first_class_attended_at) over (
+                partition by customer_uuid
+            ) as first_class_attended_at
         from
             filter_earliest_status_occurence pivot (
                 sum(1) for status in (
