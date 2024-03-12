@@ -188,5 +188,10 @@
     "mode": "NULLABLE",
     "name": "policy_document_version",
     "type": "STRING"
+  },
+  {
+    "mode": "NULLABLE",
+    "name": "excluded_from_automation",
+    "type": "BOOLEAN"
   }
 ]
