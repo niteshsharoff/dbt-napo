@@ -106,10 +106,12 @@ with
             customer.customer_uuid,
             customer.email,
             customer.name,
-            cast(backend.created_at as date) as registration_date,
+            backend.created_at as registration_at,
             subscription.stripe_customer_id,
+            subscription.stripe_subscription_id,
             subscription.created_at as subscription_created_at,
             subscription.cancelled_at as subscription_cancelled_at,
+            subscription.trial_started_at as trial_started_at,
             customer.is_insurance_customer,
             customer.is_training_customer
         from all_customers customer

@@ -10,12 +10,18 @@ models:
         description: "Customer email address."
       - name: name
         description: "Customer full name."
-      - name: registration_date
-        description: "The date the customer object is created in booking-service DB."
+      - name: registration_at
+        description: "The timestamp the customer object is created in booking-service DB."
+      - name: stripe_customer_id
+        description: "Stripe customer unique identifier."
+      - name: stripe_subscription_id
+        description: "Stripe subscription unique identifier."
       - name: subscription_created_at
         description: "The date the customer's Stripe subscription was created."
       - name: subscription_cancelled_at
         description: "The date the customer's Stripe subscription was cancelled."
+      - name: trial_started_at
+        description: "The timestamp the customer's trial started."
       - name: is_training_customer
         description: "true if the customer is in our insurance databases."
       - name: is_insurance_customer
