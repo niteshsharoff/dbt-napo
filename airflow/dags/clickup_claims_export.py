@@ -9,7 +9,7 @@ import requests
 from billiard.pool import Pool
 
 from airflow.decorators import task
-from airflow.exceptions import AirflowFailException, AirflowSkipException
+from airflow.exceptions import AirflowFailException
 from airflow.models import Variable
 from airflow.models.dag import dag
 from airflow.operators.empty import EmptyOperator
@@ -84,30 +84,17 @@ def get_snapshot(
     max_pages = 600
     offset = 10
     page = 0
-    results = []
-    batch_size = 1000
 
     while True:
         page_args = [(i, list_id, archived) for i in range(page, page + offset)]
         page_results = pool.starmap(_get_tasks, page_args)
         page_results = [item for sublist in page_results for item in sublist]
-        results.extend(page_results)
-
-        page += offset
-
-        if page >= max_pages:
-            logging.error("Max page limit exceeded!")
-            raise AirflowFailException
 
         if not page_results:
             break
 
-    if not any(results):
-        raise AirflowSkipException
-
-    # Hitting memory bottleneck, process in batches until we replace the pipeline with claims DB
-    for i in range(0, len(results), batch_size):
-        df = pd.DataFrame.from_records(results[i : i + batch_size])
+        # Hitting memory bottleneck, process in batches until we replace the pipeline with claims DB
+        df = pd.DataFrame.from_records(page_results)
 
         for column in CLICKUP_JSON_FIELDS:
             df[column] = df[column].astype(object).apply(json.dumps)
@@ -117,10 +104,16 @@ def get_snapshot(
                 gcs_path=f"{GCS_RAW_FOLDER}/{gcs_folder}/{GCS_DATA_VERSION}",
                 run_date=data_interval_end.date(),
                 filename="claims" if archived == "false" else "archived_claims",
-                batch_number=i,
+                batch_number=page,
             ),
             index=False,
         )
+
+        page += offset
+
+        if page >= max_pages:
+            logging.error("Max page limit exceeded!")
+            raise AirflowFailException
 
 
 def _get_time_in_status_batch(task_ids: List[str]):
