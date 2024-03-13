@@ -43,10 +43,14 @@ models:
         description: "Customer full name."
       - name: customer_type
         description: "pa_standalone"
+      - name: registration_date
+        description: "Deprecated, to replaced by registration_at."
+      - name: purchase_date
+        description: "Deprecated, to replaced by first_payment_at."
       - name: registration_at
         description: "The timestamp the customer object is created in booking-service DB."
-      - name: purchase_date
-        description: "The date the customer's Stripe subscription was created."
+      - name: trial_start_date
+        description: "The date the customer's Stripe trial started."
       - name: subscription_cancel_date
         description: "The date the customer's Stripe subscription was cancelled."
       - name: talk_to_trainer_sessions_booked
