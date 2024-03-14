@@ -1,4 +1,3 @@
--- {{ config(materialized="table", tags=["daily"]) }}
 with
     raw_requests as (
         select
