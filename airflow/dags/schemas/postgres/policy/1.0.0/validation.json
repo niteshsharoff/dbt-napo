@@ -116,6 +116,9 @@
     },
     "policy_document_version": {
       "type": "string"
+    },
+    "excluded_from_automation": {
+      "type": "boolean"
     }
   },
   "additionalProperties": false
