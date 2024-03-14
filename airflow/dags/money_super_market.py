@@ -370,8 +370,8 @@ def money_super_market():
         allowed_states=["success"],
         failed_states=["failed", "skipped"],
         mode="reschedule",
-        # 15 1 * * *
-        execution_delta=timedelta(hours=3, minutes=-15),
+        # 30 1 * * *
+        execution_delta=timedelta(hours=3, minutes=-30),
         trigger_rule="one_success",
     )
 

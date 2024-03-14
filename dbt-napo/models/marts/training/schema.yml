@@ -16,8 +16,12 @@ models:
         description: "Count of payment intents aggregated by day where payment_plan_type = 'year'."
       - name: new_monthly
         description: "Count of payment intents aggregated by day where payment_plan_type = 'month' and recurring_payment = false."
+      - name: new_weekly
+        description: "Count of payment intents aggregated by day where payment_plan_type = 'week' and recurring_payment = false."
       - name: recurring_monthly
         description: "Count of payment intents aggregated by day where payment_plan_type = 'month' and recurring_payment = true."
+      - name: recurring_weekly
+        description: "Count of payment intents aggregated by day where payment_plan_type = 'week' and recurring_payment = true."
       - name: new_revenue
         description: "Sum of payment amounts aggreated by day where recurring_payment = false."
       - name: recurring_revenue
@@ -40,9 +44,13 @@ models:
       - name: customer_type
         description: "pa_standalone"
       - name: registration_date
-        description: "The date the customer object is created in booking-service DB."
+        description: "Deprecated, to replaced by registration_at."
       - name: purchase_date
-        description: "The date the customer's Stripe subscription was created."
+        description: "Deprecated, to replaced by first_payment_at."
+      - name: registration_at
+        description: "The timestamp the customer object is created in booking-service DB."
+      - name: trial_start_date
+        description: "The date the customer's Stripe trial started."
       - name: subscription_cancel_date
         description: "The date the customer's Stripe subscription was cancelled."
       - name: talk_to_trainer_sessions_booked
@@ -74,8 +82,20 @@ models:
       - name: videos_completed
         description: "Total number of videos completed (including re-watches)."
       - name: first_class_attended
-        description: "Name of the first class a customer has attended."
+        description: "Name of the first class the customer attended."
+      - name: first_class_attended_at
+        description: "The timestamp of the first class the customer attended."
       - name: is_training_customer
         description: "Set to true if the customer has purchased a policy with Napo at any point in time."
       - name: is_insurance_customer
         description: "Set to true if the customer can be found in our booking database or via Stripe payments."
+      - name: first_payment_at
+        description: "First successful payment timestamp grouped by customer UUID."
+      - name: last_payment_at
+        description: "Last known successful payment timestamp grouped by customer UUID."
+      - name: annual_payment_count
+        description: "Number of successful annual payments paid."
+      - name: monthly_payment_count
+        description: "Number of successful monthly payments paid."
+      - name: weekly_payment_count
+        description: "Number of successful weekly payments paid."

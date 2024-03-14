@@ -18,10 +18,12 @@ from
     (
         select
             policy_id,
+            status,
             snapshot_date,
             cover_type,
             coalesce(paid_amount, 0) as paid_amount
         from {{ ref("int_claim_snapshots") }}
+        where status in ('accepted')
     ) pivot (
         sum(paid_amount) for cover_type in (
             "vet_fee_cover" as vet_fee_paid_amount,
