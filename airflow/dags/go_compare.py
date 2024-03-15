@@ -126,7 +126,7 @@ def create_weekly_view(data_interval_end: pendulum.datetime = None):
                     start_date=start_date.strftime("%Y-%m-%d"),
                     end_date=run_date.strftime("%Y-%m-%d"),
                     snapshot_at=run_date.strftime("%Y-%m-%d"),
-                    source_table='dbt_marts.gocompare_cumulative_sales_report'
+                    source_table_name='dbt_marts.gocompare_cumulative_sales_report'
                 )
             )}
             UNION ALL
@@ -135,7 +135,7 @@ def create_weekly_view(data_interval_end: pendulum.datetime = None):
                     start_date=start_date.strftime("%Y-%m-%d"),
                     end_date=run_date.strftime("%Y-%m-%d"),
                     snapshot_at=run_date.strftime("%Y-%m-%d"),
-                    source_table='dbt_marts.whitelabel_cumulative_sales_report'
+                    source_table_name='dbt_marts.whitelabel_cumulative_sales_report'
                 )
             )}
             """,
@@ -251,7 +251,7 @@ def create_monthly_whitelabel_view(data_interval_end: pendulum.datetime = None):
         view_name=get_monthly_view_name(start_date, 'stickeewhitelabel'),
         view_query=GOCOMPARE_SALES_REPORT_QUERY.render(
             dict(
-                source_table='dbt_marts.whitelabel_cumulative_sales_report',
+                source_table_name='dbt_marts.whitelabel_cumulative_sales_report',
                 start_date=start_date.strftime("%Y-%m-%d"),
                 end_date=run_date.strftime("%Y-%m-%d"),
                 snapshot_at=run_date.strftime("%Y-%m-%d"),
@@ -272,7 +272,7 @@ def create_monthly_view(data_interval_end: pendulum.datetime = None):
         view_name=get_monthly_view_name(start_date, 'gocompare'),
         view_query=GOCOMPARE_SALES_REPORT_QUERY.render(
             dict(
-                source_table='dbt_marts.gocompare_cumulative_sales_report',
+                source_table_name='dbt_marts.gocompare_cumulative_sales_report',
                 start_date=start_date.strftime("%Y-%m-%d"),
                 end_date=run_date.strftime("%Y-%m-%d"),
                 snapshot_at=run_date.strftime("%Y-%m-%d"),
