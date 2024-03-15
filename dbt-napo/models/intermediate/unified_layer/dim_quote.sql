@@ -57,6 +57,8 @@ with
             case
                 when source = 'tungsten-vale'
                 then 'gocompare'
+                when source = 'copper-inlet'
+                then 'stickeewhitelabel'
                 when source = 'gallium-rapid'
                 then 'quotezone'
                 when source = 'fermium-cliff'

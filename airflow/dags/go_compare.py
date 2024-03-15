@@ -56,7 +56,8 @@ PARTITION_INTEGRITY_CHECK = JINJA_ENV.get_template("sql/partition_integrity_chec
 GOCOMPARE_SALES_REPORT_QUERY = JINJA_ENV.get_template("sql/gocompare_sales_report.sql")
 BQ_DATASET = "reporting"
 WEEKLY_TABLE = "gocompare_sales_report_weekly"
-MONTHLY_TABLE = "gocompare_sales_report_monthly"
+GOCOMPARE_MONTHLY_TABLE = "gocompare_sales_report_monthly"
+WHITELABEL_MONTHLY_TABLE = "whitelabel_sales_report_monthly"
 
 
 def sftp_task_wrapper(
@@ -112,20 +113,32 @@ def weekly_branch(data_interval_end: pendulum.datetime = None):
 @task(outlets=[Dataset(f"{BQ_DATASET}.{WEEKLY_TABLE}_*")])
 def create_weekly_view(data_interval_end: pendulum.datetime = None):
     """
-    This task creates a Big Query weekly view on top of dbt_marts.gocompare_cumulative_sales_report
+    This task creates a Big Query weekly view on top of dbt_marts.gocompare_cumulative_sales_report and dbt_marts.whitelabel_cumulative_sales_report and unions the two together
     """
     start_date, _, run_date = get_weekly_reporting_period(data_interval_end)
     create_bq_view(
         project_name=GCP_PROJECT_ID,
         dataset_name=BQ_DATASET,
         view_name=get_weekly_view_name(start_date),
-        view_query=GOCOMPARE_SALES_REPORT_QUERY.render(
-            dict(
-                start_date=start_date.strftime("%Y-%m-%d"),
-                end_date=run_date.strftime("%Y-%m-%d"),
-                snapshot_at=run_date.strftime("%Y-%m-%d"),
-            )
-        ),
+        view_query=f"""
+            {GOCOMPARE_SALES_REPORT_QUERY.render(
+                dict(
+                    start_date=start_date.strftime("%Y-%m-%d"),
+                    end_date=run_date.strftime("%Y-%m-%d"),
+                    snapshot_at=run_date.strftime("%Y-%m-%d"),
+                    source_table_name='dbt_marts.gocompare_cumulative_sales_report'
+                )
+            )}
+            UNION ALL
+            {GOCOMPARE_SALES_REPORT_QUERY.render(
+                dict(
+                    start_date=start_date.strftime("%Y-%m-%d"),
+                    end_date=run_date.strftime("%Y-%m-%d"),
+                    snapshot_at=run_date.strftime("%Y-%m-%d"),
+                    source_table_name='dbt_marts.whitelabel_cumulative_sales_report'
+                )
+            )}
+            """,
     )
 
 
@@ -226,6 +239,26 @@ def monthly_branch(data_interval_end: pendulum.datetime = None):
 
     return "no_op"
 
+@task(outlets=[Dataset(f"{BQ_DATASET}.{WEEKLY_TABLE}_*")])
+def create_monthly_whitelabel_view(data_interval_end: pendulum.datetime = None):
+    start_date, _, run_date = get_monthly_reporting_period(data_interval_end)
+    """
+    This task creates a Big Query monthly view on top of dbt_marts.whitelabel_cumulative_sales_report
+    """
+    create_bq_view(
+        project_name=GCP_PROJECT_ID,
+        dataset_name=BQ_DATASET,
+        view_name=get_monthly_view_name(start_date, 'stickeewhitelabel'),
+        view_query=GOCOMPARE_SALES_REPORT_QUERY.render(
+            dict(
+                source_table_name='dbt_marts.whitelabel_cumulative_sales_report',
+                start_date=start_date.strftime("%Y-%m-%d"),
+                end_date=run_date.strftime("%Y-%m-%d"),
+                snapshot_at=run_date.strftime("%Y-%m-%d"),
+            )
+        ),
+    )
+
 
 @task(outlets=[Dataset(f"{BQ_DATASET}.{WEEKLY_TABLE}_*")])
 def create_monthly_view(data_interval_end: pendulum.datetime = None):
@@ -236,9 +269,10 @@ def create_monthly_view(data_interval_end: pendulum.datetime = None):
     create_bq_view(
         project_name=GCP_PROJECT_ID,
         dataset_name=BQ_DATASET,
-        view_name=get_monthly_view_name(start_date),
+        view_name=get_monthly_view_name(start_date, 'gocompare'),
         view_query=GOCOMPARE_SALES_REPORT_QUERY.render(
             dict(
+                source_table_name='dbt_marts.gocompare_cumulative_sales_report',
                 start_date=start_date.strftime("%Y-%m-%d"),
                 end_date=run_date.strftime("%Y-%m-%d"),
                 snapshot_at=run_date.strftime("%Y-%m-%d"),
@@ -248,21 +282,21 @@ def create_monthly_view(data_interval_end: pendulum.datetime = None):
 
 
 @task
-def export_monthly_report(data_interval_end: pendulum.datetime = None):
+def export_monthly_whitelabel_report(data_interval_end: pendulum.datetime = None):
     """
-    This task exports the query results of a monthly view to Cloud Storage.
+    This task exports the query results of a monthly view for whitelabel to Cloud Storage.
     """
     run_date = data_interval_end
     start_date = run_date.subtract(months=1)
-    view_name = f"{MONTHLY_TABLE}_{start_date.format('YYYYMMDD')}"
-    gcs_file_name = get_monthly_report_name(run_date)
+    gcs_file_name = get_monthly_report_name(run_date, source='stickeewhitelabel')
+     # export whitelabel monthly report
     export_query_to_gcs(
         project_name=GCP_PROJECT_ID,
-        query=f"SELECT * FROM `{GCP_PROJECT_ID}.{BQ_DATASET}.{view_name}`",
+        query=f"SELECT * FROM `{GCP_PROJECT_ID}.{BQ_DATASET}.{WHITELABEL_MONTHLY_TABLE}_{start_date.format('YYYYMMDD')}`",
         gcs_bucket=GCS_BUCKET,
         gcs_uri="{}/{}/run_date={}/{}".format(
             BQ_DATASET,
-            MONTHLY_TABLE,
+            WHITELABEL_MONTHLY_TABLE,
             run_date.date(),
             gcs_file_name,
         ),
@@ -270,18 +304,54 @@ def export_monthly_report(data_interval_end: pendulum.datetime = None):
 
 
 @task
-def monthly_report_exists_check(data_interval_end: pendulum.datetime = None):
+def export_monthly_report(data_interval_end: pendulum.datetime = None):
     """
-    This task checks if the report already exists on Google Drive
+    This task exports the query results of a monthly view for gocompare to Cloud Storage.
+    """
+    run_date = data_interval_end
+    start_date = run_date.subtract(months=1)
+    gcs_file_name = get_monthly_report_name(run_date, source='gocompare')
+    # export gocompare monthly report
+    export_query_to_gcs(
+        project_name=GCP_PROJECT_ID,
+        query=f"SELECT * FROM `{GCP_PROJECT_ID}.{BQ_DATASET}.{GOCOMPARE_MONTHLY_TABLE}_{start_date.format('YYYYMMDD')}`",
+        gcs_bucket=GCS_BUCKET,
+        gcs_uri="{}/{}/run_date={}/{}".format(
+            BQ_DATASET,
+            GOCOMPARE_MONTHLY_TABLE,
+            run_date.date(),
+            gcs_file_name,
+        ),
+    )
+
+@task
+def monthly_whitelabel_report_exists_check(data_interval_end: pendulum.datetime = None):
+    """
+    This task checks if the whitelabel report already exists on Google Drive
     """
     _, end_date, _ = get_monthly_reporting_period(data_interval_end)
-    report_name = get_monthly_report_name(end_date)
+    # check if whitelabel report exists
+    report_name = get_monthly_report_name(end_date, source='stickeewhitelabel')
     if file_exists_on_google_drive(
         file_name=report_name,
         token_file=OAUTH_TOKEN_FILE,
     ):
         raise AirflowSkipException
 
+
+@task
+def monthly_report_exists_check(data_interval_end: pendulum.datetime = None):
+    """
+    This task checks if the gocompare report already exists on Google Drive
+    """
+    _, end_date, _ = get_monthly_reporting_period(data_interval_end)
+    # check if gocompare report exists
+    report_name = get_monthly_report_name(end_date, source='gocompare')
+    if file_exists_on_google_drive(
+        file_name=report_name,
+        token_file=OAUTH_TOKEN_FILE,
+    ):
+        raise AirflowSkipException
 
 @task
 def monthly_data_integrity_check(data_interval_end: pendulum.datetime = None):
@@ -302,17 +372,18 @@ def monthly_data_integrity_check(data_interval_end: pendulum.datetime = None):
     if result.total_rows != 0:
         raise AirflowFailException
 
-
 @task
-def monthly_report_row_count_check(data_interval_end: pendulum.datetime = None):
+def monthly_whitelabel_report_row_count_check(data_interval_end: pendulum.datetime = None):
     """
-    This task checks if the report is empty.
+    This task checks if the whitelabel report is empty.
     """
     _, end_date, run_date = get_monthly_reporting_period(data_interval_end)
-    filename = get_monthly_report_name(end_date)
+
+    # check whitelabel
+    filename = get_monthly_report_name(end_date, source='stickeewhitelabel')
     df = gcs_csv_to_dataframe(
         gcs_bucket=GCS_BUCKET,
-        gcs_folder=f"{BQ_DATASET}/{MONTHLY_TABLE}/run_date={run_date.date()}",
+        gcs_folder=f"{BQ_DATASET}/{WHITELABEL_MONTHLY_TABLE}/run_date={run_date.date()}",
         pattern=f"*/{filename}",
     )
     df.head()
@@ -321,16 +392,53 @@ def monthly_report_row_count_check(data_interval_end: pendulum.datetime = None):
 
 
 @task
+def monthly_report_row_count_check(data_interval_end: pendulum.datetime = None):
+    """
+    This task checks if the gocompare report is empty.
+    """
+    _, end_date, run_date = get_monthly_reporting_period(data_interval_end)
+    # check gocompare
+    filename = get_monthly_report_name(end_date, source='gocompare')
+    df = gcs_csv_to_dataframe(
+        gcs_bucket=GCS_BUCKET,
+        gcs_folder=f"{BQ_DATASET}/{GOCOMPARE_MONTHLY_TABLE}/run_date={run_date.date()}",
+        pattern=f"*/{filename}",
+    )
+    df.head()
+    if df.empty:
+        raise AirflowFailException
+
+@task
+def upload_whitelabel_monthly_report(data_interval_end: pendulum.datetime = None):
+    """
+    This task uploads the whitel monthly report to Google Drive.
+    """
+    _, end_date, run_date = get_monthly_reporting_period(data_interval_end)
+    # whitelabel
+    report_name = get_monthly_report_name(end_date, source='stickeewhitelabel')
+    upload_to_google_drive(
+        project_name=GCP_PROJECT_ID,
+        gcs_bucket=GCS_BUCKET,
+        gcs_path=f"{BQ_DATASET}/{WHITELABEL_MONTHLY_TABLE}/run_date={run_date.date()}/{report_name}",
+        gdrive_folder_id=GOOGLE_DRIVE_MONTHLY_FOLDER_ID,
+        gdrive_file_name=f"{report_name}",
+        token_file=OAUTH_TOKEN_FILE,
+    )
+
+
+@task
 def upload_monthly_report(data_interval_end: pendulum.datetime = None):
     """
     This task uploads the monthly report to Google Drive.
     """
+
     _, end_date, run_date = get_monthly_reporting_period(data_interval_end)
-    report_name = get_monthly_report_name(end_date)
+    # gocompare
+    report_name = get_monthly_report_name(end_date, source='gocompare')
     upload_to_google_drive(
         project_name=GCP_PROJECT_ID,
         gcs_bucket=GCS_BUCKET,
-        gcs_path=f"{BQ_DATASET}/{MONTHLY_TABLE}/run_date={run_date.date()}/{report_name}",
+        gcs_path=f"{BQ_DATASET}/{GOCOMPARE_MONTHLY_TABLE}/run_date={run_date.date()}/{report_name}",
         gdrive_folder_id=GOOGLE_DRIVE_MONTHLY_FOLDER_ID,
         gdrive_file_name=f"{report_name}",
         token_file=OAUTH_TOKEN_FILE,
@@ -406,14 +514,27 @@ def go_compare():
 
     # Monthly tasks branch
     with TaskGroup(group_id="first_of_month", prefix_group_id=False) as monthly_tasks:
-        sftp_monthly_report = sftp_task_wrapper(
-            task_id="sftp_monthly_report",
+        # gocompare
+        sftp_gocompare_monthly_report = sftp_task_wrapper(
+            task_id="sftp_gocompare_monthly_report",
             local_dir="gocompare/monthly",
             remote_dir="incoming",
             gcs_uri="gs://{}/{}/{}/run_date={}/*".format(
                 GCS_BUCKET,
                 BQ_DATASET,
-                MONTHLY_TABLE,
+                GOCOMPARE_MONTHLY_TABLE,
+                run_date,
+            ),
+        )
+        # whitelabel
+        sftp_whitelabel_monthly_report = sftp_task_wrapper(
+            task_id="sftp_whitelabel_monthly_report",
+            local_dir="whitelabel/monthly",
+            remote_dir="incoming",
+            gcs_uri="gs://{}/{}/{}/run_date={}/*".format(
+                GCS_BUCKET,
+                BQ_DATASET,
+                WHITELABEL_MONTHLY_TABLE,
                 run_date,
             ),
         )
@@ -426,8 +547,20 @@ def go_compare():
                 monthly_data_integrity_check(),
                 monthly_report_row_count_check(),
             ]
-            >> sftp_monthly_report
+            >> sftp_gocompare_monthly_report
             >> upload_monthly_report()
+        )
+        (
+            create_monthly_whitelabel_view()
+            >> export_monthly_whitelabel_report()
+            >> [
+                dbt_checks,
+                monthly_whitelabel_report_exists_check(),
+                monthly_data_integrity_check(),
+                monthly_whitelabel_report_row_count_check(),
+            ]
+            >> sftp_whitelabel_monthly_report
+            >> upload_whitelabel_monthly_report()
         )
 
     is_first_day_of_week >> weekly_tasks

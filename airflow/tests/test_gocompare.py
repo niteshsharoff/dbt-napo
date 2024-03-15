@@ -28,15 +28,15 @@ def test_get_weekly_report_name(run_date: pendulum.datetime, expected_file_name:
 
 
 @pytest.mark.parametrize(
-    "run_date,expected_file_name",
+    "run_date,source,expected_file_name",
     (
-        (pendulum.datetime(2023, 1, 1, 0, 0, 0), "napodecember2022.csv"),
-        (pendulum.datetime(2023, 2, 1, 0, 0, 0), "napojanuary2023.csv"),
-        (pendulum.datetime(2023, 3, 1, 0, 0, 0), "napofebruary2023.csv"),
+        (pendulum.datetime(2023, 1, 1, 0, 0, 0),"gocompare", "napodecember2022gocompare.csv"),
+        (pendulum.datetime(2023, 2, 1, 0, 0, 0), "whitelabel", "napojanuary2023whitelabel.csv"),
+        (pendulum.datetime(2023, 3, 1, 0, 0, 0), "gocompare", "napofebruary2023gocompare.csv"),
     ),
 )
-def test_get_monthly_report_name(run_date: pendulum.datetime, expected_file_name: str):
-    assert get_monthly_report_name(run_date) == expected_file_name
+def test_get_monthly_report_name(run_date: pendulum.datetime, source: str, expected_file_name: str):
+    assert get_monthly_report_name(run_date=run_date, source=source) == expected_file_name
 
 
 @pytest.mark.parametrize(
