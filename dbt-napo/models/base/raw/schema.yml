@@ -1,0 +1,11 @@
+version: 2
+
+models:
+  - name: stg_raw__policy_ledger
+    description: '{{ doc("stg_raw__policy_ledger") }}'
+  - name: stg_raw__quote_request
+    description: ""
+    latest_version: 1
+    versions:
+      - v: 1
+      - v: 2
