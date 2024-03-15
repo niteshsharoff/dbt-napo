@@ -126,7 +126,7 @@ def create_weekly_view(data_interval_end: pendulum.datetime = None):
                     start_date=start_date.strftime("%Y-%m-%d"),
                     end_date=run_date.strftime("%Y-%m-%d"),
                     snapshot_at=run_date.strftime("%Y-%m-%d"),
-                    source_table=GOCOMPARE_MONTHLY_TABLE
+                    source_table='dbt_marts.gocompare_cumulative_sales_report'
                 )
             )}
             UNION ALL
@@ -135,7 +135,7 @@ def create_weekly_view(data_interval_end: pendulum.datetime = None):
                     start_date=start_date.strftime("%Y-%m-%d"),
                     end_date=run_date.strftime("%Y-%m-%d"),
                     snapshot_at=run_date.strftime("%Y-%m-%d"),
-                    source_table=WHITELABEL_MONTHLY_TABLE
+                    source_table='dbt_marts.whitelabel_cumulative_sales_report'
                 )
             )}
             """,
