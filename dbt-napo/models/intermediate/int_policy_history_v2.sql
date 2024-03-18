@@ -5,7 +5,7 @@
 
 with
     policy as (
-        select
+        select distinct
             policy.policy_id,
             policy.quote_id,
             policy.product_id,
@@ -47,7 +47,7 @@ with
             on policy.policy_id = original_policy.policy_id
     ),
     product as (
-        select
+        select distinct
             product.id,
             product.reference,
             product.name,
@@ -66,52 +66,56 @@ with
         from {{ ref("stg_raw__product") }} product
     ),
     customer as (
-        select
-            customer.customer_id,
-            customer.uuid,
-            user.first_name,
-            user.last_name,
-            user.email,
-            customer.street_address,
-            customer.address_locality,
-            customer.address_region,
-            customer.postal_code,
-            customer.date_of_birth,
-            customer.change_reason,
-            customer.effective_from,
-            customer.effective_to
-        from {{ ref("stg_raw__customer_ledger") }} customer
-        left join {{ source("raw", "user") }} user on customer.user_id = user.id
+        select distinct
+            customer_id,
+            -- backward compatible column name
+            customer_uuid as uuid,
+            first_name,
+            last_name,
+            email,
+            street_address,
+            address_locality,
+            address_region,
+            postal_code,
+            date_of_birth,
+            change_reason,
+            effective_from,
+            effective_to
+        from {{ ref("dim_customer") }} customer
     ),
     pet as (
-        select
-            pet.pet_id,
-            pet.uuid,
-            pet.name,
-            pet.date_of_birth,
-            pet.gender,
-            pet.size,
-            pet.cost,
-            pet.is_neutered,
-            pet.is_microchipped,
-            pet.is_vaccinated,
-            pet.species,
-            pet.breed_category,
-            breed.name as breed_name,
-            breed.source as breed_source,
-            pet.has_pre_existing_conditions,
-            pet.change_reason,
-            pet.multipet_number,
-            pet.effective_from,
-            pet.effective_to
-        from {{ ref("stg_raw__pet_ledger") }} pet
-        left join
-            {{ source("raw", "breed") }} breed
-            on pet.breed_id = breed.id
-            and breed.run_date = parse_date('%Y-%m-%d', '{{yesterday}}')
+        select distinct
+            pet_id,
+            pet_uuid as uuid,
+            name,
+            date_of_birth,
+            -- backward compatible pet gender
+            case
+                when pet.gender = 'male'
+                then '1'
+                when pet.gender = 'female'
+                then '2'
+                else null
+            end as gender,
+            size,
+            -- backward compatible column name
+            cost_pounds as cost,
+            is_neutered,
+            is_microchipped,
+            is_vaccinated,
+            species,
+            breed_category,
+            breed_name,
+            breed_source,
+            has_pre_existing_conditions,
+            change_reason,
+            multipet_number,
+            effective_from,
+            effective_to
+        from {{ ref("dim_pet") }} pet
     ),
     quote as (
-        select
+        select distinct
             quote.quote_id,
             quote.pricing_model_version,
             quote.msm_sales_tracking_urn,

@@ -28,6 +28,8 @@ with
             breed.source as breed_source,
             has_pre_existing_conditions,
             change_reason as change_reason,
+            -- excluded when capturing row changes, used only for reporting
+            multipet_number,
             effective_from,
             effective_to
         from {{ ref("stg_raw__pet_ledger") }} pet
@@ -173,6 +175,7 @@ with
             breed_source,
             has_pre_existing_conditions,
             change_reason,
+            multipet_number,
             min(effective_from) as effective_from,
             max(effective_to) as effective_to
         from assign_grp_id
@@ -193,6 +196,7 @@ with
             breed_source,
             has_pre_existing_conditions,
             change_reason,
+            multipet_number,
             grp_id
         order by pet_uuid, effective_from
     )
