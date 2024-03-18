@@ -167,7 +167,8 @@ with
     ),
 
     int_tiktok as (
-        select date,
+        select
+            date,
             case
                 when napo_campaign_type = 'growth'
                 then 'paid_marketing'
@@ -186,10 +187,10 @@ with
             null as academy_registration_conversions,
             null as purchase_conversions,
             null as purchase_conv_value
-        from {{ref('agg_marketing_tiktok_ads_by_campaign_type')}}
+        from {{ ref("agg_marketing_tiktok_ads_by_campaign_type") }}
         group by all
     ),
- 
+
     int_marketing_by_campaign as (
         select *
         from int_facebook
@@ -200,7 +201,7 @@ with
         select *
         from int_bing
         union all
-        select * 
+        select *
         from int_tiktok
     ),
 
