@@ -166,6 +166,30 @@ with
 
     ),
 
+    int_tiktok as (
+        select date,
+            case
+                when napo_campaign_type = 'growth'
+                then 'paid_marketing'
+                when napo_campaign_type = 'leadgen'
+                then 'lead_generation'
+                when napo_campaign_type = 'pa_standalone'
+                then 'pa_standalone'
+                else 'other'
+            end as channel,
+            'tiktok' as subchannel,
+            sum(cost_gbp) as total_spend,
+            sum(conversions) as conversions,
+            sum(clicks) as clicks,
+            null as view_quote_conversions,
+            sum(conversions) as lead_conversions,
+            null as academy_registration_conversions,
+            null as purchase_conversions,
+            null as purchase_conv_value
+        from {{ref('agg_marketing_tiktok_ads_by_campaign_type')}}
+        group by all
+    ),
+ 
     int_marketing_by_campaign as (
         select *
         from int_facebook
@@ -175,6 +199,9 @@ with
         union all
         select *
         from int_bing
+        union all
+        select * 
+        from int_tiktok
     ),
 
     core__paid_marketing as (

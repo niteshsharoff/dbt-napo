@@ -33,3 +33,7 @@ sources:
         tags: ['training']
       - name: stripe_charges
         tags: ['training']
+      - name: tiktok_ad_groups_reports_daily
+        tags: ['growth']
+      - name: tiktok_campaigns_reports_daily
+        tags: ['growth']
