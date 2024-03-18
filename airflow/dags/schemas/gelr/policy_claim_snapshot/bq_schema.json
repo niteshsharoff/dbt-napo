@@ -484,6 +484,11 @@
       },
       {
         "mode": "NULLABLE",
+        "name": "multipet_number",
+        "type": "INTEGER"
+      },
+      {
+        "mode": "NULLABLE",
         "name": "effective_from",
         "type": "TIMESTAMP"
       },
